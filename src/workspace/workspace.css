@@ -556,3 +556,37 @@
 .mk-ai-actions { display: flex; align-items: center; gap: 18px; margin: 12px 0; }
 .mk-ai-actions small { flex: 1; color: var(--mk-muted); }
 @media(max-width:650px) { .mk-setup-step { padding: 21px; } .mk-ai-messages { padding: 16px; } .mk-ai-prompts { grid-template-columns: 1fr; } .mk-ai-message { max-width: 95%; } .mk-ai-controls { padding: 16px; } .mk-ai-actions { align-items: flex-end; } }
+
+/* Small, quiet transitions that keep controls and text stable. */
+@keyframes mk-arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: no-preference) {
+  .mk-page-header, .mk-setup-step { animation: mk-arrive .26s ease-out both; }
+  .mk-panel { animation: mk-arrive .3s ease-out both; }
+  .mk-button, .mk-icon-button, .mk-nav-link, .mk-property, .mk-channel-card { transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease; }
+  .mk-property-image img { transition: transform .35s ease; }
+  .mk-dialog { animation: mk-arrive .2s ease-out both; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .mk-property:hover, .mk-channel-card:hover { box-shadow: 0 5px 18px #5c2f200b; }
+  .mk-property:hover .mk-property-image img { transform: scale(1.015); }
+}
+
+.mk-channel-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; }
+.mk-channel-card { padding: 24px; display: flex; align-items: flex-start; flex-direction: column; gap: 15px; }
+.mk-channel-card h2 { font-size: 20px; }
+.mk-channel-card p { color: var(--mk-muted); flex: 1; line-height: 1.9; }
+.mk-channel-emblem { width: 44px; height: 44px; border-radius: 12px; background: var(--mk-tint); color: var(--mk-accent); display: inline-grid; place-items: center; }
+.mk-channel-emblem.airbnb { background: #faeded; color: #a13948; }
+.mk-channel-emblem.booking { background: #edf2fa; color: #31568b; }
+.mk-connected-calendar { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 24px 0; border-top: 1px solid var(--mk-line); margin-top: 20px; }
+.mk-connected-calendar strong { display: block; margin-bottom: 8px; }
+.mk-connected-calendar p { margin: 10px 0; color: var(--mk-muted); }
+.mk-connected-calendar .mk-field, .mk-connected-calendar > p { grid-column: 1 / -1; }
+.mk-connected-calendar > .mk-button { width: fit-content; }
+.mk-connect-steps { padding-left: 22px; line-height: 1.9; }
+.mk-connect-steps li { margin-bottom: 12px; }
+@media(max-width:1100px) { .mk-channel-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:650px) { .mk-channel-grid { grid-template-columns: 1fr; } .mk-connected-calendar { grid-template-columns: 1fr; } }
+.mk-connected-calendar > .mk-inline-actions { align-items: center; align-self: start; }
+.mk-nav-link { position: relative; }
+.mk-nav-link.active::before { left: -12px; top: 50%; transform: translateY(-50%); }

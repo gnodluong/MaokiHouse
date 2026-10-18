@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { handleAssistant } from '../api/_lib/assistant';
 import { defaultSettings } from '../shared/workspace';
 
@@ -60,5 +61,9 @@ while (providerCalls < 8) await handleAssistant(request(question), env, fetchStu
 assert.equal((await handleAssistant(request(question), env, fetchStub)).status, 429); assert.equal(providerCalls, 8); pass('per-instance workspace burst limit stops additional provider requests');
 const vercel = JSON.parse(await readFile('vercel.json', 'utf8'));
 assert.equal(new RegExp('^' + vercel.rewrites[0].source + '$').test('/api/assistant'), false);
-assert.equal(new RegExp('^' + vercel.rewrites[0].source + '$').test('/api/workspace'), true); pass('Vercel routes the Supabase assistant independently of the Firebase API');
+assert.equal(new RegExp('^' + vercel.rewrites[0].source + '$').test('/api/workspace'), true);
+const localRequire=createRequire(import.meta.url);const runtimeRequire=createRequire(localRequire.resolve('@vercel/node/package.json'));const {pathToRegexp}=runtimeRequire('path-to-regexp');
+for(const rule of vercel.rewrites)pathToRegexp(rule.source);
+const routing=pathToRegexp(vercel.rewrites[0].source);assert.equal(routing.test('/api/assistant'),false);assert.equal(routing.test('/api/channels'),false);assert.equal(routing.test('/api/workspace'),true);
+ pass('Vercel routes the Supabase assistant independently of the Firebase API');
 console.log(`${checks} AI authentication, privacy and provider checks passed (mocked network; no live Gemini request)`);

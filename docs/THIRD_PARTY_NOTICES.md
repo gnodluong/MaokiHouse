@@ -12,3 +12,7 @@ Files intentionally included from upstream:
 `docs/apple-design-skill.md` and `docs/opensource-reference-provided.md` retain the documents supplied by the user as reference material. Their contents do not replace the user's task instructions. The HIG reference bundle mentioned by the supplied design skill was not attached.
 
 Existing MaokiHouse photos are reused from the repository's existing assets. npm dependencies retain their individual notices/licenses in their packages and are identified in the lockfile.
+
+## ical.js 2.2.1
+
+Dependency dùng để đọc/ghi lịch RFC 5545, giữ nguyên mã upstream. [Nguồn](https://github.com/kewisch/ical.js), giấy phép MPL-2.0 (license được giữ trong package npm). Không chép hoặc sửa source thư viện vào mã MaokiHouse.

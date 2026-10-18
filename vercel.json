@@ -4,7 +4,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/api/((?!assistant$).*)",
+      "source": "/api/((?!(?:assistant|channels)$).*)",
       "destination": "/api"
     },
     {

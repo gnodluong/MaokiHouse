@@ -21,6 +21,7 @@ Lần đầu sử dụng, mở **`/setup`** trên website: trang này có SQL s�
 
 | Nhóm | Chức năng |
 | --- | --- |
+| Kết nối lịch | Thêm từng phòng Airbnb/Booking.com bằng iCal, nhập ngày bận thủ công, xuất lịch Maoki, kiểm tra trùng và gỡ kết nối |
 | Lưu trú | Phòng/căn hộ, lịch 7/14 ngày, đặt phòng và chống trùng lịch, giá theo ngày, đóng ngày bán, số đêm tối thiểu |
 | Vận hành | Công việc, phân công, hoàn tất công việc, sổ tay khách qua liên kết riêng |
 | Khách hàng | Hồ sơ, thẻ, ghi chú, lịch sử đặt phòng, tìm kiếm và CSV |
@@ -32,7 +33,7 @@ Lần đầu sử dụng, mở **`/setup`** trên website: trang này có SQL s�
 | AI | Trợ lý Gemini với tài khoản Supabase, soạn phản hồi từ hộp thư, viết nội dung social, số liệu vận hành tùy chọn, sao chép và dừng yêu cầu |
 | Giao diện | Desktop/điện thoại, sáng/tối, giảm chuyển động, bàn phím, bẫy focus hộp thoại, kiểm tra tương phản |
 
-Các kênh Airbnb/Booking.com/Agoda/Facebook/Instagram/Zalo/email cần API nhà cung cấp để đồng bộ hoặc gửi thật. Hội thoại ngoài Website lưu phản hồi nội bộ; màn hình ghi rõ trạng thái. Chiến dịch lưu bản nháp/lịch dự kiến, chưa có bộ gửi. Trợ lý AI cần `GEMINI_API_KEY` trên máy chủ Vercel và Redeploy; không đưa key vào `VITE_*`. Thanh toán và tải ảnh lên storage chưa được kết nối. Ảnh phòng hiện nhập bằng URL HTTPS/đường dẫn tài nguyên; danh bạ nhân viên vận hành tách khỏi quyền đăng nhập.
+Airbnb/Booking.com đã có nhập/xuất lịch iCal; cần bấm Đồng bộ để nhập lịch mới và phía OTA lấy lịch theo chu kỳ riêng. Giá, chi tiết đặt phòng, tin nhắn OTA và các kênh Agoda/Facebook/Instagram/Zalo/email vẫn cần API nhà cung cấp. Xem [hướng dẫn kết nối từng kênh](docs/CHANNELS.md). Hội thoại ngoài Website lưu phản hồi nội bộ; màn hình ghi rõ trạng thái. Chiến dịch lưu bản nháp/lịch dự kiến, chưa có bộ gửi. Trợ lý AI cần `GEMINI_API_KEY` trên máy chủ Vercel và Redeploy; không đưa key vào `VITE_*`. Thanh toán và tải ảnh lên storage chưa được kết nối. Ảnh phòng hiện nhập bằng URL HTTPS/đường dẫn tài nguyên; danh bạ nhân viên vận hành tách khỏi quyền đăng nhập.
 
 Yêu cầu đặt phòng công khai ở trạng thái chờ cũng giữ lịch; chủ nhà cần xác nhận hoặc hủy để giải phóng lịch. Số tiền đối soát là ước tính từ sổ thu chi, không thực hiện chuyển tiền. Quy tắc giá cập nhật gần nhất có hiệu lực khi trùng ngày.
 
@@ -80,3 +81,9 @@ Trên Vercel: Settings → Environment Variables → thêm `GEMINI_API_KEY` cho 
 Có giới hạn 8 yêu cầu/phút/không gian trong mỗi instance; giới hạn này không bảo đảm tổng mức dùng khi Vercel chạy nhiều instance. Đặt quota/giới hạn chi tiêu ở Google trước khi mở rộng dùng. `npm run test:ai` kiểm tra xác thực, vai trò, giới hạn đầu vào, cô lập dữ liệu, chọn gửi số liệu, lỗi provider và routing bằng mạng giả lập; không gọi Gemini thật. Kiểm thử trình duyệt cũng dùng câu trả lời AI giả lập. Chưa xác minh Gemini trên deployment thật khi chưa có quyền truy cập/key máy chủ.
 
 API AI đọc cấu hình publishable dùng chung từ `shared/supabase-public.json`; không import module trình duyệt vào function Node CommonJS. `api/tsconfig.json` khai báo rõ target ES2022 và CommonJS cho bộ đóng gói Vercel. `npm run test:ai:deployment` dùng chính builder `@vercel/node` đã pin để đóng gói, nạp và gọi handler JavaScript đầu ra bằng Node, kiểm tra trạng thái key và luồng AI với mạng giả lập. Bộ kiểm tra này nằm trong `npm test`; không cần key Gemini thật hoặc quyền Vercel. Thêm/thay key trên Vercel cần deployment mới; chọn đúng bản từ main mới nhất và scope Production.
+
+## Cập nhật lịch kênh
+
+Mở `/setup?mode=channels` để lấy SQL nâng cấp iCal cho dự án đã thiết lập. Migration mới là `20261018085535_maoki_channel_calendars.sql`; không chạy lại initial migration trên dữ liệu đang có. Chủ không gian/quản lý mở `/admin/dashboard/channels` để chọn kênh, phòng và dán URL xuất lịch chính thức. Liên kết xuất Maoki cần được nhập lại ở phía OTA cho chiều đồng bộ ngược. Daily use không cần token quản trị hoặc service-role key.
+
+`npm run server:ai` hiện phục vụ cả `/api/assistant` và `/api/channels` trên cổng 5001, Vite chuyển cả hai route tới máy chủ này. Trên Vercel hai function độc lập với Firebase. Logo giữ nguyên; dòng Hospitality Workspace đã bỏ khỏi giao diện/tab. Chuyển động chỉ dùng animation ngắn và bị tắt khi `prefers-reduced-motion: reduce`.

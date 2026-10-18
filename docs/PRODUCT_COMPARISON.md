@@ -8,7 +8,7 @@ Ngày kiểm tra: 18/10/2026 (giờ Bangkok). MaokiHouse hiện là bản MVP h�
 | --- | --- | --- |
 | Phòng, lịch, đặt phòng | Đơn vị phòng riêng, lịch 7/14 ngày, kiểm tra trùng lịch tại database | Kho phòng theo loại/số lượng, đoàn, quy trình nhận/trả phòng chi tiết, đổi phòng nâng cao |
 | Giá và bán phòng | Giá theo ngày, đóng bán, số đêm tối thiểu, booking trực tiếp | Khuyến mãi phức tạp, thuế/phí, thanh toán/cọc/hoàn tiền, chính sách hủy |
-| Phân phối OTA | Ghi nhận nguồn Airbnb/Booking/Agoda, hiển thị trạng thái chưa kết nối | Connector/API được cấp quyền, đồng bộ giá/tồn/booking hai chiều, chống lặp và retry webhook |
+| Phân phối OTA | Airbnb/Booking.com nhập/xuất ngày bận qua iCal, map từng phòng, đồng bộ thủ công; Agoda chưa kết nối | API đối tác cho giá/tồn/chi tiết booking, đồng bộ nền liên tục, webhook và quy trình retry |
 | Vận hành | Công việc, phân công, guidebook khách, chủ sở hữu, sổ thu/chi và đối soát ước tính | Tự động đối soát thanh toán, kế toán/hóa đơn, vận hành nhiều cơ sở nâng cao |
 | Hộp thư và CRM | Hồ sơ/thẻ, gán người phụ trách, trạng thái, mẫu trả lời, lịch sử lưu trú | Phân tuyến/round-robin, SLA, tìm kiếm đầy đủ tin nhắn, tệp đính kèm, ghi chú riêng theo từng tin nhắn |
 | Chat website | Hai chiều, phiên khách riêng, nhúng iframe, tự làm mới/Re­altime | Push notification, tải file, chống spam/captcha nâng cao, tìm kiếm lịch sử dài |

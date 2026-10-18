@@ -27,6 +27,7 @@ export type ResourceName = keyof Resources;
 export type ResourceRecord = Resources[ResourceName];
 export type WorkspaceData = { [K in ResourceName]: Resources[K][] };
 export type WorkspaceRole = 'owner' | 'manager' | 'agent' | 'viewer';
-export interface WorkspaceSnapshot extends WorkspaceData { workspaceId?: string; settings: BusinessSettings; activity: AuditEvent[]; capabilities: { localDemo: boolean; aiConfigured: boolean; role?: WorkspaceRole } }
+export interface CalendarBlock { id: string; propertyId: string; checkIn: string; checkOut: string; platform: 'airbnb' | 'booking' }
+export interface WorkspaceSnapshot extends WorkspaceData { workspaceId?: string; channelBlocks?: CalendarBlock[]; settings: BusinessSettings; activity: AuditEvent[]; capabilities: { localDemo: boolean; aiConfigured: boolean; role?: WorkspaceRole } }
 export const platformLabels: Record<Platform, string> = { direct: 'Trực tiếp', airbnb: 'Airbnb', booking: 'Booking.com', agoda: 'Agoda', facebook: 'Facebook', instagram: 'Instagram', zalo: 'Zalo', email: 'Email', webchat: 'Website' };
 export const defaultSettings: BusinessSettings = { businessName: 'MaokiHouse', email: '', phone: '', address: 'Thành phố Hồ Chí Minh', currency: 'VND', timezone: 'Asia/Ho_Chi_Minh', checkinTime: '14:00', checkoutTime: '12:00', widgetEnabled: false, widgetGreeting: 'Chào bạn! MaokiHouse có thể giúp gì cho chuyến đi của bạn?', widgetToken: '' };

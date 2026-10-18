@@ -1,7 +1,7 @@
 import { PGlite } from '@electric-sql/pglite';
 import assert from 'node:assert/strict';
-import { migrationPlan,statusSQL,permissionsSQL,verifySchema } from './supabase-project.mjs';
-const plan=await migrationPlan();
+import { migrationPlan,channelMigrationPlan,statusSQL,permissionsSQL,verifySchema } from './supabase-project.mjs';
+const plan=await migrationPlan();const calendarPlan=await channelMigrationPlan();
 const bootstrap=`create role anon; create role authenticated; create schema auth;
 create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
 create function auth.uid() returns uuid language sql stable as $$ select (nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'sub')::uuid $$;
@@ -16,6 +16,18 @@ try {
  await assert.rejects(()=>fresh.exec(plan.query),/already applied/);await fresh.exec('rollback');
  assert.equal((await fresh.query('select count(*)::int as count from supabase_migrations.schema_migrations')).rows[0].count,1);
  console.log('PASS repeated deployment cannot reapply migration or duplicate history');
+ await fresh.exec(calendarPlan.query);
+ assert.equal((await fresh.query('select count(*)::int as count from supabase_migrations.schema_migrations')).rows[0].count,2);
+ assert.equal((await fresh.query("select count(*)::int as count from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='maoki_private' and c.relname in ('channel_calendars','calendar_blocks') and c.relrowsecurity")).rows[0].count,2);
+ assert.equal((await fresh.query("select has_function_privilege('anon','public.maoki_channels(text,uuid,jsonb)','execute') as allowed")).rows[0].allowed,false);
+ console.log('PASS calendar upgrade installs private RLS tables and checked RPC with exact history');
+ await fresh.exec(calendarPlan.query);
+ assert.equal((await fresh.query('select count(*)::int as count from supabase_migrations.schema_migrations')).rows[0].count,2);
+ console.log('PASS matching calendar upgrade can be rerun without duplicate objects or history');
+ await fresh.query("update supabase_migrations.schema_migrations set statements=array['different source'] where version=$1",[calendarPlan.version]);
+ await assert.rejects(()=>fresh.exec(calendarPlan.query),/history differs/);await fresh.exec('rollback');
+ console.log('PASS changed migration history is rejected without overwriting the schema');
+
 } finally {await fresh.close();}
 const existing=new PGlite();
 try {

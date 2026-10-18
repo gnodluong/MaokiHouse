@@ -32,6 +32,11 @@ export default function WorkspaceProvider({ children }: { children: ReactNode })
     try {
       if (!user) throw new Error('Phiên đăng nhập đã hết hạn');
       const result = mode === 'supabase' ? await rpc<WorkspaceSnapshot>('snapshot') : await apiFetch<WorkspaceSnapshot>('/workspace', { idToken: await demoToken() });
+      if (mode === 'supabase') {
+        const blocks = await requireSupabase().rpc('maoki_channels', { op: 'busy' });
+        if (blocks.error && blocks.error.code !== 'PGRST202') throw databaseError(blocks.error);
+        result.channelBlocks = blocks.data || [];
+      }
       setData(result); setError('');
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Không tải được dữ liệu'); }
     finally { setLoading(false); }

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { bootstrapSQL } from '../shared/supabase-bootstrap.mjs';
+import { bootstrapSQL, upgradeSQL } from '../shared/supabase-bootstrap.mjs';
 
 export const projectRef = 'msucrkkxuplgijxanzxu';
 export const productionURL = 'https://maokihousemvc.vercel.app';
@@ -16,6 +16,13 @@ export async function migrationPlan() {
   const hash = createHash('sha256').update(source).digest('hex');
   const query = bootstrapSQL(version, name, source);
   return { file, version, name, source, hash, query };
+}
+export async function channelMigrationPlan() {
+  const files = (await readdir(migrationDirectory)).filter(name => /^\d+_maoki_channel_calendars\.sql$/.test(name));
+  if (files.length !== 1) throw new Error('Expected exactly one channel calendar migration');
+  const file = files[0], source = await readFile(new URL(file, migrationDirectory), 'utf8');
+  const [,version,name] = file.match(/^(\d+)_(.+)\.sql$/);
+  return { file,version,name,source,hash:createHash('sha256').update(source).digest('hex'),query:upgradeSQL(version,name,source) };
 }
 export const statusSQL = `select
   (select coalesce(jsonb_agg(jsonb_build_object('table',c.relname,'rls',c.relrowsecurity) order by c.relname),'[]') from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ('maoki_workspaces','maoki_members','maoki_records','maoki_activity')) as tables,
@@ -36,8 +43,9 @@ export function verifySchema(status, permissions) {
 async function main() {
   const action = process.argv[2] || 'plan';
   if (!['plan','status','apply'].includes(action)) throw new Error('Use plan, status, or apply');
-  const plan = await migrationPlan();
+  const plan = await migrationPlan(); const channels = await channelMigrationPlan();
   console.log(JSON.stringify({ action, projectRef, migration:plan.file, sha256:plan.hash, productionURL }));
+  console.log(JSON.stringify({ channelMigration:channels.file,sha256:channels.hash }));
   if (action === 'plan') return;
   const token = process.env.SUPABASE_ACCESS_TOKEN;
   if (!token) throw new Error('Missing SUPABASE_ACCESS_TOKEN. Add a scoped token securely in environment settings, never in chat or VITE_* variables.');
@@ -66,6 +74,22 @@ async function main() {
     status=(await query(statusSQL))[0]; applied=true;
   }
   if (applied) verifySchema(status,(await query(permissionsSQL))[0]);
+  let channelsApplied=false;
+  if (status.history_exists || applied) {
+    const rows=await query(`select statements,name from supabase_migrations.schema_migrations where version=${literal(channels.version)};`);
+    if (rows.length) {
+      if (rows[0].name!==channels.name || !rows[0].statements?.includes(channels.source)) throw new Error('Remote calendar migration history differs from reviewed source');
+      channelsApplied=true;
+    }
+  }
+  if(action==='apply' && !channelsApplied) { await query(channels.query,false);channelsApplied=true; }
+  if(channelsApplied) {
+    const checks=(await query(`select to_regprocedure('public.maoki_channels(text,uuid,jsonb)') is not null as rpc,
+      (select count(*)=2 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='maoki_private' and c.relname in ('channel_calendars','calendar_blocks') and c.relrowsecurity) as rls,
+      has_function_privilege('anon','public.maoki_channels(text,uuid,jsonb)','execute') as anon_admin;`))[0];
+    if(!checks.rpc || !checks.rls || checks.anon_admin) throw new Error('Unexpected calendar RPC/RLS permissions');
+  }
+  console.log(JSON.stringify({channelMigrationApplied:channelsApplied}));
   console.log(JSON.stringify({ projectRef,status:project.status,migrationApplied:applied,tables:status.tables,workspaceRPC:status.workspace_rpc,publicRPC:status.public_rpc }));
   if (action==='apply') {
     if (!applied) throw new Error('Migration application not confirmed');

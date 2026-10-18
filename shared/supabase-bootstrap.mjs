@@ -23,3 +23,28 @@ insert into supabase_migrations.schema_migrations(version,statements,name)
 values(${literal(version)},array[${literal(source)}],${literal(name)});
 commit;`;
 }
+
+export function upgradeSQL(version, name, source) {
+  if (!/^\d+$/.test(version) || !/\bbegin;/.test(source) || !/commit;\s*$/.test(source)) throw new Error('Invalid migration');
+  const body = source.replace(/\bbegin;/, '').replace(/commit;\s*$/, '');
+  return `begin;
+select pg_advisory_xact_lock(hashtextextended('maokihouse_initial_schema', 17));
+create schema if not exists supabase_migrations;
+create table if not exists supabase_migrations.schema_migrations(version text primary key, statements text[], name text);
+revoke all on supabase_migrations.schema_migrations from public, anon, authenticated;
+do $maoki_upgrade$ begin
+  if to_regprocedure('public.maoki_workspace(text,text,uuid,jsonb)') is null then
+    raise exception 'Apply the MaokiHouse initial migration first';
+  end if;
+  if exists(select 1 from supabase_migrations.schema_migrations where version=${literal(version)}) then
+    if not exists(select 1 from supabase_migrations.schema_migrations where version=${literal(version)} and name=${literal(name)} and ${literal(source)}=any(statements)) then
+      raise exception 'Migration history differs from reviewed source';
+    end if;
+    return;
+  end if;
+  execute ${literal(body)};
+  insert into supabase_migrations.schema_migrations(version,statements,name)
+  values(${literal(version)},array[${literal(source)}],${literal(name)});
+end $maoki_upgrade$;
+commit;`;
+}
