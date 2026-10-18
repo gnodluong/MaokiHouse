@@ -1,3 +1,4 @@
+import Brand from './Brand';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiCheckCircle, FiCalendar, FiUsers, FiMapPin, FiWifi, FiKey, FiCoffee, FiHome, FiSend, FiFeather } from 'react-icons/fi';
@@ -7,7 +8,7 @@ import { addDays, errorMessage, money, todayIn } from './utils';
 import type { ConversationMessage } from '../../shared/workspace';
 import './workspace.css';
 
-function PublicFrame({ children }: { children: React.ReactNode }) { return <div className="maoki-ui mk-public"><header className="mk-public-header"><Link to="/" className="mk-brand"><span className="mk-logo"><FiFeather /></span><span>maoki<span className="mk-brand-dot">.</span><small>MAKE YOURSELF AT HOME</small></span></Link><Link to="/" className="mk-text-button"><FiArrowLeft />Về website</Link></header>{children}<footer className="mk-public-footer">Một không gian riêng. Một kỳ nghỉ đáng nhớ. · MaokiHouse</footer></div>; }
+function PublicFrame({ children }: { children: React.ReactNode }) { return <div className="maoki-ui mk-public"><header className="mk-public-header"><Brand /><Link to="/" className="mk-text-button"><FiArrowLeft />Về website</Link></header>{children}<footer className="mk-public-footer">Một không gian riêng. Một kỳ nghỉ đáng nhớ. · MaokiHouse</footer></div>; }
 interface PublicStay { id: string; title: string; description: string; address: string; imageURLs: string[]; basePrice: number; capacity: number; bedrooms: number; businessName: string; currency: string; checkinTime: string; checkoutTime: string }
 export function DirectBooking() {
   const { id = '' } = useParams(); const [stay, setStay] = useState<PublicStay | null>(null); const [error, setError] = useState('');

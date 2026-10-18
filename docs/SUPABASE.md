@@ -4,6 +4,18 @@ Website production được người dùng xác nhận: `https://maokihousemvc.v
 
 SDK, hai biến môi trường và official agent skills đã được cài. Migration đã kiểm tra với PostgreSQL nhúng; chưa được áp dụng lên dự án đang host. Publishable key chỉ cấp quyền dùng Data API theo RLS, không cấp quyền tạo bảng. Phiên cloud hiện bị proxy chặn CONNECT 403 tới dự án Supabase; chưa kiểm tra được Auth hoặc database của dự án từ đây.
 
+## Cách dễ nhất: làm trên website
+
+Sau khi bản cập nhật được Vercel triển khai, mở [trang thiết lập](https://maokihousemvc.vercel.app/setup):
+
+1. Chọn **Sao chép SQL** → **Mở SQL Editor** → **New query** → dán SQL → **Run**. Chỉ chạy một lần, chờ báo thành công. Có thể tải file SQL hoặc chọn toàn bộ nội dung trong “Xem SQL” nếu clipboard bị chặn.
+2. Quay lại trang và nhấn **Kiểm tra dữ liệu**. Nút này kiểm tra hàm public bằng publishable key, không tạo/sửa dữ liệu. Thành công xác nhận kết nối hàm public, chưa chứng minh toàn bộ Auth/RLS hay migration history trên dự án.
+3. Cấu hình Site URL/Redirect URLs theo bước 2 trên trang.
+4. Tạo tài khoản ở Authentication → Users cho `maokihouse.sg@gmail.com`, bật Auto Confirm User, rồi đăng nhập. Không lưu mật khẩu vào SQL hoặc repository. Tài khoản mới sẽ có không gian riêng với quyền Chủ không gian khi mở dashboard; tài khoản là thành viên không gian có sẵn không tự được nâng quyền.
+5. Bật Gemini theo bước 4 trên trang nếu muốn dùng AI: thêm `GEMINI_API_KEY` ở Vercel rồi Redeploy. Không cần API key quản trị Supabase cho AI.
+
+SQL trên trang và lệnh `supabase:apply` dùng chung hàm `shared/supabase-bootstrap.mjs`: có khóa chống chạy đồng thời, từ chối ghi đè schema đang có và ghi đúng migration history trong cùng giao dịch. Nếu báo đã áp dụng/đã có đối tượng, dừng và kiểm tra trạng thái; không drop dữ liệu để chạy lại.
+
 ## Thao tác còn cần trên dự án
 
 1. Mở SQL Editor của đúng dự án `msucrkkxuplgijxanzxu` bằng tài khoản quản trị. Xem và chạy một lần toàn bộ [migration](../supabase/migrations/20261017131312_maoki_workspace.sql). Nó tạo các bảng có tiền tố `maoki_` và schema `maoki_private`, không sửa bảng Firebase hay bảng hiện có khác. Nếu đã có các tên này, kiểm tra xung đột trước khi chạy; không chạy lại mù quáng. Có thể dùng quy trình migration CLI đã xác thực của dự án thay SQL Editor; không dùng service-role key trong trình duyệt.
@@ -12,7 +24,7 @@ SDK, hai biến môi trường và official agent skills đã được cài. Mig
 4. Khởi động lại Vite sau khi thay `.env`. Đăng ký/đăng nhập, tạo phòng rồi bật xuất bản. Mở liên kết đặt phòng ở trình duyệt riêng; tạo yêu cầu, xác nhận nó xuất hiện trong lịch. Bật chat Website trong Cài đặt; gửi tin nhắn ở phiên khách và trả lời từ hộp thư.
 5. Mời một email thứ hai ở chế độ Chỉ xem, xác nhận xem được nhưng không sửa được dữ liệu. Tài khoản độc lập không nhận lời mời phải có không gian trống riêng.
 
-Nếu cần để agent áp dụng migration sau này, cung cấp quyền quản trị qua cơ chế kết nối/bí mật an toàn của môi trường; không gửi database password, access token hoặc secret key trong chat. Hiện không có quyền quản trị đó trong phiên.
+Nếu cần để agent áp dụng migration sau này, cung cấp quyền quản trị qua cơ chế kết nối/bí mật an toàn của môi trường; không gửi database password, access token hoặc secret key trong chat. Binding token quản trị đã được lưu trong cấu hình cloud; máy chạy hiện tại vẫn bị proxy từ chối CONNECT 403, nên chưa dùng được quyền đó. Không cần khai báo thêm token trùng tên.
 
 ## Mô hình dữ liệu và quyền
 

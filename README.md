@@ -15,7 +15,7 @@ npm run dev
 
 `.env` hiện tại đã được điền theo thông tin người dùng cung cấp và được Git bỏ qua. Không ghi đè nếu file đã tồn tại. Hai biến trình duyệt có thể ghi đè cấu hình dự án mặc định là `VITE_SUPABASE_URL` và `VITE_SUPABASE_PUBLISHABLE_KEY`. Các biến `VITE_*` có mặt trong bundle; chỉ dùng publishable key tại đây. `src/config/supabase.public.ts` giữ URL/publishable key công khai của dự án đã được người dùng chọn, để bản build Vercel không phụ thuộc file `.env` chỉ có trên máy cloud. Không có token quản trị hoặc secret key trong cấu hình này.
 
-Trước khi dùng tài khoản thật, thực hiện [kích hoạt Supabase](docs/SUPABASE.md). Đường dẫn `/admin` mở đăng nhập/đăng ký; `/admin/dashboard` mở không gian quản lý. Website công khai hiển thị phòng được chủ nhà chủ động xuất bản. Dữ liệu Firebase cũ chưa được nhập sang Supabase.
+Lần đầu sử dụng, mở **`/setup`** trên website: trang này có SQL sẵn để sao chép hoặc tải xuống, liên kết đúng SQL Editor, nút kiểm tra kết nối và hướng dẫn tạo tài khoản/bật AI. Không cần terminal. Xem thêm [kích hoạt Supabase](docs/SUPABASE.md). Đường dẫn `/admin` mở đăng nhập/đăng ký; `/admin/dashboard` mở không gian quản lý. Website công khai hiển thị phòng được chủ nhà chủ động xuất bản. Dữ liệu Firebase cũ chưa được nhập sang Supabase.
 
 ## Các luồng đã xây dựng
 
@@ -29,9 +29,10 @@ Trước khi dùng tài khoản thật, thực hiện [kích hoạt Supabase](do
 | Kinh doanh | Thu/chi, báo cáo dòng tiền/công suất, đối soát chủ sở hữu, thống kê hội thoại theo kênh |
 | Đội ngũ | Chủ không gian, quản lý, nhân viên, chỉ xem; mời đúng email đã xác minh; thu hồi; chuyển không gian |
 | Công khai | Danh sách phòng đã xuất bản, báo giá từ máy chủ, yêu cầu đặt phòng, sổ tay, widget chat |
+| AI | Trợ lý Gemini với tài khoản Supabase, soạn phản hồi từ hộp thư, viết nội dung social, số liệu vận hành tùy chọn, sao chép và dừng yêu cầu |
 | Giao diện | Desktop/điện thoại, sáng/tối, giảm chuyển động, bàn phím, bẫy focus hộp thoại, kiểm tra tương phản |
 
-Các kênh Airbnb/Booking.com/Agoda/Facebook/Instagram/Zalo/email cần API nhà cung cấp để đồng bộ hoặc gửi thật. Hội thoại ngoài Website lưu phản hồi nội bộ; màn hình ghi rõ trạng thái. Chiến dịch lưu bản nháp/lịch dự kiến, chưa có bộ gửi. Thanh toán, AI và tải ảnh lên storage chưa được kết nối. Ảnh phòng hiện nhập bằng URL HTTPS/đường dẫn tài nguyên; danh bạ nhân viên vận hành tách khỏi quyền đăng nhập.
+Các kênh Airbnb/Booking.com/Agoda/Facebook/Instagram/Zalo/email cần API nhà cung cấp để đồng bộ hoặc gửi thật. Hội thoại ngoài Website lưu phản hồi nội bộ; màn hình ghi rõ trạng thái. Chiến dịch lưu bản nháp/lịch dự kiến, chưa có bộ gửi. Trợ lý AI cần `GEMINI_API_KEY` trên máy chủ Vercel và Redeploy; không đưa key vào `VITE_*`. Thanh toán và tải ảnh lên storage chưa được kết nối. Ảnh phòng hiện nhập bằng URL HTTPS/đường dẫn tài nguyên; danh bạ nhân viên vận hành tách khỏi quyền đăng nhập.
 
 Yêu cầu đặt phòng công khai ở trạng thái chờ cũng giữ lịch; chủ nhà cần xác nhận hoặc hủy để giải phóng lịch. Số tiền đối soát là ước tính từ sổ thu chi, không thực hiện chuyển tiền. Quy tắc giá cập nhật gần nhất có hiệu lực khi trùng ngày.
 
@@ -52,6 +53,8 @@ npm run supabase:apply
 npm run test:supabase-browser
 # Cần thêm bộ emulator/API demo đang chạy:
 npm run test:browser
+# API AI cục bộ, chạy song song với npm run dev:
+npm run server:ai
 ```
 
 `test:db` chạy migration thật trên PostgreSQL nhúng PGlite, kiểm tra RLS, phân quyền, cô lập tài khoản, lời mời, chống trùng lịch, giá máy chủ và phiên chat. `test:supabase-browser` chạy SDK thật với PostgreSQL đó qua cầu REST cục bộ và Auth giả lập; không kiểm tra Supabase Auth đang host. Nó cũng chạy axe cho trang đăng nhập, tổng quan, hộp thoại và hộp thư sáng/tối/điện thoại. `test:browser` dùng Auth/Firestore Emulator thật và hai phiên trình duyệt độc lập; dọn dữ liệu/tài khoản do lần kiểm tra tạo ra.
@@ -65,3 +68,13 @@ Bộ cài/khởi động demo đã chuẩn bị tại `/workspace/.maokihouse`. 
 [Skill thiết kế do người dùng gửi](docs/apple-design-skill.md) được giữ để tham khảo. Các file HIG `references/` đi kèm không có trong bản tải lên; giao diện áp dụng các nguyên tắc trong tài liệu và được kiểm tra trực tiếp, không đưa ra trích dẫn HIG chưa đọc.
 
 Đối chiếu với các nền tảng thương mại và QloApps/Chatwoot: [PRODUCT_COMPARISON.md](docs/PRODUCT_COMPARISON.md). Xem [thông báo nguồn/giấy phép](docs/THIRD_PARTY_NOTICES.md) cho các file upstream được giữ trong repository.
+
+## Trợ lý AI và nhận diện Maoki
+
+Logo gốc `src/assets/images/logo.png` được dùng trực tiếp trên website, đăng nhập, sidebar và trang hướng dẫn. Bảng màu trở về nâu đất `#8a4a34`, nâu espresso `#5c2f20`, kem `#fdf6ee`, với màu nhấn vàng đồng của bộ nhận diện cũ. Logo không phụ thuộc Cloudinary.
+
+`/admin/dashboard/ai` gọi function `/api/assistant` riêng, không khởi tạo Firebase Admin. Function xác minh người dùng với Supabase Auth, kiểm tra vai trò owner/manager/agent trong không gian hiện tại và gọi Gemini bằng key máy chủ. Vai trò chỉ xem không được dùng AI. API không dùng service-role key. Chọn “Dùng số liệu vận hành” để gửi thống kê/phòng; mặc định tắt, không tự gửi danh bạ, hội thoại khách, token widget hay mật khẩu Wi-Fi. Nội dung người dùng nhập vẫn được chuyển đến Gemini. AI tạo bản nháp, không tự gửi tin hoặc sửa dữ liệu. Lịch sử trò chuyện chỉ ở bộ nhớ trang.
+
+Trên Vercel: Settings → Environment Variables → thêm `GEMINI_API_KEY` cho Production → Redeploy. Model mặc định `gemini-flash-latest`, đối chiếu ví dụ trong [SDK chính thức Google](https://github.com/googleapis/js-genai#readme); có thể đổi bằng `GEMINI_MODEL`. Nếu dùng một dự án Supabase khác, cấu hình thêm `SUPABASE_URL` và `SUPABASE_PUBLISHABLE_KEY` ở máy chủ cho khớp hai biến Vite. Chạy local bằng `npm run server:ai` cùng `npm run dev`; Vite chuyển `/api/assistant` đến cổng 5001.
+
+Có giới hạn 8 yêu cầu/phút/không gian trong mỗi instance; giới hạn này không bảo đảm tổng mức dùng khi Vercel chạy nhiều instance. Đặt quota/giới hạn chi tiêu ở Google trước khi mở rộng dùng. `npm run test:ai` kiểm tra xác thực, vai trò, giới hạn đầu vào, cô lập dữ liệu, chọn gửi số liệu, lỗi provider và routing bằng mạng giả lập; không gọi Gemini thật. Kiểm thử trình duyệt cũng dùng câu trả lời AI giả lập. Chưa xác minh Gemini trên deployment thật khi chưa có quyền truy cập/key máy chủ.

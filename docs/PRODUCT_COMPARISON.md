@@ -14,7 +14,8 @@ Ngày kiểm tra: 18/10/2026 (giờ Bangkok). MaokiHouse hiện là bản MVP h�
 | Chat website | Hai chiều, phiên khách riêng, nhúng iframe, tự làm mới/Re­altime | Push notification, tải file, chống spam/captcha nâng cao, tìm kiếm lịch sử dài |
 | Facebook/Instagram/Zalo/email | Có khung dữ liệu và bộ lọc theo kênh; phản hồi nội bộ được ghi rõ | Kết nối và xác nhận gửi/nhận qua API chính thức, kiểm duyệt app, xử lý hạn mức |
 | Tự động hóa/chiến dịch | Quy tắc cho hội thoại/booking, tạo việc/gắn thẻ/lưu phản hồi; bản nháp/lịch chiến dịch | Bộ gửi chiến dịch, hàng đợi, lịch chạy thực, thống kê gửi/nhận và đồng ý nhận tin |
-| Dữ liệu và quyền | Supabase Auth, workspace riêng, RLS, owner/manager/agent/viewer, mời/thu hồi | Hosted Supabase chưa áp dụng trong phiên vì thiếu quyền quản trị; backup/giám sát production cần cấu hình thực tế |
+| AI | Trợ lý Gemini, soạn phản hồi/nội dung social, số liệu vận hành tùy chọn | Cần key máy chủ và xác minh trên deployment thật; chưa tự gửi tin hoặc sửa dữ liệu |
+| Dữ liệu và quyền | Supabase Auth, workspace riêng, RLS, owner/manager/agent/viewer, mời/thu hồi | Hosted Supabase chưa áp dụng trong phiên vì máy cloud bị proxy chặn; backup/giám sát production cần cấu hình thực tế |
 
 Các trang GoHost, Hostfully và Subiz vẫn trả CONNECT 403 qua mạng của môi trường. Những tên sản phẩm trên là nhóm tham chiếu do người dùng nêu, không phải kết quả kiểm thử tài khoản thật hay xác minh giao diện trực tiếp. Không đưa ra tỷ lệ phần trăm “giống” khi chưa có tiêu chí và phép đo.
 

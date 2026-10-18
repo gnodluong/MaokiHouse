@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { bootstrapSQL } from '../shared/supabase-bootstrap.mjs';
 
 export const projectRef = 'msucrkkxuplgijxanzxu';
 export const productionURL = 'https://maokihousemvc.vercel.app';
@@ -12,29 +13,8 @@ export async function migrationPlan() {
   if (files.length !== 1) throw new Error('Expected exactly one MaokiHouse initial migration');
   const file = files[0]; const source = await readFile(new URL(file, migrationDirectory), 'utf8');
   const match = file.match(/^(\d+)_(.+)\.sql$/); const version = match[1]; const name = match[2];
-  if (!/\bbegin;/.test(source) || !/commit;\s*$/.test(source)) throw new Error('Migration must be a complete transaction');
-  const body = source.replace(/\bbegin;/, '').replace(/commit;\s*$/, '');
   const hash = createHash('sha256').update(source).digest('hex');
-  // Store the reviewed source/version in the standard CLI migration history in
-  // the same transaction. A partial/previous manual install is never overwritten.
-  const query = `begin;
-select pg_advisory_xact_lock(hashtextextended('maokihouse_initial_schema', 17));
-create schema if not exists supabase_migrations;
-create table if not exists supabase_migrations.schema_migrations(version text primary key, statements text[], name text);
-revoke all on supabase_migrations.schema_migrations from public, anon, authenticated;
-do $maoki_preflight$ begin
-  if exists(select 1 from supabase_migrations.schema_migrations where version=${literal(version)}) then
-    raise exception 'MaokiHouse migration already applied; run status instead';
-  end if;
-  if exists(select 1 from pg_namespace where nspname='maoki_private')
-     or exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname like 'maoki\\_%' escape '\\') then
-    raise exception 'MaokiHouse objects already exist without matching migration history; manual review required';
-  end if;
-end $maoki_preflight$;
-${body}
-insert into supabase_migrations.schema_migrations(version,statements,name)
-values(${literal(version)},array[${literal(source)}],${literal(name)});
-commit;`;
+  const query = bootstrapSQL(version, name, source);
   return { file, version, name, source, hash, query };
 }
 export const statusSQL = `select
