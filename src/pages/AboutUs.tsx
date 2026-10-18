@@ -126,7 +126,7 @@ const AboutUs = () => {
       const saved = await contentService.put(idToken, 'about-us', {
         ...content,
         updatedAt: Date.now(),
-        updatedBy: user.email
+        updatedBy: user.email || undefined
       });
       setContent(saved);
       setIsEditing(false);
@@ -347,4 +347,4 @@ const AboutUs = () => {
   );
 };
 
-export default AboutUs; 
+export default AboutUs;

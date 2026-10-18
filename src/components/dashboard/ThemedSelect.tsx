@@ -31,7 +31,7 @@ const ThemedSelect = ({ value, onChange, options, style, className }: ThemedSele
       // dashboard cards use `overflow: hidden` for their rounded corners,
       // which was clipping the dropdown instead of letting it float above.
       dropdownParent: 'body',
-      onChange: (val) => onChangeRef.current(String(val)),
+      onChange: (val: string | string[]) => onChangeRef.current(String(val)),
     });
     tomRef.current = instance;
 

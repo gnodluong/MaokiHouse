@@ -6,7 +6,6 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 
 if (!GEMINI_API_KEY) {
-  // eslint-disable-next-line no-console
   console.warn('[gemini] Missing GEMINI_API_KEY — the AI Support endpoint will fail until it is set.');
 }
 

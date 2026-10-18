@@ -3,7 +3,7 @@ const API_URL =
   (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api');
 
 export interface ApiOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   idToken?: string;
   isFormData?: boolean;
@@ -26,6 +26,7 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promi
   if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
 
   const response = await fetch(`${API_URL}${path}`, {
+    signal: AbortSignal.timeout(20000),
     method,
     headers,
     body: body === undefined ? undefined : isFormData ? (body as FormData) : JSON.stringify(body),

@@ -9,7 +9,6 @@ const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 const databaseURL = process.env.FIREBASE_DATABASE_URL;
 
 if (!projectId || !clientEmail || !privateKey || !databaseURL) {
-  // eslint-disable-next-line no-console
   console.warn(
     '[firebase] Missing one or more Firebase Admin env vars (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, FIREBASE_DATABASE_URL). ' +
       'The server will start but Firebase calls will fail until these are set in server/.env'

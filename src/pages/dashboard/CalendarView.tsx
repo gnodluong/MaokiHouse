@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -64,7 +64,7 @@ const CalendarView = () => {
     })();
   }, [user]);
 
-  const propertyName = (id: string) => properties.find((p) => p.id === id)?.title || '—';
+  const propertyName = useCallback((id: string) => properties.find((p) => p.id === id)?.title || '—', [properties]);
 
   const events: CalEvent[] = useMemo(
     () =>
@@ -77,7 +77,7 @@ const CalendarView = () => {
           end: new Date(b.checkOut),
           booking: b,
         })),
-    [bookings, properties]
+    [bookings, propertyName]
   );
 
   if (loading) {

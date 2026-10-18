@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .env
+.env.*
 .env.vercel
 !.env.example
 
@@ -25,3 +26,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Supabase CLI machine/project state
+supabase/.temp/
+supabase/.branches/
+__pycache__/

@@ -48,7 +48,8 @@ const Login = () => {
 
       toast.success('Login successful!');
       navigate('/admin/dashboard');
-    } catch (error: any) {
+    } catch (cause: unknown) {
+      const error = cause as { code?: string; message?: string };
       console.error('Login error:', error.code, error.message);
       
       // Better error handling with user-friendly messages

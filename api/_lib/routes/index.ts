@@ -10,6 +10,8 @@ import employeesRouter from './employees';
 import revenueRouter from './revenue';
 import channelsRouter from './channels';
 import aiRouter from './ai';
+import workspaceRouter from '../workspace/router';
+import publicRouter from '../workspace/public';
 
 const router = Router();
 
@@ -24,5 +26,7 @@ router.use('/employees', employeesRouter);
 router.use('/revenue', revenueRouter);
 router.use('/channels', channelsRouter);
 router.use('/ai', aiRouter);
+router.use('/workspace', workspaceRouter);
+router.use('/public', publicRouter);
 
 export default router;
