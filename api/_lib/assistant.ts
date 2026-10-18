@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import publicConfig from '../../src/config/supabase.public';
+import publicConfig from '../../shared/supabase-public.json';
 import type { WorkspaceSnapshot } from '../../shared/workspace';
 
 const inputSchema = z.object({

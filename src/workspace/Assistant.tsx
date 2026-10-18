@@ -14,6 +14,7 @@ async function askAI(method: 'GET' | 'POST', signal: AbortSignal, body?: unknown
   if (!session) throw new Error('Vui lòng đăng nhập lại.');
   const response = await fetch('/api/assistant', { method, signal: AbortSignal.any([signal, AbortSignal.timeout(45000)]), headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
   const result = await response.json().catch(() => null);
+  if (!result) throw new Error(`API trợ lý chưa hoạt động (HTTP ${response.status}). Hãy triển khai bản mới nhất trên Vercel rồi tải lại trang.`);
   if (!response.ok || !result) throw new Error(result?.error || 'Chưa kết nối được trợ lý. Hãy kiểm tra cấu hình AI.');
   return result;
 }
