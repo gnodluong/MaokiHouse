@@ -1,29 +1,163 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import { FiArrowLeft, FiCheckCircle, FiCalendar, FiUsers, FiMapPin, FiWifi, FiKey, FiCoffee, FiHome, FiSend, FiFeather } from 'react-icons/fi';
 import { publicFetch } from './publicApi';
 import { Button } from './ui';
 import { addDays, errorMessage, money, todayIn } from './utils';
 import type { ConversationMessage } from '../../shared/workspace';
 import './workspace.css';
+import './zones.css';
 
 // Header/footer come from GuestLayout (guest zone); this only frames the page body.
-function PublicFrame({ children }: { children: React.ReactNode }) { return <div className="mk-public mk-guest-page"><Link to="/#stays" className="mk-text-button mk-guest-back"><FiArrowLeft />Tất cả phòng</Link>{children}</div>; }
+function PublicFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mk-public mk-guest-page">
+      <Link to="/#stays" className="mk-text-button mk-guest-back">
+        <FiArrowLeft /> Tất cả phòng
+      </Link>
+      {children}
+    </div>
+  );
+}
+
 interface PublicStay { id: string; title: string; description: string; address: string; imageURLs: string[]; basePrice: number; capacity: number; bedrooms: number; businessName: string; currency: string; checkinTime: string; checkoutTime: string }
+
 export function DirectBooking() {
-  const { id = '' } = useParams(); const [stay, setStay] = useState<PublicStay | null>(null); const [error, setError] = useState('');
-  const [dates, setDates] = useState({ checkIn: todayIn(), checkOut: addDays(todayIn(), 1) });
+  const prefersReducedMotion = useReducedMotion();
+  const { id = '' } = useParams();
+  const [searchParams] = useSearchParams();
+  const [stay, setStay] = useState<PublicStay | null>(null);
+  const [error, setError] = useState('');
+  const [dates, setDates] = useState(() => {
+    const initialIn = searchParams.get('checkIn') || todayIn();
+    const initialOut = searchParams.get('checkOut') || addDays(initialIn, 1);
+    return { checkIn: initialIn, checkOut: initialOut > initialIn ? initialOut : addDays(initialIn, 1) };
+  });
   const [guest, setGuest] = useState({ name: '', email: '', phone: '', notes: '' });
-  const [quote, setQuote] = useState<{ nights: number; total: number; currency: string } | null>(null); const [busy, setBusy] = useState(false); const [reference, setReference] = useState('');
-  useEffect(() => { let active = true; void publicFetch<PublicStay>(`/public/properties/${id}`).then(result => { if (active) setStay(result); }).catch(cause => { if (active) setError(errorMessage(cause)); }); return () => { active = false; }; }, [id]);
-  return <PublicFrame>{error && !stay ? <div className="mk-public-card"><h1>Không mở được trang đặt phòng</h1><p role="alert">{error}</p><Link className="mk-button primary" to="/#stays">Xem những không gian khác</Link></div> : stay ? reference ? <div className="mk-public-card mk-receipt"><FiCheckCircle /><span className="mk-eyebrow">CẢM ƠN BẠN</span><h1>Lời hẹn của bạn đã được gửi.</h1><p>MaokiHouse đã nhận yêu cầu lưu trú tại <strong>{stay.title}</strong> và sẽ liên hệ để xác nhận. Phòng đang được giữ trong thời gian xử lý.</p><div className="mk-receipt-reference">MÃ YÊU CẦU<strong>{reference}</strong></div><p>Bạn chưa bị tính phí. Thanh toán và xác nhận cuối cùng sẽ được trao đổi trực tiếp với chủ nhà.</p><Link className="mk-button primary" to="/">Về MaokiHouse</Link></div> : <div className="mk-booking-public-grid"><article><div className="mk-stay-cover">{stay.imageURLs[0] && <img src={stay.imageURLs[0]} alt={stay.title} />}</div><span className="mk-eyebrow">KHÔNG GIAN CỦA BẠN TẠI SÀI GÒN</span><h1>{stay.title}</h1><p className="mk-stay-location"><FiMapPin />{stay.address}</p><div className="mk-stay-facts"><span><FiUsers />{stay.capacity || 2} khách</span><span><FiHome />{stay.bedrooms || 1} phòng ngủ</span><span><FiKey />Nhận phòng {stay.checkinTime}</span></div><p className="mk-stay-description">{stay.description}</p></article><section className="mk-public-booking-form mk-panel"><h2>Một kỳ nghỉ đang chờ bạn</h2><p><strong>{money(stay.basePrice, stay.currency)}</strong> / đêm · Giá có thể thay đổi theo ngày</p><form onSubmit={event => { event.preventDefault(); setBusy(true); setError(''); const params = new URLSearchParams(dates); void publicFetch<{ nights: number; total: number; currency: string }>(`/public/properties/${id}/quote?${params}`).then(setQuote).catch(cause => { setQuote(null); setError(errorMessage(cause)); }).finally(() => setBusy(false)); }}><div className="mk-form-grid"><label className="mk-field">Ngày nhận phòng<input type="date" required min={todayIn()} value={dates.checkIn} onChange={event => { setDates(current => ({ ...current, checkIn: event.target.value })); setQuote(null); }} /></label><label className="mk-field">Ngày trả phòng<input type="date" required min={dates.checkIn ? addDays(dates.checkIn, 1) : todayIn()} value={dates.checkOut} onChange={event => { setDates(current => ({ ...current, checkOut: event.target.value })); setQuote(null); }} /></label></div><Button type="submit" kind={quote ? 'secondary' : 'primary'} busy={busy}><FiCalendar />{quote ? 'Kiểm tra lại ngày' : 'Kiểm tra phòng & giá'}</Button></form>{error && <div className="mk-alert error" role="alert">{error}</div>}{quote && <form className="mk-guest-form" onSubmit={event => { event.preventDefault(); setBusy(true); setError(''); void publicFetch<{ reference: string }>(`/public/properties/${id}/book`, { method: 'POST', body: { ...dates, ...guest } }).then(result => setReference(result.reference)).catch(cause => setError(errorMessage(cause))).finally(() => setBusy(false)); }}><div className="mk-booking-total"><span>{quote.nights} đêm lưu trú</span><strong>{money(quote.total, quote.currency)}</strong></div><label className="mk-field">Họ và tên<input value={guest.name} autoComplete="name" required maxLength={150} onChange={event => setGuest(current => ({ ...current, name: event.target.value }))} /></label><label className="mk-field">Email<input type="email" value={guest.email} autoComplete="email" required onChange={event => setGuest(current => ({ ...current, email: event.target.value }))} /></label><label className="mk-field">Điện thoại<input type="tel" value={guest.phone} autoComplete="tel" minLength={5} maxLength={50} required onChange={event => setGuest(current => ({ ...current, phone: event.target.value }))} /></label><label className="mk-field">Bạn có lời nhắn nào không?<textarea rows={2} value={guest.notes} maxLength={2000} onChange={event => setGuest(current => ({ ...current, notes: event.target.value }))} /></label><Button type="submit" kind="primary" busy={busy}>Gửi yêu cầu đặt phòng</Button><small>Yêu cầu cần chủ nhà xác nhận. Bạn chưa cần thanh toán tại bước này.</small></form>}</section></div> : <div className="mk-page-loading" role="status"><span className="mk-loading-ring" />Đang chuẩn bị không gian…</div>}</PublicFrame>;
+  const [quote, setQuote] = useState<{ nights: number; total: number; currency: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [reference, setReference] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    void publicFetch<PublicStay>(`/public/properties/${id}`)
+      .then(result => { if (active) setStay(result); })
+      .catch(cause => { if (active) setError(errorMessage(cause)); });
+    return () => { active = false; };
+  }, [id]);
+
+  return (
+    <PublicFrame>
+      {error && !stay ? (
+        <div className="mk-public-card">
+          <h1>Không mở được trang đặt phòng</h1>
+          <p role="alert">{error}</p>
+          <Link className="mk-button primary" to="/#stays">Xem những không gian khác</Link>
+        </div>
+      ) : stay ? reference ? (
+        <motion.div
+          className="mk-public-card mk-receipt"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+        >
+          <FiCheckCircle />
+          <h1>Lời hẹn của bạn đã được gửi.</h1>
+          <p>MaokiHouse đã nhận yêu cầu lưu trú tại <strong>{stay.title}</strong> và sẽ liên hệ để xác nhận. Phòng đang được giữ trong thời gian xử lý.</p>
+          <div className="mk-receipt-reference">MÃ YÊU CẦU<strong>{reference}</strong></div>
+          <p>Bạn chưa bị tính phí. Thanh toán và xác nhận cuối cùng sẽ được trao đổi trực tiếp với chủ nhà.</p>
+          <Link className="mk-button primary" to="/">Về MaokiHouse</Link>
+        </motion.div>
+      ) : (
+        <motion.div
+          className="mk-booking-public-grid"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <article>
+            <div className="mk-stay-cover">{stay.imageURLs[0] && <img src={stay.imageURLs[0]} alt={stay.title} />}</div>
+            <h1>{stay.title}</h1>
+            <p className="mk-stay-location"><FiMapPin />{stay.address}</p>
+            <div className="mk-stay-facts">
+              <span><FiUsers />{stay.capacity || 2} khách</span>
+              <span><FiHome />{stay.bedrooms || 1} phòng ngủ</span>
+              <span><FiKey />Nhận phòng {stay.checkinTime}</span>
+            </div>
+            <p className="mk-stay-description">{stay.description}</p>
+          </article>
+
+          <section className="mk-public-booking-form mk-panel">
+            <h2>Một kỳ nghỉ đang chờ bạn</h2>
+            <p><strong>{money(stay.basePrice, stay.currency)}</strong> / đêm · Giá có thể thay đổi theo ngày</p>
+            <form onSubmit={event => {
+              event.preventDefault();
+              setBusy(true);
+              setError('');
+              const params = new URLSearchParams(dates);
+              void publicFetch<{ nights: number; total: number; currency: string }>(`/public/properties/${id}/quote?${params}`)
+                .then(setQuote)
+                .catch(cause => { setQuote(null); setError(errorMessage(cause)); })
+                .finally(() => setBusy(false));
+            }}>
+              <div className="mk-form-grid">
+                <label className="mk-field">Ngày nhận phòng
+                  <input type="date" required min={todayIn()} value={dates.checkIn} onChange={event => { setDates(current => ({ ...current, checkIn: event.target.value })); setQuote(null); }} />
+                </label>
+                <label className="mk-field">Ngày trả phòng
+                  <input type="date" required min={dates.checkIn ? addDays(dates.checkIn, 1) : todayIn()} value={dates.checkOut} onChange={event => { setDates(current => ({ ...current, checkOut: event.target.value })); setQuote(null); }} />
+                </label>
+              </div>
+              <Button type="submit" kind={quote ? 'secondary' : 'primary'} busy={busy}>
+                <FiCalendar />{quote ? 'Kiểm tra lại ngày' : 'Kiểm tra phòng & giá'}
+              </Button>
+            </form>
+            {error && <div className="mk-alert error" role="alert">{error}</div>}
+            {quote && (
+              <form className="mk-guest-form" onSubmit={event => {
+                event.preventDefault();
+                setBusy(true);
+                setError('');
+                void publicFetch<{ reference: string }>(`/public/properties/${id}/book`, { method: 'POST', body: { ...dates, ...guest } })
+                  .then(result => setReference(result.reference))
+                  .catch(cause => setError(errorMessage(cause)))
+                  .finally(() => setBusy(false));
+              }}>
+                <div className="mk-booking-total">
+                  <span>{quote.nights} đêm lưu trú</span>
+                  <strong>{money(quote.total, quote.currency)}</strong>
+                </div>
+                <label className="mk-field">Họ và tên
+                  <input value={guest.name} autoComplete="name" required maxLength={150} onChange={event => setGuest(current => ({ ...current, name: event.target.value }))} />
+                </label>
+                <label className="mk-field">Email
+                  <input type="email" value={guest.email} autoComplete="email" required onChange={event => setGuest(current => ({ ...current, email: event.target.value }))} />
+                </label>
+                <label className="mk-field">Điện thoại
+                  <input type="tel" value={guest.phone} autoComplete="tel" minLength={5} maxLength={50} required onChange={event => setGuest(current => ({ ...current, phone: event.target.value }))} />
+                </label>
+                <label className="mk-field">Bạn có lời nhắn nào không?
+                  <textarea rows={2} value={guest.notes} maxLength={2000} onChange={event => setGuest(current => ({ ...current, notes: event.target.value }))} />
+                </label>
+                <Button type="submit" kind="primary" busy={busy}>Gửi yêu cầu đặt phòng</Button>
+                <small>Yêu cầu cần chủ nhà xác nhận. Bạn chưa cần thanh toán tại bước này.</small>
+              </form>
+            )}
+          </section>
+        </motion.div>
+      ) : (
+        <div className="mk-page-loading" role="status"><span className="mk-loading-ring" />Đang chuẩn bị không gian…</div>
+      )}
+    </PublicFrame>
+  );
 }
 
 interface PublicGuide { title: string; propertyTitle: string; welcome: string; checkin: string; wifiName: string; wifiPassword: string; houseRules: string; recommendations: string }
 export function GuestGuidebook() {
   const { token = '' } = useParams(); const [guide, setGuide] = useState<PublicGuide | null>(null); const [error, setError] = useState('');
   useEffect(() => { let active = true; void publicFetch<PublicGuide>(`/public/guidebooks/${token}`).then(result => { if (active) setGuide(result); }).catch(cause => { if (active) setError(errorMessage(cause)); }); return () => { active = false; }; }, [token]);
-  return <PublicFrame><div className="mk-guide">{error ? <div className="mk-public-card"><h1>Sổ tay đang được chuẩn bị</h1><p role="alert">{error}</p></div> : guide ? <><div className="mk-guide-welcome"><span className="mk-eyebrow">SỔ TAY LƯU TRÚ · {guide.propertyTitle}</span><h1>{guide.title}</h1><p>{guide.welcome}</p></div><div className="mk-guide-grid">{[{ title: 'Nhận phòng thật dễ', text: guide.checkin, icon: FiKey }, { title: 'Kết nối và thư giãn', text: `Wi-Fi: ${guide.wifiName || 'Liên hệ chủ nhà'}\nMật khẩu: ${guide.wifiPassword || 'Liên hệ chủ nhà'}`, icon: FiWifi }, { title: 'Cùng giữ một không gian đẹp', text: guide.houseRules, icon: FiHome }, { title: 'Một chút địa phương', text: guide.recommendations, icon: FiCoffee }].map(({ title, text, icon: Icon }) => <section className="mk-panel" key={title}><Icon /><h2>{title}</h2><p>{text || 'Chủ nhà sẽ cập nhật thêm thông tin tại đây.'}</p></section>)}</div></> : <div className="mk-page-loading" role="status">Đang mở sổ tay…</div>}</div></PublicFrame>;
+  return <PublicFrame><div className="mk-guide">{error ? <div className="mk-public-card"><h1>Sổ tay đang được chuẩn bị</h1><p role="alert">{error}</p></div> : guide ? <><div className="mk-guide-welcome"><h1>{guide.title} · {guide.propertyTitle}</h1><p>{guide.welcome}</p></div><div className="mk-guide-grid">{[{ title: 'Nhận phòng thật dễ', text: guide.checkin, icon: FiKey }, { title: 'Kết nối và thư giãn', text: `Wi-Fi: ${guide.wifiName || 'Liên hệ chủ nhà'}\nMật khẩu: ${guide.wifiPassword || 'Liên hệ chủ nhà'}`, icon: FiWifi }, { title: 'Cùng giữ một không gian đẹp', text: guide.houseRules, icon: FiHome }, { title: 'Một chút địa phương', text: guide.recommendations, icon: FiCoffee }].map(({ title, text, icon: Icon }) => <section className="mk-panel" key={title}><Icon /><h2>{title}</h2><p>{text || 'Chủ nhà sẽ cập nhật thêm thông tin tại đây.'}</p></section>)}</div></> : <div className="mk-page-loading" role="status">Đang mở sổ tay…</div>}</div></PublicFrame>;
 }
 
 export function VisitorChat() {
