@@ -345,23 +345,23 @@ export function layoutSpiral(width: number, height: number, seed = 21): SpiralLa
   const rnd = mulberry32(seed);
   const maxRadius = Math.hypot(width, height) / 2 + 40;
   const compact = Math.min(width, height) < 560;
-  const count = Math.round(Math.max(54, Math.min(150, (width * height) / (compact ? 5200 : 9000))));
-  const skip = compact ? 7 : 10; // leave a clearing in the middle for the title
-  const c = maxRadius / Math.sqrt(count + skip);
+  // A handful of very large blossoms: each petal reaches roughly a third of the short side,
+  // so one flower fills about a quarter of the screen and the rest spill past the edges.
+  const count = compact ? 5 : 6;
+  const petal = Math.min(width, height) * (compact ? 0.5 : 0.36);
   const blossoms: Blossom[] = [];
-  for (let i = skip; i < count + skip; i++) {
-    const order = (i - skip) / count;
-    const radius = c * Math.sqrt(i);
-    const grow = 0.78 + 0.5 * (radius / maxRadius);
+  for (let i = 0; i < count; i++) {
+    const t = (i + 0.5) / count;
+    const radius = (0.32 + 0.6 * Math.sqrt(t)) * (maxRadius - 40);
     blossoms.push({
-      angle: i * GOLDEN,
+      angle: i * GOLDEN + 0.6,
       radius,
-      order,
-      size: c * 0.74 * grow * (0.88 + rnd() * 0.24),
+      order: i / count,
+      size: petal * (0.82 + 0.3 * t + rnd() * 0.12),
       spin: rnd() * TAU,
       petalVariants: [0, 1, 2, 3, 4].map(() => Math.floor(rnd() * PALETTES.length)),
       heart: Math.floor(rnd() * 3),
-      lag: rnd() * 0.07,
+      lag: rnd() * 0.06,
     });
   }
   return { blossoms, maxRadius };
@@ -374,7 +374,7 @@ export interface Sprites {
 }
 
 export function buildSprites(dpr: number): Sprites {
-  const refLength = Math.round(96 * Math.min(dpr, 2));
+  const refLength = Math.round(280 * Math.min(dpr, 2));
   const petals: PetalSprite[] = [];
   for (let v = 0; v < 8; v++) petals.push(paintPetal(refLength, v, 11 + v));
   const hearts: CenterSprite[] = [0, 1, 2].map(i => paintHeart(refLength * 0.7, 40 + i));
