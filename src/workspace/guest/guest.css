@@ -1,0 +1,646 @@
+/*
+ * Guest zone (khách thuê phòng): watercolor sakura on vintage paper.
+ *
+ * Ground     aged rag paper (tile painted at runtime, flat colour until it arrives)
+ * Ink        espresso-brown type, never black
+ * Pigment    sakura pinks for emphasis and ornament, terracotta for actions
+ * Objects    photographs sit on the paper as taped prints; notes are slips of paper
+ */
+
+.mk-zone-guest {
+  --paper: #f1e6cf;
+  --paper-hi: #faf4e4;
+  --paper-deep: #e6d5b0;
+  --ink: #2b1810;
+  --ink-soft: #5a4234;
+  --rust: #8a4a34;
+  --rust-deep: #6a321f;
+  --sakura: #d9798f;
+  --sakura-deep: #a23a5b;
+  --sakura-wash: #f3ccd3;
+  --rule: rgba(43, 24, 16, 0.18);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-print: 0 1px 0 rgba(255, 255, 255, 0.55) inset, 0 18px 38px rgba(43, 24, 16, 0.22), 0 3px 8px rgba(43, 24, 16, 0.12);
+  --shadow-sheet: 0 14px 30px rgba(43, 24, 16, 0.14), 0 2px 5px rgba(43, 24, 16, 0.08);
+  /* aliases used by the opening scene */
+  --mk-ease-expo: var(--ease);
+  --mk-guest-espresso: var(--ink);
+
+  position: relative;
+  min-height: 100dvh;
+  background-color: var(--paper);
+  background-image: var(--mk-paper-tile, none);
+  color: var(--ink);
+  font-family: var(--font-body);
+  caret-color: var(--sakura-deep);
+  scrollbar-color: var(--rust) var(--paper-deep);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Light falling off toward the edges of the sheet. */
+.mk-zone-guest::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 38%, transparent 52%, rgba(122, 84, 40, 0.2) 100%);
+}
+
+.mk-zone-guest > * { position: relative; z-index: 1; }
+.mk-zone-guest > .mk-blossom-intro { position: fixed; z-index: 2000; }
+.mk-zone-guest > .mk-skip { position: fixed; }
+
+.mk-zone-guest ::selection { background: var(--sakura-wash); color: var(--ink); }
+.mk-zone-guest :focus-visible { outline: 2px solid var(--sakura-deep); outline-offset: 3px; border-radius: 6px; }
+.mk-zone-guest a { color: var(--sakura-deep); text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.mk-zone-guest a:hover { color: var(--rust-deep); }
+.mk-zone-guest h1, .mk-zone-guest h2, .mk-zone-guest h3 { font-family: var(--font-display); color: var(--ink); text-wrap: balance; }
+.maoki-ui.mk-zone-guest h1, .maoki-ui.mk-zone-guest h2, .maoki-ui.mk-zone-guest h3 { color: var(--ink); }
+.mk-zone-guest img { max-width: 100%; }
+
+/* Decorative watercolor. Multiplying sinks the pigment into the paper. */
+.mk-blossom {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  mix-blend-mode: multiply;
+  height: auto;
+}
+
+/* ─────────── Buttons & small controls ─────────── */
+.mk-zone-guest .mk-button {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  min-height: 46px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: var(--ink);
+  background: transparent;
+  border: 1.5px solid rgba(43, 24, 16, 0.4);
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.mk-zone-guest .mk-button:hover { background: var(--paper-hi); border-color: var(--ink); color: var(--ink); }
+.mk-zone-guest .mk-button.primary {
+  background: var(--rust-deep);
+  border-color: var(--rust-deep);
+  color: var(--paper-hi);
+}
+.mk-zone-guest .mk-button.primary:hover { background: var(--sakura-deep); border-color: var(--sakura-deep); color: var(--paper-hi); filter: none; }
+.mk-zone-guest .mk-button:active { transform: translateY(1px); }
+.mk-zone-guest .mk-button:disabled { opacity: 0.55; cursor: not-allowed; }
+.mk-zone-guest .mk-text-button { color: var(--sakura-deep) !important; font-size: 0.95rem; text-decoration: underline; text-underline-offset: 0.25em; text-decoration-thickness: 1px; }
+.mk-zone-guest .mk-text-button:hover { color: var(--rust-deep) !important; }
+
+/* ─────────── Header ─────────── */
+.mk-guest-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.mk-guest-header.is-scrolled, .mk-guest-header.is-open {
+  background: color-mix(in srgb, var(--paper) 96%, transparent);
+  border-bottom-color: var(--rule);
+  box-shadow: 0 8px 22px rgba(43, 24, 16, 0.08);
+}
+.mk-guest-header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 10px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.mk-guest-brand-cluster { display: flex; align-items: center; gap: 16px; }
+.mk-guest-header .mk-brand { padding: 4px 0; }
+.mk-guest-header .mk-brand small { display: none; }
+.mk-guest-header .mk-brand-wordmark { width: 128px; border-radius: 5px; transition: transform 0.3s var(--ease); }
+.mk-guest-header .mk-brand:hover .mk-brand-wordmark { transform: rotate(-1.5deg); }
+.mk-guest-city-stamp {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.mk-guest-nav { display: flex; align-items: center; gap: 6px; }
+.mk-zone-guest .mk-guest-nav-link {
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: linear-gradient(transparent 62%, transparent 62%);
+  transition: background 0.3s var(--ease);
+}
+.mk-zone-guest .mk-guest-nav-link:hover {
+  color: var(--ink);
+  background: linear-gradient(transparent 58%, color-mix(in srgb, var(--sakura-wash) 90%, transparent) 58% 90%, transparent 90%);
+}
+.mk-guest-cta { margin-left: 10px; min-height: 42px !important; padding: 8px 18px !important; }
+.mk-guest-menu {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid rgba(43, 24, 16, 0.4);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 20px;
+}
+
+/* ─────────── Hero ─────────── */
+.mk-guest-main { overflow-x: clip; }
+.mk-hero { position: relative; padding: 36px 0 110px; isolation: isolate; }
+.mk-hero-blossom { z-index: -1; opacity: 0.92; animation: mk-sway 26s ease-in-out infinite alternate; }
+.mk-hero-blossom.is-a { width: min(44vw, 600px); right: -9%; top: 3%; }
+.mk-hero-blossom.is-b { width: min(36vw, 470px); left: -12%; bottom: -22%; animation-direction: alternate-reverse; animation-duration: 32s; }
+.mk-drift-petal { z-index: -1; opacity: 0.85; animation: mk-drift 22s ease-in-out infinite alternate; }
+
+@keyframes mk-sway {
+  from { transform: rotate(-4deg) translate3d(0, 0, 0); }
+  to { transform: rotate(5deg) translate3d(-12px, 14px, 0); }
+}
+@keyframes mk-drift {
+  from { transform: translate3d(0, -14px, 0) rotate(-20deg); }
+  to { transform: translate3d(36px, 52px, 0) rotate(110deg); }
+}
+
+.mk-hero-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 36px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 64px;
+  align-items: center;
+}
+.maoki-ui .mk-hero-headline {
+  font-size: clamp(2.7rem, 5.6vw, 5.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  margin: 0 0 26px;
+}
+.mk-hero-headline em {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--sakura-deep);
+  padding: 0 0.08em;
+  background: linear-gradient(transparent 60%, color-mix(in srgb, var(--sakura-wash) 85%, transparent) 60% 94%, transparent 94%);
+  border-radius: 0.3em;
+}
+.mk-hero-lead { max-width: 50ch; font-size: 1.15rem; line-height: 1.75; color: var(--ink-soft); margin: 0 0 34px; }
+
+/* Room index: four bookmarks along the foot of the headline. */
+.mk-hero-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0 0 30px; border-bottom: 1px solid var(--rule); }
+.mk-hero-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 10px 12px 0;
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  text-align: left;
+  color: var(--ink-soft);
+  transition: border-color 0.3s var(--ease), color 0.3s var(--ease);
+}
+.mk-hero-tab small { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; color: var(--ink-soft); }
+.mk-hero-tab strong { font-family: var(--font-display); font-size: 1.05rem; color: var(--ink); line-height: 1.2; }
+.mk-hero-tab span { font-size: 0.85rem; }
+.mk-hero-tab:hover { border-bottom-color: var(--sakura); }
+.mk-hero-tab.is-active { border-bottom-color: var(--sakura-deep); }
+.mk-hero-tab.is-active small { color: var(--sakura-deep); }
+
+/* Booking slip */
+.mk-slip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  background: var(--paper-hi);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sheet);
+  overflow: hidden;
+}
+.mk-slip-field { border-bottom: 1px dashed rgba(43, 24, 16, 0.3); display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 14px 16px; margin: 0; min-width: 0; border-right: 1px dashed rgba(43, 24, 16, 0.3); cursor: pointer; }
+.mk-slip-field span { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); }
+.mk-slip-field input, .mk-slip-field select {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 2px 0;
+  font: 600 1rem var(--font-body);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+}
+.mk-slip-field input:focus-visible, .mk-slip-field select:focus-visible { outline-offset: 4px; }
+.mk-slip-field input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.7; }
+.mk-slip-submit { grid-column: 1 / -1; border-radius: 0 !important; min-height: 54px !important; }
+.mk-slip-field:nth-child(3) { border-right: 0; }
+.mk-slip { border-bottom: 0; }
+
+/* The photograph, taped to the paper. */
+.mk-hero-plate { position: relative; padding-bottom: 60px; }
+.mk-print {
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: 14px 14px 52px;
+  background: var(--paper-hi);
+  box-shadow: var(--shadow-print);
+  border-radius: 3px;
+  color: var(--ink);
+}
+.mk-print img { display: block; width: 100%; aspect-ratio: 4 / 4.1; object-fit: cover; border-radius: 1px; filter: saturate(0.94) sepia(0.1) contrast(1.02); }
+.mk-print::before {
+  content: '';
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  width: 104px;
+  height: 28px;
+  margin-left: -52px;
+  transform: rotate(-3deg);
+  background: rgba(228, 198, 148, 0.72);
+  box-shadow: 0 1px 2px rgba(43, 24, 16, 0.15);
+  z-index: 2;
+  clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 100% 0, 96% 50%, 100% 100%, 8% 100%, 4% 90%, 0 100%, 3% 50%);
+}
+.mk-print figcaption {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ink-soft);
+}
+.mk-print figcaption svg { color: var(--sakura-deep); flex: none; }
+.mk-print.is-hero { transform: rotate(1.4deg); }
+.mk-print.is-story { transform: rotate(-1deg); }
+.mk-print.is-story img { aspect-ratio: 4 / 4.6; }
+.mk-print.is-story figcaption { flex-direction: column; align-items: flex-start; gap: 0; bottom: 10px; }
+.mk-print.is-story figcaption strong { font-style: normal; font-size: 1rem; color: var(--ink); }
+.mk-print.is-story figcaption span { font-size: 0.9rem; }
+
+/* A slip of paper laid over the corner of the print. */
+.mk-note {
+  position: absolute;
+  left: -34px;
+  bottom: 0;
+  width: min(78%, 400px);
+  padding: 22px 24px 18px;
+  background: #f6ebcd;
+  box-shadow: var(--shadow-sheet);
+  border-radius: 3px;
+  transform: rotate(-1.6deg);
+  z-index: 3;
+}
+.mk-note-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 8px; }
+.mk-note-tag { display: block; font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 2px; }
+.maoki-ui .mk-note h2 { font-size: 1.4rem; line-height: 1.15; margin: 0; }
+.mk-note-top > strong { font-family: var(--font-display); font-size: 1.05rem; color: var(--sakura-deep); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mk-note > p { font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); margin: 0 0 12px; }
+.mk-note-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 10px; border-top: 1px dashed rgba(43, 24, 16, 0.3); font-size: 0.85rem; color: var(--ink-soft); }
+.mk-note-foot > span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ─────────── Sections ─────────── */
+.mk-section { max-width: 1280px; margin: 0 auto; padding: 96px 36px; scroll-margin-top: 70px; }
+.mk-section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 36px; margin-bottom: 44px; flex-wrap: wrap; }
+.mk-section-head > div:first-child { max-width: 640px; }
+.maoki-ui .mk-section-head h2, .maoki-ui .mk-story-copy h2 { font-size: clamp(2rem, 3.8vw, 3.3rem); line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 14px; }
+.mk-section-head p { margin: 0; font-size: 1.05rem; line-height: 1.7; color: var(--ink-soft); max-width: 56ch; }
+
+.mk-filters { display: flex; flex-direction: column; gap: 14px; align-items: flex-end; }
+.mk-filter-search { display: flex; align-items: center; gap: 10px; width: min(380px, 100%); margin: 0; padding: 8px 2px; border-bottom: 1.5px solid rgba(43, 24, 16, 0.4); color: var(--ink-soft); }
+.mk-filter-search:focus-within { border-bottom-color: var(--sakura-deep); }
+.mk-filter-search input { flex: 1; min-width: 0; border: 0; background: transparent; font: 500 0.98rem var(--font-body); color: var(--ink); padding: 4px 0; }
+.mk-filter-search input::placeholder { color: #7d6656; }
+.mk-filter-search input:focus-visible { outline: none; }
+.mk-filter-pills { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.mk-filter-pills button {
+  padding: 7px 14px;
+  border: 1.5px solid rgba(43, 24, 16, 0.3);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: 600 0.88rem var(--font-body);
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.mk-filter-pills button:hover { border-color: var(--ink); }
+.mk-filter-pills button.is-selected { background: var(--sakura-wash); border-color: var(--sakura-deep); color: var(--ink); }
+
+.mk-curated-note { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; padding: 18px 22px; margin-bottom: 36px; background: var(--paper-hi); border-radius: 10px; box-shadow: var(--shadow-sheet); }
+.mk-curated-note > div { display: flex; flex-direction: column; gap: 4px; max-width: 62ch; }
+.mk-curated-note span { font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); }
+
+/* Stays: one page of the sketchbook per room. */
+.mk-plates { display: flex; flex-direction: column; }
+.mk-plate { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 64px; align-items: center; padding: 44px 0; border-top: 1px dashed rgba(43, 24, 16, 0.3); }
+.mk-plate:first-child { border-top: 0; padding-top: 0; }
+.mk-plate.is-flip { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.mk-plate.is-flip .mk-plate-photo { order: 2; }
+.mk-plate-photo { transform: rotate(-1.1deg); transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease); }
+.mk-plate.is-flip .mk-plate-photo { transform: rotate(1.1deg); }
+.mk-plate-photo:hover { transform: rotate(0deg) translateY(-4px); }
+.mk-plate-photo img { aspect-ratio: 4 / 3; }
+.mk-plate-photo { padding-bottom: 14px; }
+.mk-print-tag { position: absolute; left: 26px; top: 26px; padding: 5px 11px; background: var(--paper-hi); color: var(--ink); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 3px; box-shadow: 0 2px 6px rgba(43, 24, 16, 0.2); }
+.mk-plate-body { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.mk-plate-where { display: inline-flex; align-items: center; gap: 7px; margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--ink-soft); }
+.maoki-ui .mk-plate-body h3 { font-size: clamp(1.8rem, 2.8vw, 2.5rem); line-height: 1.1; letter-spacing: -0.015em; margin: 0; }
+.mk-plate-desc { margin: 0; font-size: 1.05rem; line-height: 1.75; color: var(--ink-soft); max-width: 46ch; }
+.mk-plate-facts { display: flex; gap: 20px; flex-wrap: wrap; margin: 0; font-size: 0.92rem; color: var(--ink-soft); }
+.mk-plate-facts span { display: inline-flex; align-items: center; gap: 7px; }
+.mk-plate-price { display: flex; align-items: baseline; gap: 10px; width: 100%; max-width: 420px; margin-top: 6px; }
+.mk-plate-price small { font-size: 0.88rem; color: var(--ink-soft); white-space: nowrap; }
+.mk-plate-price i { flex: 1; min-width: 20px; border-bottom: 2px dotted rgba(43, 24, 16, 0.4); transform: translateY(-4px); }
+.mk-plate-price strong { font-family: var(--font-display); font-size: 1.55rem; color: var(--rust-deep); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.mk-plates-skeleton { display: grid; gap: 28px; }
+.mk-plate-skeleton { height: 340px; border-radius: 6px; background: linear-gradient(100deg, rgba(230, 213, 176, 0.5) 30%, rgba(250, 244, 228, 0.9) 50%, rgba(230, 213, 176, 0.5) 70%); background-size: 220% 100%; animation: mk-shimmer 1.6s linear infinite; }
+@keyframes mk-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+.mk-empty-filter { text-align: center; padding: 60px 20px; }
+.mk-empty-filter p { font-family: var(--font-display); font-size: 1.4rem; margin: 0 0 18px; }
+
+/* ─────────── Story ─────────── */
+.mk-story { position: relative; max-width: none; padding: 104px 0; background: color-mix(in srgb, var(--paper-deep) 70%, transparent); overflow: hidden; isolation: isolate; }
+.mk-story-blossom { z-index: -1; width: min(44vw, 560px); left: -14%; top: -8%; opacity: 0.55; animation: mk-sway 30s ease-in-out infinite alternate; }
+.mk-story-inner { max-width: 1280px; margin: 0 auto; padding: 0 36px; display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 72px; align-items: start; }
+.mk-story-intro { margin: 0 0 36px; font-size: 1.1rem; line-height: 1.75; color: var(--ink-soft); max-width: 56ch; }
+.mk-story-intro em { font-family: var(--font-display); color: var(--ink); }
+.mk-story-steps { display: flex; flex-direction: column; border-left: 2px solid rgba(43, 24, 16, 0.25); }
+.mk-story-step { position: relative; padding: 18px 0 18px 28px; text-align: left; background: none; border: 0; color: var(--ink-soft); }
+.mk-story-step::before { content: ''; position: absolute; left: -7px; top: 26px; width: 12px; height: 12px; border-radius: 50%; background: var(--paper-deep); border: 2px solid rgba(43, 24, 16, 0.5); transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease), transform 0.3s var(--ease); }
+.mk-story-step.is-active::before { background: var(--sakura); border-color: var(--sakura-deep); transform: scale(1.25); }
+.mk-story-time { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+.maoki-ui .mk-story-step h3 { font-size: 1.35rem; line-height: 1.25; margin: 0; }
+.mk-story-step p { margin: 0; font-size: 1rem; line-height: 1.7; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s var(--ease), opacity 0.4s var(--ease), margin 0.4s var(--ease); }
+.mk-story-step.is-active p { max-height: 14em; opacity: 1; margin-top: 10px; }
+.mk-story-step:not(.is-active):hover h3 { color: var(--sakura-deep); }
+.mk-story-stage { position: sticky; top: 110px; padding: 10px 0 0; }
+
+/* ─────────── Guestbook ─────────── */
+.mk-letters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; align-items: start; }
+.mk-letter { position: relative; display: flex; flex-direction: column; gap: 22px; padding: 30px 26px 24px; background: var(--paper-hi); box-shadow: var(--shadow-sheet); border-radius: 3px; transform: rotate(-0.6deg); }
+.mk-letter:nth-child(2) { transform: rotate(0.5deg); margin-top: 40px; }
+.mk-letter:nth-child(3) { transform: rotate(-0.3deg); margin-top: 14px; }
+.mk-letter::after { content: ''; position: absolute; top: 14px; right: 14px; width: 40px; height: 48px; border: 2px dashed rgba(162, 58, 91, 0.45); background: color-mix(in srgb, var(--sakura-wash) 60%, transparent); border-radius: 2px; }
+.mk-letter blockquote { margin: 0; padding-right: 36px; font-family: var(--font-display); font-style: italic; font-size: 1.12rem; line-height: 1.65; color: var(--ink); }
+.mk-letter footer { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px dashed rgba(43, 24, 16, 0.3); }
+.mk-letter footer img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--paper-deep); flex: none; }
+.mk-letter footer > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.mk-letter footer strong { font-size: 0.98rem; }
+.mk-letter footer small { font-size: 0.82rem; color: var(--ink-soft); }
+.mk-letter-stars { display: inline-flex; gap: 2px; color: var(--sakura-deep); font-size: 0.8rem; }
+.mk-letter-stars svg { fill: currentColor; }
+.mk-letter-room { margin: -8px 0 0; font-size: 0.82rem; color: var(--ink-soft); }
+
+/* ─────────── Footer ─────────── */
+.mk-guest-footer { position: relative; margin-top: 70px; padding: 96px 0 0; background: #2a1810; color: #efe3cb; overflow: hidden; isolation: isolate; }
+.mk-guest-footer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 38px;
+  background-color: var(--paper);
+  background-image: var(--mk-paper-tile, none);
+  clip-path: polygon(0% 0%, 0% 57%, 2.8% 76%, 4.9% 52%, 6.3% 38%, 8.4% 59%, 10.5% 79%, 11.9% 86%, 15.3% 86%, 18.7% 91%, 20.8% 79%, 22.2% 90%, 24.3% 30%, 27.1% 94%, 30.5% 88%, 33.9% 42%, 36.7% 40%, 38.1% 77%, 41.5% 41%, 42.9% 71%, 45.0% 39%, 48.4% 94%, 50.5% 46%, 51.9% 97%, 53.3% 90%, 55.4% 46%, 58.8% 84%, 61.6% 99%, 64.4% 82%, 66.5% 48%, 67.9% 96%, 70.7% 73%, 74.1% 92%, 76.2% 67%, 78.3% 73%, 81.1% 93%, 82.5% 92%, 84.6% 72%, 86.7% 29%, 89.5% 71%, 91.6% 62%, 93.0% 82%, 95.8% 76%, 98.6% 81%, 100% 0%);
+  z-index: 0;
+}
+.mk-guest-footer .mk-footer-blossom { mix-blend-mode: normal; right: -6%; bottom: -26%; width: min(42vw, 520px); opacity: 0.4; z-index: -1; }
+.mk-guest-footer-inner { max-width: 1280px; margin: 0 auto; padding: 0 36px 64px; display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 56px; }
+.mk-guest-footer-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.mk-guest-footer .mk-brand { padding: 0; }
+.mk-guest-footer .mk-brand small { display: none; }
+.mk-guest-footer .mk-brand-wordmark { width: 150px; border-radius: 5px; }
+.mk-guest-footer-note { font-family: var(--font-display); font-style: italic; font-size: 1.35rem; color: var(--sakura-wash); margin: 4px 0 0; }
+.mk-guest-footer-brand > p:not(.mk-guest-footer-note) { margin: 0; max-width: 42ch; line-height: 1.7; color: #d6c4a3; }
+.maoki-ui .mk-guest-footer h2 { font-size: 1.15rem; color: #faf0da; margin: 0 0 16px; }
+.mk-guest-contact { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.mk-zone-guest .mk-guest-footer a { color: #e6d6b6; }
+.mk-zone-guest .mk-guest-footer a:hover { color: var(--sakura-wash); }
+.mk-guest-contact a { display: inline-flex; align-items: center; gap: 8px; line-height: 1.5; }
+.mk-zone-guest .mk-guest-pill-action { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; padding: 11px 18px; border: 1.5px solid rgba(239, 227, 203, 0.5); border-radius: 10px; font-weight: 600; color: #faf0da; transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease); }
+.mk-zone-guest .mk-guest-pill-action:hover { background: rgba(243, 204, 211, 0.12); border-color: var(--sakura-wash); }
+.mk-guest-footer-bottom { max-width: 1280px; margin: 0 auto; padding: 22px 36px 30px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid rgba(239, 227, 203, 0.18); font-size: 0.85rem; color: #cdb99a; }
+.mk-zone-guest .mk-guest-staff-link { display: inline-flex; align-items: center; gap: 7px; color: #cdb99a; }
+
+/* ─────────── Sub-pages: booking, guidebook ─────────── */
+.mk-zone-guest .mk-public { min-height: 0; max-width: 1280px; margin: 0 auto; padding: 32px 36px 96px; }
+.mk-guest-back { margin-bottom: 26px; }
+.mk-zone-guest .mk-panel, .mk-zone-guest .mk-public-card {
+  background: var(--paper-hi);
+  border: 0;
+  border-radius: 6px;
+  box-shadow: var(--shadow-sheet);
+  color: var(--ink);
+}
+.mk-zone-guest .mk-public-card { margin: 40px auto; padding: 48px; }
+.mk-zone-guest .mk-public-card h1 { font-size: 2rem; }
+.mk-zone-guest .mk-public-card p, .mk-zone-guest .mk-public-booking-form > p, .mk-zone-guest .mk-stay-description, .mk-zone-guest .mk-guide-grid p, .mk-zone-guest .mk-guide-welcome p, .mk-zone-guest .mk-guest-form > small { color: var(--ink-soft); }
+.mk-zone-guest .mk-public-card p, .mk-zone-guest .mk-stay-description, .mk-zone-guest .mk-guide-grid p { font-size: 1rem; line-height: 1.8; }
+.mk-zone-guest .mk-booking-public-grid { gap: 64px; grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.85fr); }
+.mk-zone-guest .mk-booking-public-grid h1 { font-size: clamp(2rem, 3.6vw, 3rem); line-height: 1.1; margin: 8px 0 0; }
+.mk-zone-guest .mk-stay-cover { position: relative; height: auto; margin-bottom: 36px; padding: 14px; background: var(--paper-hi); border-radius: 3px; box-shadow: var(--shadow-print); transform: rotate(-0.8deg); overflow: visible; }
+.mk-zone-guest .mk-stay-cover::before { content: ''; position: absolute; top: -13px; left: 50%; width: 104px; height: 28px; margin-left: -52px; transform: rotate(2deg); background: rgba(228, 198, 148, 0.72); box-shadow: 0 1px 2px rgba(43, 24, 16, 0.15); clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 100% 0, 96% 50%, 100% 100%, 8% 100%, 4% 90%, 0 100%, 3% 50%); }
+.mk-zone-guest .mk-stay-cover img { display: block; aspect-ratio: 16 / 10; height: auto; border-radius: 1px; filter: saturate(0.94) sepia(0.1); }
+.mk-zone-guest .mk-stay-location { color: var(--ink-soft); font-size: 1rem; }
+.mk-zone-guest .mk-stay-facts { border-color: var(--rule); font-size: 1rem; color: var(--ink); }
+.mk-zone-guest .mk-stay-facts svg { color: var(--sakura-deep); }
+.mk-zone-guest .mk-public-booking-form { top: 96px; padding: 32px; }
+.maoki-ui.mk-zone-guest .mk-public-booking-form h2 { font-size: 1.6rem; margin: 0; }
+.mk-zone-guest .mk-public-booking-form > p strong { font-family: var(--font-display); font-size: 1.5rem; color: var(--rust-deep); }
+.mk-zone-guest .mk-guest-form { border-top: 1px dashed rgba(43, 24, 16, 0.3); }
+.mk-zone-guest .mk-booking-total strong { font-family: var(--font-display); color: var(--rust-deep); }
+.mk-zone-guest .mk-booking-total span { color: var(--ink-soft); }
+
+.mk-zone-guest .mk-field { color: var(--ink); font-size: 0.9rem; font-weight: 600; }
+.mk-zone-guest .mk-field input, .mk-zone-guest .mk-field textarea, .mk-zone-guest .mk-field select {
+  font: 500 1rem var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid rgba(43, 24, 16, 0.3);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-height: 46px;
+}
+.mk-zone-guest .mk-field input:focus, .mk-zone-guest .mk-field textarea:focus, .mk-zone-guest .mk-field select:focus { border-color: var(--sakura-deep); box-shadow: 0 0 0 3px rgba(217, 121, 143, 0.3); outline: none; }
+.mk-zone-guest .mk-alert { background: var(--paper); border: 1px solid var(--rule); color: var(--ink); }
+.mk-zone-guest .mk-alert.error { background: #f7dcd6; border-color: rgba(143, 29, 44, 0.4); color: #7e1826; }
+.mk-zone-guest .mk-receipt > svg { color: var(--sakura-deep); }
+.mk-zone-guest .mk-receipt-reference { background: var(--paper); border: 1.5px dashed rgba(43, 24, 16, 0.35); color: var(--ink-soft); }
+.mk-zone-guest .mk-receipt-reference strong { color: var(--ink); }
+.mk-zone-guest .mk-guide-grid svg { color: var(--sakura-deep); }
+.maoki-ui.mk-zone-guest .mk-guide-welcome h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); }
+.mk-zone-guest .mk-page-loading { color: var(--ink-soft); }
+
+/* ─────────── Responsive ─────────── */
+@media (max-width: 1100px) {
+  .mk-hero-inner { grid-template-columns: 1fr; gap: 56px; }
+  .mk-hero-plate { max-width: 600px; margin: 0 auto; width: 100%; }
+  .mk-plate, .mk-plate.is-flip { grid-template-columns: 1fr; gap: 32px; }
+  .mk-plate.is-flip .mk-plate-photo { order: 0; }
+  .mk-story-inner { grid-template-columns: 1fr; gap: 48px; }
+  .mk-story-stage { position: static; max-width: 520px; }
+  .mk-letters { grid-template-columns: 1fr; max-width: 560px; margin: 0 auto; }
+  .mk-letter:nth-child(n) { margin-top: 0; }
+  .mk-guest-footer-inner { grid-template-columns: 1fr 1fr; }
+  .mk-guest-footer-brand { grid-column: 1 / -1; }
+  .mk-zone-guest .mk-booking-public-grid { grid-template-columns: 1fr; }
+  .mk-zone-guest .mk-public-booking-form { position: static; }
+}
+
+@media (max-width: 900px) {
+  .mk-guest-menu { display: inline-flex; }
+  .mk-guest-city-stamp { display: none; }
+  .mk-guest-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 2px; padding: 12px 20px 22px; background: var(--paper-hi); box-shadow: 0 18px 30px rgba(43, 24, 16, 0.16); }
+  .mk-guest-nav.is-open { display: flex; }
+  .mk-zone-guest .mk-guest-nav-link { padding: 14px 8px; font-size: 1.05rem; border-bottom: 1px dashed rgba(43, 24, 16, 0.25); border-radius: 0; }
+  .mk-guest-cta { margin: 14px 0 0; justify-content: center; }
+}
+
+@media (max-width: 720px) {
+  .mk-guest-header-inner, .mk-hero-inner, .mk-story-inner, .mk-guest-footer-inner, .mk-guest-footer-bottom { padding-left: 20px; padding-right: 20px; }
+  .mk-section { padding: 68px 20px; }
+  .mk-story { padding: 72px 0; }
+  .mk-hero { padding: 20px 0 72px; }
+  .mk-hero-blossom.is-a { width: 70vw; right: -30%; top: -3%; opacity: 0.5; }
+  .mk-hero-blossom.is-b { width: 64vw; left: -22%; bottom: -10%; }
+  .mk-hero-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mk-slip { grid-template-columns: 1fr 1fr; }
+  .mk-slip-field:nth-child(2) { border-right: 0; }
+  .mk-slip-field:nth-child(3) { grid-column: 1 / -1; }
+  .mk-hero-plate { padding-bottom: 0; }
+  .mk-note { position: relative; left: auto; width: auto; margin: -34px 8px 0 14px; }
+  .mk-filters { align-items: stretch; width: 100%; }
+  .mk-filter-pills { justify-content: flex-start; }
+  .mk-plate-price { flex-wrap: wrap; }
+  .mk-guest-footer-inner { grid-template-columns: 1fr; gap: 40px; }
+  .mk-guest-footer-bottom { flex-direction: column; }
+  .mk-zone-guest .mk-public { padding: 24px 20px 72px; }
+  .mk-zone-guest .mk-public-card { padding: 32px 22px; }
+  .mk-zone-guest .mk-public-booking-form { padding: 24px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-hero-blossom, .mk-story-blossom, .mk-drift-petal, .mk-plate-skeleton { animation: none; }
+  .mk-plate-photo, .mk-plate-photo:hover { transition: none; }
+}
+
+/* ───────────── Opening scene: watercolor sakura on vintage paper ───────────── */
+.mk-blossom-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  overflow: hidden;
+  background: #ead9b6;
+  color: var(--mk-guest-espresso);
+}
+
+.mk-blossom-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mk-blossom-title {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 0 24px;
+  text-align: center;
+  pointer-events: none;
+  animation: mk-blossom-title-in 1.4s var(--mk-ease-expo) 1.5s both;
+}
+
+/* A breath of lighter paper behind the lettering keeps it legible over the petals. */
+.mk-blossom-title::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: min(420px, 86vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 233, 210, 0.92) 0%, rgba(244, 233, 210, 0.7) 45%, rgba(244, 233, 210, 0) 72%);
+  z-index: -1;
+}
+
+.mk-blossom-title h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 7vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--mk-guest-espresso);
+  text-wrap: balance;
+}
+
+.mk-blossom-title p {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1rem, 2.2vw, 1.3rem);
+  color: #5c2f20;
+}
+
+.mk-blossom-skip {
+  position: absolute;
+  right: clamp(16px, 3vw, 36px);
+  bottom: clamp(16px, 3vw, 32px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(92, 47, 32, 0.45);
+  border-radius: 999px;
+  background: rgba(244, 233, 210, 0.82);
+  color: #4a2618;
+  font: 600 0.9rem/1 var(--font-body);
+  cursor: pointer;
+  transition: background-color 0.25s var(--mk-ease-expo), border-color 0.25s var(--mk-ease-expo), transform 0.25s var(--mk-ease-expo);
+}
+
+.mk-blossom-skip:hover {
+  background: #f4e9d2;
+  border-color: #5c2f20;
+  transform: translateX(2px);
+}
+
+.mk-blossom-skip:focus-visible {
+  outline: 2px solid #8a4a34;
+  outline-offset: 3px;
+}
+
+@keyframes mk-blossom-title-in {
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-blossom-title { animation: none; }
+}

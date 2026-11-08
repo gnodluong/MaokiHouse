@@ -5,7 +5,6 @@ import {
   FiArrowRight,
   FiArrowUpRight,
   FiCalendar,
-  FiCompass,
   FiHome,
   FiKey,
   FiMapPin,
@@ -21,10 +20,10 @@ import about3 from '../assets/images/about3.jpg';
 import morganAvatar from '../assets/images/reviews/morgan.jpg';
 import myAvatar from '../assets/images/reviews/my.jpg';
 import paigeAvatar from '../assets/images/reviews/paige.jpg';
+import { Blossom } from './guest/Blossom';
 import { publicFetch, publicPath } from './publicApi';
 import { addDays, money, todayIn } from './utils';
 import './workspace.css';
-import './zones.css';
 
 interface PublicStay {
   id: string;
@@ -285,41 +284,49 @@ export default function Landing() {
     document.getElementById('stays')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
   };
 
+  const driftPetals = [
+    { left: '47%', top: '5%', size: 30, delay: '-6s', dur: '23s', index: 1 },
+    { left: '93%', top: '60%', size: 34, delay: '-11s', dur: '21s', index: 2 },
+    { left: '58%', top: '86%', size: 30, delay: '-3s', dur: '25s', index: 0 },
+  ];
+
   return (
     <div className="mk-guest-canvas">
-      {/* ───────────── FOCAL HERO: SHUTTERED SAIGON RESIDENCE STAGE ───────────── */}
+      {/* ───────────── HERO: a postcard from Saigon, pinned to the paper ───────────── */}
       <section
-        className="mk-hero-stage"
+        className="mk-hero"
         aria-label="Không gian nổi bật tại MaokiHouse"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        <div className="mk-hero-grid">
-          <div className="mk-hero-editorial">
+        <Blossom index={0} className="mk-hero-blossom is-a" />
+        <Blossom index={3} className="mk-hero-blossom is-b" />
+        {driftPetals.map((petal, i) => (
+          <Blossom
+            key={i}
+            kind="petal"
+            index={petal.index}
+            className="mk-drift-petal"
+            style={{ left: petal.left, top: petal.top, width: petal.size, animationDelay: petal.delay, animationDuration: petal.dur }}
+          />
+        ))}
+
+        <div className="mk-hero-inner">
+          <div className="mk-hero-copy">
             <motion.div
               initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, ease: easeOutExpo }}
+              transition={{ duration: 0.8, delay: prefersReducedMotion ? 0 : 0.25, ease: easeOutExpo }}
             >
-              <div className="mk-hero-ledger">
-                <span className="mk-hero-key-badge">{chapter.roomKey}</span>
-                <span>{chapter.district}</span>
-                <span className="mk-hero-coords">{chapter.coordinates}</span>
-              </div>
-
               <h1 className="mk-hero-headline">
                 Ở lại một nơi.
                 <br />
                 Mang về một <em>cảm giác.</em>
               </h1>
-
-              <p className="mk-hero-lead">
-                Bốn góc trốn nắng dịu dàng giữa lòng Sài Gòn — nơi ánh sáng tự nhiên, ban công xanh và sự hiếu khách của người trẻ bản địa đón bạn về như nhà mình.
-              </p>
+              <p className="mk-hero-lead">Bốn góc trốn nắng dịu dàng giữa lòng Sài Gòn — nơi ánh sáng tự nhiên, ban công xanh và sự hiếu khách của người trẻ bản địa đón bạn về như nhà mình.</p>
             </motion.div>
 
-            {/* Interactive Key Fob Switcher */}
-            <div className="mk-hero-keyfobs" role="tablist" aria-label="Chọn phòng tiêu biểu">
+            <div className="mk-hero-tabs" role="tablist" aria-label="Chọn phòng tiêu biểu">
               {heroChapters.map((item, index) => {
                 const selected = index === activeChapter;
                 return (
@@ -330,27 +337,19 @@ export default function Landing() {
                     id={`hero-tab-${item.id}`}
                     aria-selected={selected}
                     aria-controls={`hero-panel-${item.id}`}
-                    className={`mk-keyfob ${selected ? 'is-active' : ''}`}
+                    className={`mk-hero-tab ${selected ? 'is-active' : ''}`}
                     onClick={() => setActiveChapter(index)}
                   >
-                    <span className="mk-keyfob-num">{item.roomKey}</span>
+                    <small>{item.roomKey}</small>
                     <strong>{item.title.split('·')[0].trim()}</strong>
-                    <small>{item.district.split('·')[0].trim()}</small>
-                    {selected && !prefersReducedMotion && (
-                      <motion.span
-                        layoutId="mk-keyfob-indicator"
-                        className="mk-keyfob-active-bar"
-                        transition={{ duration: 0.4, ease: easeOutExpo }}
-                      />
-                    )}
+                    <span>{item.district.split('·')[0].trim()}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Live Booking Concierge Strip */}
-            <form className="mk-concierge-bar" onSubmit={jumpToStays} aria-label="Tìm nhanh phòng theo ngày và số khách">
-              <label className="mk-concierge-field" htmlFor="guest-checkin">
+            <form className="mk-slip" onSubmit={jumpToStays} aria-label="Tìm nhanh phòng theo ngày và số khách">
+              <label className="mk-slip-field" htmlFor="guest-checkin">
                 <span><FiCalendar /> Nhận phòng</span>
                 <input
                   id="guest-checkin"
@@ -367,7 +366,7 @@ export default function Landing() {
                 />
               </label>
 
-              <label className="mk-concierge-field" htmlFor="guest-checkout">
+              <label className="mk-slip-field" htmlFor="guest-checkout">
                 <span><FiCalendar /> Trả phòng</span>
                 <input
                   id="guest-checkout"
@@ -378,13 +377,9 @@ export default function Landing() {
                 />
               </label>
 
-              <label className="mk-concierge-field" htmlFor="guest-count">
+              <label className="mk-slip-field" htmlFor="guest-count">
                 <span><FiUsers /> Số khách</span>
-                <select
-                  id="guest-count"
-                  value={guestCount}
-                  onChange={event => setGuestCount(Number(event.target.value))}
-                >
+                <select id="guest-count" value={guestCount} onChange={event => setGuestCount(Number(event.target.value))}>
                   <option value={1}>1 khách</option>
                   <option value={2}>2 khách</option>
                   <option value={3}>3 khách</option>
@@ -392,89 +387,81 @@ export default function Landing() {
                 </select>
               </label>
 
-              <button type="submit" className="mk-button primary mk-concierge-submit">
+              <button type="submit" className="mk-button primary mk-slip-submit">
                 <span>Xem {filtered.length} phòng phù hợp</span>
                 <FiArrowRight />
               </button>
             </form>
           </div>
 
-          {/* Focal Window Aperture with Crossfade & Tactile Dossier Card */}
           <div
-            className="mk-hero-aperture-wrap"
+            className="mk-hero-plate"
             id={`hero-panel-${chapter.id}`}
             role="tabpanel"
             aria-labelledby={`hero-tab-${chapter.id}`}
           >
-            <div className="mk-hero-aperture">
-              <AnimatePresence mode="wait">
-                <motion.figure
-                  key={chapter.id}
-                  className="mk-hero-photo-frame"
-                  initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 1.04 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.985 }}
-                  transition={{ duration: 0.65, ease: easeOutExpo }}
-                >
-                  <img
-                    src={chapter.image}
-                    alt={`${chapter.title} tại ${chapter.district}`}
-                  />
-                  <figcaption className="mk-hero-sun-pill">
-                    <FiSun />
-                    <span>{chapter.timeNote}</span>
-                  </figcaption>
-                </motion.figure>
-              </AnimatePresence>
+            <AnimatePresence mode="wait">
+              <motion.figure
+                key={chapter.id}
+                className="mk-print is-hero"
+                initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 14, rotate: -1 }}
+                animate={{ opacity: 1, y: 0, rotate: 0 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                transition={{ duration: 0.6, ease: easeOutExpo }}
+              >
+                <img src={chapter.image} alt={`${chapter.title} tại ${chapter.district}`} />
+                <figcaption>
+                  <FiSun aria-hidden="true" />
+                  <span>{chapter.timeNote}</span>
+                </figcaption>
+              </motion.figure>
+            </AnimatePresence>
 
-              <AnimatePresence mode="wait">
-                <motion.aside
-                  key={chapter.id + '-card'}
-                  className="mk-hero-dossier"
-                  initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
-                  transition={{ duration: 0.45, ease: easeOutExpo }}
-                >
-                  <div className="mk-hero-dossier-top">
-                    <div>
-                      <span className="mk-hero-dossier-tag">{chapter.district}</span>
-                      <h2>{chapter.title}</h2>
-                    </div>
-                    <strong>{chapter.rateHint}</strong>
+            <AnimatePresence mode="wait">
+              <motion.aside
+                key={chapter.id + '-card'}
+                className="mk-note"
+                initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+                transition={{ duration: 0.45, ease: easeOutExpo }}
+              >
+                <div className="mk-note-top">
+                  <div>
+                    <span className="mk-note-tag">{chapter.district}</span>
+                    <h2>{chapter.title}</h2>
                   </div>
-                  <p>{chapter.atmosphere}</p>
-                  <div className="mk-hero-dossier-foot">
-                    <span><FiKey /> {chapter.specs}</span>
-                    {matchingHeroStay && liveReady ? (
-                      <Link className="mk-text-button" to={publicPath('/book/' + matchingHeroStay.id, demo)}>
-                        Đặt phòng này <FiArrowRight />
-                      </Link>
-                    ) : (
-                      <a className="mk-text-button" href="#stays">
-                        Khám phá chi tiết <FiArrowRight />
-                      </a>
-                    )}
-                  </div>
-                </motion.aside>
-              </AnimatePresence>
-            </div>
+                  <strong>{chapter.rateHint}</strong>
+                </div>
+                <p>{chapter.atmosphere}</p>
+                <div className="mk-note-foot">
+                  <span><FiKey /> {chapter.specs}</span>
+                  {matchingHeroStay && liveReady ? (
+                    <Link className="mk-text-button" to={publicPath('/book/' + matchingHeroStay.id, demo)}>
+                      Đặt phòng này <FiArrowRight />
+                    </Link>
+                  ) : (
+                    <a className="mk-text-button" href="#stays">
+                      Khám phá chi tiết <FiArrowRight />
+                    </a>
+                  )}
+                </div>
+              </motion.aside>
+            </AnimatePresence>
           </div>
         </div>
       </section>
 
-      {/* ───────────── COLLECTION LEDGER: STAGGERED ARCHITECTURAL DOSSIERS ───────────── */}
-      <section id="stays" className="mk-guest-section mk-stays-ledger">
-        <div className="mk-ledger-header">
+      {/* ───────────── STAYS: four pages from the sketchbook ───────────── */}
+      <section id="stays" className="mk-section mk-stays">
+        <div className="mk-section-head">
           <div>
             <h2>Bốn góc trú ẩn giữa Sài Gòn.</h2>
-            <p className="mk-ledger-sub">
-              Mỗi căn phòng được chăm chút ánh sáng tự nhiên, bếp riêng và hướng dẫn tự nhận phòng chi tiết. Bạn chưa bị tính phí khi gửi yêu cầu giữ lịch.
-            </p>
+            <p>Mỗi căn phòng được chăm chút ánh sáng tự nhiên, bếp riêng và hướng dẫn tự nhận phòng chi tiết. Bạn chưa bị tính phí khi gửi yêu cầu giữ lịch.</p>
           </div>
 
-          <div className="mk-ledger-controls">
-            <label className="mk-ledger-search" htmlFor="stay-filter-input">
+          <div className="mk-filters">
+            <label className="mk-filter-search" htmlFor="stay-filter-input">
               <FiSearch />
               <input
                 id="stay-filter-input"
@@ -483,7 +470,7 @@ export default function Landing() {
                 onChange={event => setQuery(event.target.value)}
               />
             </label>
-            <div className="mk-ledger-pills" role="group" aria-label="Lọc theo số khách">
+            <div className="mk-filter-pills" role="group" aria-label="Lọc theo số khách">
               {[
                 [1, 'Mọi quy mô'],
                 [2, '2+ khách'],
@@ -492,6 +479,7 @@ export default function Landing() {
                 <button
                   key={count}
                   type="button"
+                  aria-pressed={guestCount === count}
                   className={guestCount === count ? 'is-selected' : ''}
                   onClick={() => setGuestCount(Number(count))}
                 >
@@ -503,7 +491,7 @@ export default function Landing() {
         </div>
 
         {!liveReady && !loading && (
-          <div className="mk-curated-banner" role="status">
+          <div className="mk-curated-note" role="status">
             <div>
               <strong>Bộ sưu tập không gian tiêu biểu của MaokiHouse</strong>
               <span>
@@ -517,13 +505,13 @@ export default function Landing() {
         )}
 
         {loading ? (
-          <div className="mk-stays-skeleton" role="status">
-            {[0, 1, 2, 3].map(item => (
-              <div key={item} className="mk-stay-skeleton-card" />
+          <div className="mk-plates-skeleton" role="status" aria-label="Đang tải danh sách phòng">
+            {[0, 1].map(item => (
+              <div key={item} className="mk-plate-skeleton" />
             ))}
           </div>
         ) : filtered.length ? (
-          <div className="mk-stays-editorial-grid">
+          <div className="mk-plates">
             {filtered.map((stay, index) => {
               const roomNumber = String(index + 1).padStart(2, '0');
               const canBookOnline = liveReady;
@@ -531,70 +519,57 @@ export default function Landing() {
                 `/book/${stay.id}?checkIn=${encodeURIComponent(dates.checkIn)}&checkOut=${encodeURIComponent(dates.checkOut)}`,
                 demo
               );
+              const whatsappHref = `${CONTACT_LINKS.whatsapp}?text=${encodeURIComponent(
+                `Chào MaokiHouse, mình muốn hỏi phòng ${stay.title} từ ${dates.checkIn} đến ${dates.checkOut} cho ${guestCount} khách.`
+              )}`;
+              const photo = stay.imageURLs[0] && <img src={stay.imageURLs[0]} alt={stay.title} loading="lazy" />;
               return (
                 <motion.article
                   key={stay.id}
                   layout
-                  className={`mk-stay-dossier ${index % 2 === 1 ? 'is-offset' : ''}`}
+                  className={`mk-plate ${index % 2 === 1 ? 'is-flip' : ''}`}
                   initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: (index % 4) * 0.07, ease: easeOutExpo }}
                 >
-                  <div className="mk-stay-dossier-media">
-                    {canBookOnline ? (
-                      <Link to={bookingHref} className="mk-stay-photo-link">
-                        {stay.imageURLs[0] && <img src={stay.imageURLs[0]} alt={stay.title} loading="lazy" />}
-                        <span className="mk-stay-room-tag">NO. {roomNumber}</span>
-                        <span className="mk-stay-hover-pill">
-                          Kiểm tra lịch trống <FiArrowRight />
-                        </span>
-                      </Link>
-                    ) : (
-                      <a href={CONTACT_LINKS.whatsapp} target="_blank" rel="noreferrer" className="mk-stay-photo-link">
-                        {stay.imageURLs[0] && <img src={stay.imageURLs[0]} alt={stay.title} loading="lazy" />}
-                        <span className="mk-stay-room-tag">NO. {roomNumber}</span>
-                        <span className="mk-stay-hover-pill">
-                          Hỏi phòng qua WhatsApp <FiArrowUpRight />
-                        </span>
-                      </a>
-                    )}
-                  </div>
+                  {canBookOnline ? (
+                    <Link to={bookingHref} className="mk-print mk-plate-photo" aria-label={`Kiểm tra lịch trống ${stay.title}`}>
+                      {photo}
+                      <span className="mk-print-tag">Phòng {roomNumber}</span>
+                    </Link>
+                  ) : (
+                    <a href={whatsappHref} target="_blank" rel="noreferrer" className="mk-print mk-plate-photo" aria-label={`Hỏi phòng ${stay.title} qua WhatsApp`}>
+                      {photo}
+                      <span className="mk-print-tag">Phòng {roomNumber}</span>
+                    </a>
+                  )}
 
-                  <div className="mk-stay-dossier-body">
-                    <div className="mk-stay-dossier-meta">
-                      <span><FiMapPin /> {stay.address}</span>
+                  <div className="mk-plate-body">
+                    <p className="mk-plate-where"><FiMapPin /> {stay.address}</p>
+                    <h3>{stay.title}</h3>
+                    <p className="mk-plate-desc">{stay.description}</p>
+                    <p className="mk-plate-facts">
                       <span><FiUsers /> Tối đa {stay.capacity || 2} khách</span>
                       <span><FiHome /> {stay.bedrooms || 1} phòng ngủ</span>
+                    </p>
+
+                    <div className="mk-plate-price">
+                      <small>Giá tham khảo mỗi đêm</small>
+                      <i aria-hidden="true" />
+                      <strong>{money(stay.basePrice, stay.currency)}</strong>
                     </div>
 
-                    <h3>{stay.title}</h3>
-                    <p>{stay.description}</p>
-
-                    <div className="mk-stay-dossier-footer">
-                      <div className="mk-stay-price-block">
-                        <small>Giá tham khảo mỗi đêm</small>
-                        <strong>{money(stay.basePrice, stay.currency)}</strong>
-                      </div>
-
-                      {canBookOnline ? (
-                        <Link className="mk-button primary" to={bookingHref}>
-                          <span>Xem lịch &amp; giữ phòng</span>
-                          <FiArrowRight />
-                        </Link>
-                      ) : (
-                        <a
-                          className="mk-button primary"
-                          href={`${CONTACT_LINKS.whatsapp}?text=${encodeURIComponent(
-                            `Chào MaokiHouse, mình muốn hỏi phòng ${stay.title} từ ${dates.checkIn} đến ${dates.checkOut} cho ${guestCount} khách.`
-                          )}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <span>Giữ phòng qua WhatsApp</span>
-                          <FiArrowUpRight />
-                        </a>
-                      )}
-                    </div>
+                    {canBookOnline ? (
+                      <Link className="mk-button primary" to={bookingHref}>
+                        <span>Xem lịch &amp; giữ phòng</span>
+                        <FiArrowRight />
+                      </Link>
+                    ) : (
+                      <a className="mk-button primary" href={whatsappHref} target="_blank" rel="noreferrer">
+                        <span>Giữ phòng qua WhatsApp</span>
+                        <FiArrowUpRight />
+                      </a>
+                    )}
                   </div>
                 </motion.article>
               );
@@ -617,14 +592,13 @@ export default function Landing() {
         )}
       </section>
 
-      {/* ───────────── SAIGON COMPANION STORY: INTERACTIVE EDITORIAL TRIPTYCH ───────────── */}
-      <section id="story" className="mk-guest-section mk-story-band">
+      {/* ───────────── STORY: a day walking Saigon with the hosts ───────────── */}
+      <section id="story" className="mk-section mk-story">
+        <Blossom index={1} className="mk-story-blossom" />
         <div className="mk-story-inner">
           <div className="mk-story-copy">
             <h2>Đồng hành cùng người trẻ Sài Gòn suốt 15 năm.</h2>
-            <p className="mk-story-intro">
-              <em>“We love wandering around, talking, sharing things about our lovely Saigon.”</em> — Khởi đầu từ những buổi dẫn khách đi bộ miễn phí qua từng góc phố, tụi mình tạo nên MaokiHouse để mỗi vị khách đều có một người bạn bản địa thực sự.
-            </p>
+            <p className="mk-story-intro"><em>“We love wandering around, talking, sharing things about our lovely Saigon.”</em> — Khởi đầu từ những buổi dẫn khách đi bộ miễn phí qua từng góc phố, tụi mình tạo nên MaokiHouse để mỗi vị khách đều có một người bạn bản địa thực sự.</p>
 
             <div className="mk-story-steps" role="tablist" aria-label="Ba trải nghiệm đặc trưng tại MaokiHouse">
               {saigonMoments.map((moment, index) => {
@@ -639,10 +613,7 @@ export default function Landing() {
                     onClick={() => setActiveMoment(index)}
                     onMouseEnter={() => setActiveMoment(index)}
                   >
-                    <div className="mk-story-step-head">
-                      <span>{moment.time}</span>
-                      <FiCompass />
-                    </div>
+                    <span className="mk-story-time">{moment.time}</span>
                     <h3>{moment.title}</h3>
                     <p>{moment.story}</p>
                   </button>
@@ -655,11 +626,11 @@ export default function Landing() {
             <AnimatePresence mode="wait">
               <motion.figure
                 key={saigonMoments[activeMoment].title}
-                className="mk-story-portrait"
-                initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 1.03 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.5, ease: easeOutExpo }}
+                className="mk-print is-story"
+                initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 14, rotate: 1 }}
+                animate={{ opacity: 1, y: 0, rotate: 0 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                transition={{ duration: 0.55, ease: easeOutExpo }}
               >
                 <img src={saigonMoments[activeMoment].image} alt={saigonMoments[activeMoment].alt} loading="lazy" />
                 <figcaption>
@@ -672,49 +643,39 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ───────────── GUESTBOOK: AUTHENTIC TRAVELER POSTCARDS ───────────── */}
-      <section id="reviews" className="mk-guest-section mk-guestbook-section">
-        <div className="mk-guestbook-header">
+      {/* ───────────── GUESTBOOK: letters left behind ───────────── */}
+      <section id="reviews" className="mk-section mk-guestbook">
+        <div className="mk-section-head">
           <div>
             <h2>Những trang lưu bút để lại sau kỳ nghỉ.</h2>
             <p>Cảm nhận thật từ những vị khách đã chọn MaokiHouse làm nhà tại Sài Gòn.</p>
           </div>
-          <a
-            className="mk-button"
-            href={CONTACT_LINKS.airbnb}
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a className="mk-button" href={CONTACT_LINKS.airbnb} target="_blank" rel="noreferrer">
             Xem hồ sơ trên Airbnb <FiArrowUpRight />
           </a>
         </div>
 
-        <div className="mk-guestbook-grid">
+        <div className="mk-letters">
           {guestNotes.map((note, index) => (
             <motion.article
               key={note.name}
-              className="mk-postcard"
+              className="mk-letter"
               initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: index * 0.07, ease: easeOutExpo }}
             >
-              <div className="mk-postcard-top">
-                <img src={note.avatar} alt={note.name} loading="lazy" />
-                <div>
-                  <h3>{note.name}</h3>
-                  <small>{note.origin}</small>
-                </div>
-                <span className="mk-postcard-stars" aria-label="5 trên 5 sao">
-                  <FiStar /><FiStar /><FiStar /><FiStar /><FiStar />
-                </span>
-              </div>
-
               <blockquote>“{note.quote}”</blockquote>
-
-              <footer className="mk-postcard-foot">
-                <span>{note.room}</span>
-                <time>{note.date}</time>
+              <footer>
+                <img src={note.avatar} alt="" loading="lazy" />
+                <div>
+                  <strong>{note.name}</strong>
+                  <small>{note.origin} · {note.date}</small>
+                </div>
+                <span className="mk-letter-stars" role="img" aria-label="5 trên 5 sao">
+                  <FiStar aria-hidden="true" /><FiStar aria-hidden="true" /><FiStar aria-hidden="true" /><FiStar aria-hidden="true" /><FiStar aria-hidden="true" />
+                </span>
               </footer>
+              <p className="mk-letter-room">{note.room}</p>
             </motion.article>
           ))}
         </div>

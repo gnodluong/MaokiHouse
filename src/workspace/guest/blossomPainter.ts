@@ -35,7 +35,7 @@ function ctx2d(c: HTMLCanvasElement): CanvasRenderingContext2D {
 /* ───────────────────────── vintage paper ───────────────────────── */
 
 /** Aged rag paper: warm vignette, mottling, fibres, foxing and fine grain. */
-export function paintPaper(width: number, height: number, seed = 7): HTMLCanvasElement {
+export function paintPaper(width: number, height: number, seed = 7, tile = false): HTMLCanvasElement {
   const canvas = makeCanvas(width, height);
   const g = ctx2d(canvas);
   const rnd = mulberry32(seed);
@@ -43,25 +43,36 @@ export function paintPaper(width: number, height: number, seed = 7): HTMLCanvasE
   const h = canvas.height;
   const diag = Math.hypot(w, h) / 2;
 
-  const base = g.createRadialGradient(w / 2, h * 0.46, diag * 0.1, w / 2, h / 2, diag);
-  base.addColorStop(0, '#f3e8d0');
-  base.addColorStop(0.55, '#ead9b6');
-  base.addColorStop(1, '#d3b987');
-  g.fillStyle = base;
-  g.fillRect(0, 0, w, h);
+  if (tile) {
+    // A repeating sheet: flat tone, no vignette, so copies join without seams.
+    g.fillStyle = '#f1e6cf';
+    g.fillRect(0, 0, w, h);
+  } else {
+    const base = g.createRadialGradient(w / 2, h * 0.46, diag * 0.1, w / 2, h / 2, diag);
+    base.addColorStop(0, '#f3e8d0');
+    base.addColorStop(0.55, '#ead9b6');
+    base.addColorStop(1, '#d3b987');
+    g.fillStyle = base;
+    g.fillRect(0, 0, w, h);
+  }
+
+  // A repeating tile draws every blob at its wrapped positions so the seams vanish.
+  const offsets: Array<[number, number]> = tile ? [[0, 0], [-w, 0], [w, 0], [0, -h], [0, h], [-w, -h], [w, -h], [-w, h], [w, h]] : [[0, 0]];
 
   // Cloudy mottling from hundreds of huge, near-invisible washes.
   for (let i = 0; i < 90; i++) {
     const x = rnd() * w;
     const y = rnd() * h;
-    const r = (0.08 + rnd() * 0.28) * Math.max(w, h);
+    const r = (tile ? 0.1 + rnd() * 0.2 : 0.08 + rnd() * 0.28) * Math.max(w, h);
     const warm = rnd() > 0.5;
-    const grd = g.createRadialGradient(x, y, 0, x, y, r);
     const tone = warm ? '176, 128, 70' : '255, 250, 235';
-    grd.addColorStop(0, `rgba(${tone}, ${warm ? 0.05 : 0.07})`);
-    grd.addColorStop(1, `rgba(${tone}, 0)`);
-    g.fillStyle = grd;
-    g.fillRect(x - r, y - r, r * 2, r * 2);
+    for (const [ox, oy] of offsets) {
+      const grd = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
+      grd.addColorStop(0, `rgba(${tone}, ${warm ? 0.05 : 0.07})`);
+      grd.addColorStop(1, `rgba(${tone}, 0)`);
+      g.fillStyle = grd;
+      g.fillRect(x + ox - r, y + oy - r, r * 2, r * 2);
+    }
   }
 
   // Foxing: small oxidised rust blotches.
@@ -70,15 +81,17 @@ export function paintPaper(width: number, height: number, seed = 7): HTMLCanvasE
     const x = rnd() * w;
     const y = rnd() * h;
     const r = 3 + Math.pow(rnd(), 2.4) * 34;
-    const grd = g.createRadialGradient(x, y, 0, x, y, r);
     const a = 0.05 + rnd() * 0.12;
-    grd.addColorStop(0, `rgba(139, 92, 46, ${a})`);
-    grd.addColorStop(0.6, `rgba(150, 104, 56, ${a * 0.5})`);
-    grd.addColorStop(1, 'rgba(150, 104, 56, 0)');
-    g.fillStyle = grd;
-    g.beginPath();
-    g.arc(x, y, r, 0, TAU);
-    g.fill();
+    for (const [ox, oy] of offsets) {
+      const grd = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
+      grd.addColorStop(0, `rgba(139, 92, 46, ${a})`);
+      grd.addColorStop(0.6, `rgba(150, 104, 56, ${a * 0.5})`);
+      grd.addColorStop(1, 'rgba(150, 104, 56, 0)');
+      g.fillStyle = grd;
+      g.beginPath();
+      g.arc(x + ox, y + oy, r, 0, TAU);
+      g.fill();
+    }
   }
 
   // Rag fibres: short hairlines, light and dark.
@@ -99,14 +112,14 @@ export function paintPaper(width: number, height: number, seed = 7): HTMLCanvasE
   }
 
   // Edge burn: soft darkening where the sheet meets the table.
-  const edge = Math.min(w, h) * 0.07;
+  const edge = tile ? 0 : Math.min(w, h) * 0.07;
   const sides: Array<[number, number, number, number, number, number, number, number]> = [
     [0, 0, edge, 0, 0, 0, edge, h],
     [w, 0, w - edge, 0, w - edge, 0, edge, h],
     [0, 0, 0, edge, 0, 0, w, edge],
     [0, h, 0, h - edge, 0, h - edge, w, edge],
   ];
-  for (const [x0, y0, x1, y1, rx, ry, rw, rh] of sides) {
+  for (const [x0, y0, x1, y1, rx, ry, rw, rh] of tile ? [] : sides) {
     const grd = g.createLinearGradient(x0, y0, x1, y1);
     grd.addColorStop(0, 'rgba(120, 82, 40, 0.22)');
     grd.addColorStop(1, 'rgba(120, 82, 40, 0)');
@@ -446,4 +459,33 @@ export function drawBloom(
     }
   }
   g.restore();
+}
+
+/* ───────────────────────── static art for the page ───────────────────────── */
+
+/** One full-bloom flower on a transparent canvas, ready to sit on the page with mix-blend-mode: multiply. */
+export function paintFlower(petalLength: number, seed: number): HTMLCanvasElement {
+  const rnd = mulberry32(seed * 53 + 9);
+  const reach = Math.ceil(petalLength * 1.12);
+  const canvas = makeCanvas(reach * 2, reach * 2);
+  const g = ctx2d(canvas);
+  g.globalCompositeOperation = 'multiply';
+  const turn = rnd() * TAU;
+  for (let k = 0; k < 5; k++) {
+    const petal = paintPetal(petalLength, Math.floor(rnd() * PALETTES.length), seed * 7 + k);
+    g.save();
+    g.translate(reach, reach);
+    g.rotate(turn + k * (TAU / 5) + (rnd() - 0.5) * 0.18);
+    g.drawImage(petal.canvas, -petal.pivotX, -petal.pivotY);
+    g.restore();
+  }
+  const heart = paintHeart(petalLength * 0.7, seed);
+  const hs = petalLength * 0.62;
+  g.drawImage(heart.canvas, reach - hs / 2 * 1.4, reach - hs / 2 * 1.4, hs * 1.4, hs * 1.4);
+  return canvas;
+}
+
+/** A single drifting petal (transparent). */
+export function paintLoosePetal(length: number, seed: number): HTMLCanvasElement {
+  return paintPetal(length, seed, 300 + seed).canvas;
 }
