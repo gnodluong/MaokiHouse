@@ -1,16 +1,17 @@
 import Brand from './Brand';
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { FiArrowRight, FiGrid, FiArrowLeft } from 'react-icons/fi';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { FiArrowRight, FiGrid, FiArrowLeft, FiShield, FiCheck, FiInfo, FiLock } from 'react-icons/fi';
 import { requireSupabase, databaseError } from '../lib/supabase/client';
 import { useSession } from './Session';
 import { Button } from './ui';
 import { errorMessage } from './utils';
 import './workspace.css';
+import './zones.css';
 
 export default function Login() {
   const navigate = useNavigate(); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
-  const { demoAvailable, startDemo, selectPrimary } = useSession(); const [params] = useSearchParams(); const invite = params.get('invite');
+  const { user, loading, demoAvailable, startDemo, selectPrimary } = useSession(); const [params] = useSearchParams(); const invite = params.get('invite');
   const [register, setRegister] = useState(false); const [notice, setNotice] = useState('');
   const login = async (demo = false) => {
     setBusy(true); setError('');
@@ -35,5 +36,39 @@ export default function Login() {
       setError(message.includes('auth/invalid') || message.includes('auth/user-not-found') || message.includes('auth/wrong-password') || message.toLowerCase().includes('invalid login credentials') ? 'Email hoặc mật khẩu chưa đúng. Vui lòng kiểm tra lại.' : message);
     } finally { setBusy(false); }
   };
-  return <div className="maoki-ui mk-login"><section className="mk-login-story"><Brand tagline="" /><div><h1>Vận hành nhẹ hơn.<br />Kết nối gần hơn.</h1><p>Từ mỗi căn phòng đến từng lời nhắn. Một không gian để đội ngũ của bạn chăm chút những kỳ nghỉ đáng nhớ.</p></div><small>MaokiHouse · Chăm chút từng kỳ nghỉ</small></section><section className="mk-login-form-wrap"><div className="mk-login-form"><Link to="/" className="mk-text-button"><FiArrowLeft />Về website</Link><h2>Chào mừng trở lại.</h2><p>Đăng nhập để bắt đầu một ngày đón khách thật tốt.</p>{notice && <div className="mk-alert" role="status">{notice}</div>}{invite && <div className="mk-alert">Đăng nhập bằng email được mời để tham gia không gian.</div>}{error && <div className="mk-alert error" role="alert">{error}</div>}<form onSubmit={event => { event.preventDefault(); void login(); }}><label className="mk-field" htmlFor="login-email">Email<input id="login-email" type="email" required autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} placeholder="ban@maokihouse.vn" /></label><label className="mk-field" htmlFor="login-password">Mật khẩu<input id="login-password" type="password" required minLength={register ? 8 : undefined} autoComplete={register ? 'new-password' : 'current-password'} value={password} onChange={event => setPassword(event.target.value)} placeholder="Nhập mật khẩu của bạn" /></label><Button kind="primary" type="submit" busy={busy}>{register ? 'Tạo tài khoản' : 'Đăng nhập'}<FiArrowRight /></Button></form><button className="mk-text-button" disabled={busy} onClick={() => { setRegister(value => !value); setError(''); setNotice(''); }}>{register ? 'Đã có tài khoản? Đăng nhập' : 'Tạo tài khoản quản lý'}</button>{demoAvailable && <><div className="mk-login-divider">hoặc khám phá trước</div><Button busy={busy} onClick={() => void login(true)}><FiGrid />Mở không gian demo</Button><small className="mk-login-demo-note">Dữ liệu mẫu được lưu trong môi trường thử nghiệm riêng. Không kết nối tài khoản hoặc gửi tin nhắn bên ngoài.</small></>}<Link className="mk-subtle-link mk-setup-link" to="/setup">Lần đầu sử dụng? Thiết lập Supabase và AI</Link></div></section></div>;
+  // Staff who are already signed in go straight to the admin console.
+  if (!loading && user && !invite && !busy) return <Navigate to="/admin/dashboard" replace />;
+  return <div className="maoki-ui mk-zone-admin mk-admin-login">
+    <section className="mk-admin-login-story">
+      <div className="mk-admin-login-top"><Brand to="/admin" tagline="" /><span className="mk-admin-badge"><FiShield />Khu vực quản trị</span></div>
+      <div>
+        <span className="mk-admin-eyebrow">MAOKIHOUSE ADMIN CONSOLE</span>
+        <h1>Bảng điều hành<br />dành cho đội ngũ.</h1>
+        <p>Quản lý phòng, đặt phòng, hộp thư khách, công việc và doanh thu. Chỉ chủ nhà và nhân viên được mời mới có quyền truy cập.</p>
+        <ul className="mk-admin-login-points">
+          <li><FiCheck />Phân quyền theo vai trò: chủ không gian, quản lý, nhân viên, chỉ xem</li>
+          <li><FiCheck />Mọi thay đổi được ghi lại trong nhật ký hoạt động</li>
+          <li><FiCheck />Dữ liệu khách được bảo vệ bằng phân quyền phía máy chủ</li>
+        </ul>
+      </div>
+      <small>MaokiHouse · Hệ thống nội bộ</small>
+    </section>
+    <section className="mk-login-form-wrap">
+      <div className="mk-login-form">
+        <div className="mk-admin-guest-notice" role="note"><FiInfo /><div><strong>Bạn là khách muốn đặt phòng?</strong><span>Bạn không cần tài khoản. <Link to="/#stays">Xem phòng và đặt ngay</Link></span></div></div>
+        <span className="mk-admin-eyebrow">{register ? 'TẠO TÀI KHOẢN QUẢN TRỊ' : 'ĐĂNG NHẬP QUẢN TRỊ'}</span>
+        <h2>{register ? 'Tạo tài khoản quản lý' : 'Đăng nhập nhân viên'}</h2>
+        <p>{register ? 'Dùng email công việc. Nếu được mời, hãy dùng đúng email nhận lời mời.' : 'Dùng email và mật khẩu được cấp cho đội ngũ MaokiHouse.'}</p>
+        {notice && <div className="mk-alert" role="status">{notice}</div>}{invite && <div className="mk-alert">Đăng nhập bằng email được mời để tham gia không gian.</div>}{error && <div className="mk-alert error" role="alert">{error}</div>}
+        <form onSubmit={event => { event.preventDefault(); void login(); }}>
+          <label className="mk-field" htmlFor="login-email">Email công việc<input id="login-email" type="email" required autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} placeholder="ten@maokihouse.vn" /></label>
+          <label className="mk-field" htmlFor="login-password">Mật khẩu<input id="login-password" type="password" required minLength={register ? 8 : undefined} autoComplete={register ? 'new-password' : 'current-password'} value={password} onChange={event => setPassword(event.target.value)} placeholder="Nhập mật khẩu của bạn" /></label>
+          <Button kind="primary" type="submit" busy={busy}><FiLock />{register ? 'Tạo tài khoản quản trị' : 'Vào trang quản trị'}<FiArrowRight /></Button>
+        </form>
+        <button className="mk-text-button" disabled={busy} onClick={() => { setRegister(value => !value); setError(''); setNotice(''); }}>{register ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Tạo tài khoản quản lý'}</button>
+        {demoAvailable && <><div className="mk-login-divider">hoặc khám phá trước</div><Button busy={busy} onClick={() => void login(true)}><FiGrid />Mở trang quản trị demo</Button><small className="mk-login-demo-note">Dữ liệu mẫu được lưu trong môi trường thử nghiệm riêng. Không kết nối tài khoản hoặc gửi tin nhắn bên ngoài.</small></>}
+        <div className="mk-admin-login-footer"><Link to="/" className="mk-text-button"><FiArrowLeft />Về website khách</Link><Link className="mk-subtle-link" to="/setup">Thiết lập Supabase &amp; AI</Link></div>
+      </div>
+    </section>
+  </div>;
 }

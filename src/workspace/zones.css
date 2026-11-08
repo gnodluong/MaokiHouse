@@ -1,0 +1,135 @@
+/*
+ * Two visually distinct zones:
+ *   .mk-zone-guest  – khách thuê phòng: warm cream, editorial, no management UI.
+ *   .mk-zone-admin  – chủ nhà & đội ngũ: espresso sidebar/console, explicit "Quản trị" markers.
+ */
+
+/* ─────────────────────────── GUEST ZONE ─────────────────────────── */
+.mk-zone-guest { min-height: 100dvh; display: flex; flex-direction: column; background: var(--mk-bg); }
+.mk-guest-header { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--mk-bg) 92%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--mk-line); }
+.mk-guest-header-inner { max-width: 1360px; margin: 0 auto; padding: 0 36px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.mk-guest-header .mk-brand { padding: 14px 0; }
+.mk-guest-header .mk-brand small { display: none; }
+.mk-guest-header .mk-brand-wordmark { width: 140px; }
+.mk-guest-nav { display: flex; align-items: center; gap: 30px; font-size: 14px; font-weight: 500; }
+.mk-guest-nav > a:not(.mk-button):hover { color: var(--mk-accent); }
+.mk-guest-menu { display: none; }
+.mk-guest-main { flex: 1; outline: none; }
+.mk-guest-main section[id] { scroll-margin-top: 90px; }
+.mk-guest-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.mk-site-stays .mk-property-body .mk-button { width: 100%; }
+
+.mk-guest-perks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.mk-guest-perks article { background: var(--mk-surface); border: 1px solid var(--mk-line); border-radius: 16px; padding: 26px; }
+.mk-guest-perks h3 { margin: 18px 0 8px; }
+.mk-guest-perks p { color: var(--mk-muted); font-size: 14px; line-height: 1.8; }
+.mk-guest-perk-icon { display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; background: var(--mk-tint); color: var(--mk-accent); }
+
+.mk-guest-page { padding-top: 26px; padding-bottom: 40px; min-height: auto; }
+.mk-guest-back { margin-bottom: 18px; }
+
+.mk-guest-footer { background: var(--color-primary-dark); color: #f3e3d3; margin-top: 30px; }
+.mk-guest-footer-inner { max-width: 1360px; margin: 0 auto; padding: 50px 36px 30px; display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 40px; }
+.maoki-ui .mk-guest-footer h2 { color: #fff; font-size: 15px; margin-bottom: 16px; }
+.mk-guest-footer-brand .mk-brand { padding: 0; }
+.mk-guest-footer-brand .mk-brand small { display: none; }
+.mk-guest-footer-brand .mk-brand-wordmark { background: transparent; padding: 0; width: 150px; }
+.mk-guest-footer-brand p { margin-top: 18px; max-width: 360px; line-height: 1.9; color: #e8d5b0; }
+.mk-guest-contact { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.mk-guest-contact a { display: inline-flex; align-items: center; gap: 10px; color: #f3e3d3; }
+.mk-guest-contact a:hover { color: #fff; text-decoration: underline; }
+.mk-guest-footer-bottom { max-width: 1360px; margin: 0 auto; padding: 18px 36px 24px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid #ffffff22; font-size: 12px; color: #d9c2a8; }
+.mk-guest-staff-link { display: inline-flex; align-items: center; gap: 6px; color: #d9c2a8; opacity: .85; }
+.mk-guest-staff-link:hover { opacity: 1; color: #fff; }
+.mk-guest-staff-link svg { font-size: 13px; }
+
+@media (max-width: 1000px) { .mk-guest-perks { grid-template-columns: repeat(2, minmax(0, 1fr)); } .mk-guest-footer-inner { grid-template-columns: 1fr 1fr; } .mk-guest-footer-brand { grid-column: 1 / -1; } }
+@media (max-width: 760px) {
+  .mk-guest-header-inner { padding: 0 20px; }
+  .mk-guest-menu { display: inline-flex; }
+  .mk-guest-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 4px; padding: 12px 20px 20px; background: var(--mk-surface); border-bottom: 1px solid var(--mk-line); box-shadow: 0 12px 30px #2b18101a; }
+  .mk-guest-nav.is-open { display: flex; }
+  .mk-guest-nav > a:not(.mk-button) { padding: 12px 4px; border-bottom: 1px solid var(--mk-line); }
+  .mk-guest-nav .mk-button { margin-top: 10px; }
+  .mk-guest-perks { grid-template-columns: 1fr; }
+  .mk-guest-footer-inner { grid-template-columns: 1fr; padding: 40px 22px 24px; gap: 28px; }
+  .mk-guest-footer-bottom { padding: 18px 22px 24px; flex-direction: column; }
+}
+
+/* ─────────────────────────── ADMIN ZONE ─────────────────────────── */
+.mk-zone-admin { --mk-admin-ink: #1f1410; --mk-admin-panel: #2b1c17; --mk-admin-line: #4a342b; --mk-admin-text: #f3e3d3; --mk-admin-muted: #c7ab96; --mk-admin-gold: #d9b26f; }
+
+.mk-admin-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: var(--mk-admin-gold); color: var(--mk-admin-ink); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.mk-admin-badge svg { font-size: 13px; }
+.mk-admin-badge.small { padding: 3px 8px; font-size: 10px; }
+.mk-admin-eyebrow { display: block; font-size: 11px; letter-spacing: .18em; font-weight: 700; color: var(--mk-accent); margin-bottom: 10px; }
+
+/* Sidebar becomes a dark console rail so admin never looks like the guest site. */
+.mk-zone-admin .mk-sidebar { background: var(--mk-admin-ink); border-right-color: var(--mk-admin-line); color: var(--mk-admin-text); }
+.mk-admin-sidebar-brand { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-right: 16px; }
+.mk-admin-sidebar-brand .mk-brand { padding: 22px 0 18px 20px; }
+.mk-admin-sidebar-brand .mk-brand-wordmark { width: 130px; background: transparent; padding: 0; }
+.mk-zone-admin .mk-workspace-label { border-color: var(--mk-admin-line); background: var(--mk-admin-panel); }
+.mk-zone-admin .mk-workspace-label strong { color: #fff; }
+.mk-zone-admin .mk-workspace-label small { color: var(--mk-admin-muted); }
+.mk-zone-admin .mk-workspace-label select { margin-top: 6px; min-height: 34px; padding: 4px 8px; background: var(--mk-admin-ink); color: var(--mk-admin-text); border-color: var(--mk-admin-line); }
+.mk-zone-admin .mk-business-avatar { background: var(--mk-admin-gold); color: var(--mk-admin-ink); }
+.mk-zone-admin .mk-nav-heading { color: #a88b77; }
+.mk-zone-admin .mk-nav-link { color: var(--mk-admin-muted) !important; }
+.mk-zone-admin .mk-nav-link:hover { background: var(--mk-admin-panel); color: #fff !important; }
+.mk-zone-admin .mk-nav-link.active { background: #3d2820; color: #fff !important; }
+.mk-zone-admin .mk-nav-link.active::before { background: var(--mk-admin-gold); }
+.mk-zone-admin .mk-unread-count { background: var(--mk-admin-gold); color: var(--mk-admin-ink); }
+.mk-zone-admin .mk-sidebar nav { scrollbar-color: var(--mk-admin-line) transparent; }
+.mk-zone-admin .mk-sidebar-footer { border-top-color: var(--mk-admin-line); }
+.mk-zone-admin .mk-sidebar-footer > a { color: var(--mk-admin-muted); }
+.mk-zone-admin .mk-sidebar-footer > a:hover { color: #fff; }
+.mk-zone-admin .mk-sidebar-person strong { color: #fff; }
+.mk-zone-admin .mk-sidebar-person small { color: var(--mk-admin-muted); }
+.mk-zone-admin .mk-sidebar .mk-icon-button { color: var(--mk-admin-muted); }
+.mk-zone-admin .mk-sidebar .mk-icon-button:hover { background: var(--mk-admin-panel); color: #fff; }
+.mk-zone-admin .mk-sidebar :focus-visible { outline-color: var(--mk-admin-gold); }
+
+.mk-zone-admin .mk-topbar { border-top: 3px solid var(--mk-admin-gold); }
+.mk-admin-zone-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: var(--mk-tint); color: var(--mk-accent); font-weight: 650; }
+.mk-admin-zone-pill svg { font-size: 12px; }
+.mk-admin-role { white-space: nowrap; font-size: 12px; font-weight: 650; padding: 5px 10px; border-radius: 6px; background: var(--mk-admin-ink); color: var(--mk-admin-gold); }
+
+/* Admin login: dark console story + plain form, unmistakably different from the guest site. */
+.mk-admin-login { min-height: 100dvh; display: grid; grid-template-columns: 1fr 1fr; }
+.mk-admin-login-story { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 34px 6vw 48px; background: radial-gradient(circle at 85% 110%, #5c2f20 0, transparent 55%), var(--mk-admin-ink); color: var(--mk-admin-text); }
+.mk-admin-login-story::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(#ffffff08 1px, transparent 1px), linear-gradient(90deg, #ffffff08 1px, transparent 1px); background-size: 34px 34px; pointer-events: none; }
+.mk-admin-login-story > * { position: relative; z-index: 1; }
+.mk-admin-login-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.mk-admin-login-top .mk-brand { padding: 0; }
+.mk-admin-login-top .mk-brand-wordmark { background: transparent; padding: 0; width: 150px; }
+.mk-admin-login-story .mk-admin-eyebrow { color: var(--mk-admin-gold); margin-top: 60px; }
+.maoki-ui .mk-admin-login-story h1 { color: #fff; font-size: clamp(32px, 3.6vw, 52px); font-weight: 600; line-height: 1.2; letter-spacing: -.04em; }
+.mk-admin-login-story p { color: var(--mk-admin-muted); margin: 22px 0 26px; max-width: 420px; line-height: 1.9; }
+.mk-admin-login-points { list-style: none; margin: 0 0 40px; padding: 0; display: grid; gap: 12px; }
+.mk-admin-login-points li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--mk-admin-text); }
+.mk-admin-login-points svg { color: var(--mk-admin-gold); font-size: 16px; margin-top: 2px; }
+.mk-admin-login-story > small { font-size: 12px; color: var(--mk-admin-muted); }
+.mk-admin-login .mk-login-form-wrap { display: flex; justify-content: center; align-items: center; padding: 50px 30px; background: var(--mk-surface); }
+.mk-admin-login .mk-login-form > h2 { font-size: 26px; margin: 4px 0 10px; }
+.mk-admin-guest-notice { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; margin-bottom: 30px; border-radius: 12px; background: var(--mk-tint); font-size: 13px; }
+.mk-admin-guest-notice svg { color: var(--mk-accent); margin-top: 2px; }
+.mk-admin-guest-notice strong { display: block; }
+.mk-admin-guest-notice span { color: var(--mk-muted); }
+.mk-admin-guest-notice a { color: var(--mk-accent); font-weight: 650; text-decoration: underline; }
+.mk-admin-login-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--mk-line); }
+.mk-admin-login-footer .mk-setup-link { margin-top: 0; }
+
+@media (max-width: 1300px) { .mk-admin-role { display: none; } }
+@media (max-width: 650px) {
+  .mk-admin-login { grid-template-columns: 1fr; }
+  .mk-admin-login-story { padding: 22px; }
+  .mk-admin-login-story .mk-admin-eyebrow { margin-top: 28px; }
+  .maoki-ui .mk-admin-login-story h1 { font-size: 28px; }
+  .mk-admin-login-story p, .mk-admin-login-points, .mk-admin-login-story > small { display: none; }
+  .mk-admin-login .mk-login-form-wrap { padding: 28px 20px 40px; }
+}
+@media (prefers-color-scheme: dark) {
+  .mk-zone-admin { --mk-admin-ink: #120b09; --mk-admin-panel: #241713; }
+  .mk-zone-admin .mk-topbar { border-top-color: var(--mk-admin-gold); }
+}
