@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { FiMenu, FiX, FiPhone, FiMail, FiFacebook, FiArrowRight, FiArrowUpRight, FiLock } from 'react-icons/fi';
 import Brand from '../Brand';
+import BlossomIntro from './BlossomIntro';
 import { CONTACT_LINKS } from '../../constants/contact';
 import '../workspace.css';
 import '../zones.css';
@@ -40,6 +41,7 @@ export default function GuestLayout() {
 
   return (
     <div className="maoki-ui mk-zone-guest">
+      <BlossomIntro />
       <a className="mk-skip" href="#guest-main">Đến nội dung chính</a>
 
       <header className={`mk-guest-header ${scrolled ? 'is-scrolled' : ''}`}>
