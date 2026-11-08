@@ -118,7 +118,9 @@
 .mk-guest-brand-cluster { display: flex; align-items: center; gap: 16px; }
 .mk-guest-header .mk-brand { padding: 4px 0; }
 .mk-guest-header .mk-brand small { display: none; }
-.mk-guest-header .mk-brand-wordmark { width: 128px; border-radius: 5px; transition: transform 0.3s var(--ease); }
+.mk-guest-header .mk-brand-wordmark { width: 132px; padding: 0; background: transparent; transition: transform 0.3s var(--ease); }
+/* The logo is cream-on-transparent: on paper it is inked espresso, no box behind it. */
+.mk-guest-header .mk-brand-wordmark img { filter: brightness(0) invert(9%) sepia(55%) saturate(900%) hue-rotate(345deg) brightness(0.95); }
 .mk-guest-header .mk-brand:hover .mk-brand-wordmark { transform: rotate(-1.5deg); }
 .mk-guest-city-stamp {
   font-family: var(--font-display);
@@ -429,7 +431,7 @@
 .mk-guest-footer-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .mk-guest-footer .mk-brand { padding: 0; }
 .mk-guest-footer .mk-brand small { display: none; }
-.mk-guest-footer .mk-brand-wordmark { width: 150px; border-radius: 5px; }
+.mk-guest-footer .mk-brand-wordmark { width: 160px; padding: 0; background: transparent; }
 .mk-guest-footer-note { font-family: var(--font-display); font-style: italic; font-size: 1.35rem; color: var(--sakura-wash); margin: 4px 0 0; }
 .mk-guest-footer-brand > p:not(.mk-guest-footer-note) { margin: 0; max-width: 42ch; line-height: 1.7; color: #d6c4a3; }
 .maoki-ui .mk-guest-footer h2 { font-size: 1.15rem; color: #faf0da; margin: 0 0 16px; }
