@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ChannelConnectionModel } from '../models/ChannelConnection';
+import { ChannelConnectionModel, channelConnectionId } from '../models/ChannelConnection';
 import type { ChannelPlatform } from '../models/ChannelConnection';
 import { MockChannelAdapter } from '../adapters/MockChannelAdapter';
 
@@ -34,7 +34,7 @@ export const connectChannel = async (req: Request, res: Response, next: NextFunc
     const platform = req.params.platform as ChannelPlatform;
     if (!PLATFORMS.includes(platform)) return res.status(400).json({ error: 'Unknown platform' });
     await adapterFor(platform).connect(hostId);
-    const updated = await ChannelConnectionModel.get(hostId, platform);
+    const updated = await ChannelConnectionModel.get(hostId, channelConnectionId(hostId, platform));
     res.json(updated);
   } catch (error) {
     next(error);
@@ -47,7 +47,7 @@ export const disconnectChannel = async (req: Request, res: Response, next: NextF
     const platform = req.params.platform as ChannelPlatform;
     if (!PLATFORMS.includes(platform)) return res.status(400).json({ error: 'Unknown platform' });
     await adapterFor(platform).disconnect(hostId);
-    const updated = await ChannelConnectionModel.get(hostId, platform);
+    const updated = await ChannelConnectionModel.get(hostId, channelConnectionId(hostId, platform));
     res.json(updated);
   } catch (error) {
     next(error);

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import publicConfig from '../../shared/supabase-public.json';
-import { CalendarInputError, calendarPlatforms, calendarURL, exportCalendar, fetchCalendar } from './calendars';
+import { CalendarInputError, calendarPlatforms, calendarURL, exportCalendar, fetchCalendar, publicFetch } from './calendars';
 import type { CalendarEvent } from './calendars';
 
 const inputSchema = z.discriminatedUnion('action', [
@@ -10,7 +10,9 @@ const inputSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('disconnect'), id: z.string().uuid() }).strict(),
 ]);
 const json = (status: number, body: object) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
-export async function handleChannels(request: Request, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch): Promise<Response> {
+// `transport` reaches Supabase only. Remote calendars always go through `calendarTransport`,
+// which defaults to the DNS-guarded publicFetch so user-supplied hosts cannot reach private addresses.
+export async function handleChannels(request: Request, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch, calendarTransport: typeof fetch = publicFetch): Promise<Response> {
   if (!['GET', 'POST'].includes(request.method)) return json(405, { error: 'Phương thức không được hỗ trợ.' });
   const feed = new URL(request.url).searchParams.get('feed');
   const token = request.headers.get('authorization')?.match(/^Bearer (\S+)$/)?.[1];
@@ -23,7 +25,7 @@ export async function handleChannels(request: Request, env: NodeJS.ProcessEnv = 
   };
   const sync = async (id: string) => {
     const claim = await rpc<{ nonce: string; url: string; platform: string }>('claim', id);
-    try { const events = await fetchCalendar(claim.url, claim.platform, transport); return await rpc<{ synced: boolean; blockCount: number; conflictCount: number }>('finish', id, { nonce: claim.nonce, events }); }
+    try { const events = await fetchCalendar(claim.url, claim.platform, calendarTransport); return await rpc<{ synced: boolean; blockCount: number; conflictCount: number }>('finish', id, { nonce: claim.nonce, events }); }
     catch (error) { try { await rpc('fail', id, { nonce: claim.nonce, reason: error instanceof CalendarInputError ? error.message : '' }); } catch { /* Keep previous blocks even if the lease expired. */ } throw error; }
   };
   try {

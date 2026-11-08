@@ -21,7 +21,7 @@ Lần đầu sử dụng, mở **`/setup`** trên website: trang này có SQL s�
 
 | Nhóm | Chức năng |
 | --- | --- |
-| Kết nối lịch | Thêm từng phòng Airbnb/Booking.com bằng iCal, nhập ngày bận thủ công, xuất lịch Maoki, kiểm tra trùng và gỡ kết nối |
+| Kết nối lịch | Trình hướng dẫn 3 bước cho Airbnb, Booking.com, Agoda, Vrbo, Expedia, Traveloka, Trip.com, Google Calendar và mọi lịch iCal (.ics); xuất lịch Maoki cho từng phòng; đồng bộ tất cả và tự đồng bộ khi mở trang quản trị nếu lịch đã quá 1 giờ |
 | Lưu trú | Phòng/căn hộ, lịch 7/14 ngày, đặt phòng và chống trùng lịch, giá theo ngày, đóng ngày bán, số đêm tối thiểu |
 | Vận hành | Công việc, phân công, hoàn tất công việc, sổ tay khách qua liên kết riêng |
 | Khách hàng | Hồ sơ, thẻ, ghi chú, lịch sử đặt phòng, tìm kiếm và CSV |
@@ -30,8 +30,8 @@ Lần đầu sử dụng, mở **`/setup`** trên website: trang này có SQL s�
 | Kinh doanh | Thu/chi, báo cáo dòng tiền/công suất, đối soát chủ sở hữu, thống kê hội thoại theo kênh |
 | Đội ngũ | Chủ không gian, quản lý, nhân viên, chỉ xem; mời đúng email đã xác minh; thu hồi; chuyển không gian |
 | Công khai | Danh sách phòng đã xuất bản, báo giá từ máy chủ, yêu cầu đặt phòng, sổ tay, widget chat |
-| AI | Trợ lý Gemini với tài khoản Supabase, soạn phản hồi từ hộp thư, viết nội dung social, số liệu vận hành tùy chọn, sao chép và dừng yêu cầu |
-| Giao diện | Desktop/điện thoại, sáng/tối, giảm chuyển động, bàn phím, bẫy focus hộp thoại, kiểm tra tương phản |
+| AI | Trợ lý qua OpenRouter (mặc định `nvidia/nemotron-3.5-super-vl:free`), dán API key ngay trong trang Trợ lý AI → Cài đặt AI; soạn phản hồi từ hộp thư, viết nội dung social, số liệu vận hành tùy chọn |
+| Giao diện | Admin có giao diện Sáng/Tối (nút trên thanh trên cùng và trong Cài đặt), hướng dẫn nhanh trên mỗi trang, danh sách “Bắt đầu” ở Tổng quan; website khách vẽ màu nước hoa anh đào trên giấy cổ |
 
 Airbnb/Booking.com đã có nhập/xuất lịch iCal; cần bấm Đồng bộ để nhập lịch mới và phía OTA lấy lịch theo chu kỳ riêng. Giá, chi tiết đặt phòng, tin nhắn OTA và các kênh Agoda/Facebook/Instagram/Zalo/email vẫn cần API nhà cung cấp. Xem [hướng dẫn kết nối từng kênh](docs/CHANNELS.md). Hội thoại ngoài Website lưu phản hồi nội bộ; màn hình ghi rõ trạng thái. Chiến dịch lưu bản nháp/lịch dự kiến, chưa có bộ gửi. Trợ lý AI cần `GEMINI_API_KEY` trên máy chủ Vercel và Redeploy; không đưa key vào `VITE_*`. Thanh toán và tải ảnh lên storage chưa được kết nối. Ảnh phòng hiện nhập bằng URL HTTPS/đường dẫn tài nguyên; danh bạ nhân viên vận hành tách khỏi quyền đăng nhập.
 
@@ -69,6 +69,12 @@ Bộ cài/khởi động demo đã chuẩn bị tại `/workspace/.maokihouse`. 
 [Skill thiết kế do người dùng gửi](docs/apple-design-skill.md) được giữ để tham khảo. Các file HIG `references/` đi kèm không có trong bản tải lên; giao diện áp dụng các nguyên tắc trong tài liệu và được kiểm tra trực tiếp, không đưa ra trích dẫn HIG chưa đọc.
 
 Đối chiếu với các nền tảng thương mại và QloApps/Chatwoot: [PRODUCT_COMPARISON.md](docs/PRODUCT_COMPARISON.md). Xem [thông báo nguồn/giấy phép](docs/THIRD_PARTY_NOTICES.md) cho các file upstream được giữ trong repository.
+
+## Trợ lý AI qua OpenRouter
+
+Chủ không gian hoặc quản lý mở **Trợ lý AI → Cài đặt AI**, dán API key OpenRouter (`sk-or-…`) và bấm **Lưu và kiểm tra**. Key lưu trong bảng riêng của Supabase (`maoki_private.ai_settings`), không nằm trong snapshot và chỉ hiển thị 4 ký tự cuối. Nhân viên chỉ dùng được AI khi chủ bật “Cho phép nhân viên”. Mọi lượt gọi bị giới hạn 12 lần/phút/không gian trong database. Nếu đặt `OPENROUTER_API_KEY` trên Vercel, key đó được ưu tiên và chỉ dùng model `OPENROUTER_MODEL` (hoặc model mặc định). Website đã có dữ liệu cần chạy SQL **Cập nhật** tại `/setup?mode=upgrade` một lần (migration `20261108120000_maoki_calendars_ai.sql`). Gemini (`GEMINI_API_KEY`) vẫn được hỗ trợ như phương án cũ.
+
+Kết quả kiểm tra bảo mật: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
 
 ## Trợ lý AI và nhận diện Maoki
 

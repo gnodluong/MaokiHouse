@@ -73,8 +73,10 @@ try {
  ok(aiStatus.configured && aiStatus.keyHint==='wxyz' && !JSON.stringify(aiStatus).includes('aaaa') && aiStatus.model==='nvidia/nemotron-3.5-super-vl:free','status shows only the last 4 key characters and the default model');
  ok(!JSON.stringify(await rpc('snapshot')).includes('sk-or-'),'workspace snapshot never contains the AI key');
  ok((await ai('secret')).apiKey.endsWith('wxyz'),'owner can resolve the key for the server function');
+ ok((await ai('use')).ok===true && !JSON.stringify(await ai('use')).includes('sk-or-'),'use op charges budget without returning the key');
  await login(agent,'agent@example.test'); await denied(()=>ai('save',{model:'x/y'}),'agent cannot change AI settings');
  await denied(()=>ai('secret'),'agent cannot read the key until the owner allows staff AI');
+ await denied(()=>ai('use'),'agent cannot spend server-paid AI until the owner allows staff AI');
  await login(a); await ai('save',{allowAgents:true}); ok((await ai('status')).keyHint==='wxyz','saving other fields keeps the stored key');
  await login(agent,'agent@example.test'); ok((await ai('secret')).apiKey.length>20,'allowed agent can use workspace AI');
  await login(b,'other@example.test'); ok((await ai('status')).configured===false,'AI key is isolated per workspace');

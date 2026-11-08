@@ -60,9 +60,15 @@ export function createHostScopedModel<T extends { id: string; hostId: string }>(
       await collection().doc(id).delete();
     },
 
-    // For collections keyed by a fixed id (e.g. ChannelConnection per platform).
+    // For collections keyed by a fixed id (e.g. ChannelConnection per platform). Callers must pass an id
+    // that is unique per host; the ownership check below stops one host from overwriting another's document.
     async upsert(hostId: string, id: string, data: Omit<T, 'id'>): Promise<T> {
-      await collection().doc(id).set(stripUndefined({ ...data, hostId } as Record<string, unknown>), { merge: true });
+      const ref = collection().doc(id);
+      const existing = await ref.get();
+      if (existing.exists && existing.data()?.hostId !== hostId) {
+        throw new Error('NOT_FOUND');
+      }
+      await ref.set(stripUndefined({ ...data, hostId } as Record<string, unknown>), { merge: true });
       return { id, ...data } as T;
     },
   };

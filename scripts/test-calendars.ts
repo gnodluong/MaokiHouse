@@ -51,10 +51,10 @@ const transport:typeof fetch=async(input,options)=>{
  throw new Error('Unexpected test URL');
 };
 const request=(body?:unknown,feed?:string,auth=true)=>new Request('https://maoki.test/api/channels'+(feed?'?feed='+feed:''),{method:body?'POST':'GET',headers:auth?{Authorization:'Bearer test-token'}:{},...(body?{body:JSON.stringify(body)}:{})});
-const api=async(body?:unknown)=>{const response=await handleChannels(request(body),{},transport);return{status:response.status,...await response.json()};};
+const api=async(body?:unknown)=>{const response=await handleChannels(request(body),{},transport,transport);return{status:response.status,...await response.json()};};
 try{
  await login(owner);const initial=await workspace('snapshot') as {workspaceId:string};const stay=await workspace('save','properties',null,{title:'Calendar Stay',basePrice:750000,published:true}) as {id:string};
- assert.equal((await handleChannels(request(undefined,undefined,false),{},transport)).status,401);pass('private channel endpoints require authentication');
+ assert.equal((await handleChannels(request(undefined,undefined,false),{},transport,transport)).status,401);pass('private channel endpoints require authentication');
  let result=await api({action:'connect',platform:'airbnb',propertyId:stay.id,url:validURL});assert.equal(result.synced,true);assert.equal(result.blockCount,1);const connection=result.id as string;pass('web connect fetches and persists actual all-day blocks through checked SQL');
  const list=await api();const token=list.connections[0].exportToken as string;assert.ok(!JSON.stringify(list).includes('private-test-feed'));assert.ok(!JSON.stringify(list).includes('Private guest'));pass('connection list excludes source URLs and guest data');
  await login(owner);const snapshot=await workspace('snapshot') as {bookings:unknown[];revenue:unknown[]};assert.equal(snapshot.bookings.length,0);assert.equal(snapshot.revenue.length,0);assert.equal((await channels('busy') as unknown[]).length,1);pass('imported busy dates do not become bookings or revenue');
@@ -68,18 +68,26 @@ try{
  remote='<html>Temporary error</html>';result=await api({action:'sync',id:connection});assert.equal(result.status,400);await login(owner);assert.equal((await channels('busy') as unknown[]).length,2);pass('failed fetch/parse retains previous busy dates');
  remote=calendar(event('airbnb-one',day(3),day(5)));result=await api({action:'sync',id:connection});assert.equal(result.synced,true);await login(owner);assert.equal((await channels('busy') as {checkIn:string;platform:string}[]).find(item=>item.platform==='airbnb')!.checkIn,day(3));pass('sync updates an event without duplicate blocks');
  const booking=await workspace('save','bookings',null,{propertyId:stay.id,guestName:'PRIVATE REAL GUEST',checkIn:day(10),checkOut:day(11),status:'confirmed'}) as {id:string};
- const feed=await handleChannels(request(undefined,token,false),{},transport);assert.equal(feed.status,200);const text=await feed.text();assert.ok(text.includes('BEGIN:VCALENDAR'));assert.ok(!text.includes('PRIVATE REAL GUEST'));assert.ok(!text.includes('750000'));assert.ok(!text.includes('private-test-feed'));const outgoing=new ICAL.Component(ICAL.parse(text));assert.equal(outgoing.getAllSubcomponents('vevent').length,2);pass('public feed exports actual availability without guest names, rates or source secrets');
+ const feed=await handleChannels(request(undefined,token,false),{},transport,transport);assert.equal(feed.status,200);const text=await feed.text();assert.ok(text.includes('BEGIN:VCALENDAR'));assert.ok(!text.includes('PRIVATE REAL GUEST'));assert.ok(!text.includes('750000'));assert.ok(!text.includes('private-test-feed'));const outgoing=new ICAL.Component(ICAL.parse(text));assert.equal(outgoing.getAllSubcomponents('vevent').length,2);pass('public feed exports actual availability without guest names, rates or source secrets');
  remote=calendar(event('airbnb-one',day(10),day(11)));result=await api({action:'sync',id:connection});assert.equal(result.synced,true);assert.equal(result.conflictCount,1);await login(owner);assert.equal((await workspace('snapshot') as {bookings:{id:string}[]}).bookings[0].id,booking.id);pass('remote conflicts are reported while existing bookings are preserved');
  remote=calendar('');result=await api({action:'sync',id:connection});assert.equal(result.synced,true);await login(owner);assert.equal((await channels('busy') as unknown[]).length,1);assert.equal((await workspace('snapshot') as {bookings:unknown[]}).bookings.length,1);pass('remote cancellation removes only imported availability, not real bookings');
- result=await api({action:'disconnect',id:connection});assert.equal(result.disconnected,true);assert.equal((await handleChannels(request(undefined,token,false),{},transport)).status,404);await login(owner);assert.equal((await workspace('snapshot') as {bookings:unknown[]}).bookings.length,1);pass('disconnect revokes export URL and preserves real records');
+ result=await api({action:'disconnect',id:connection});assert.equal(result.disconnected,true);assert.equal((await handleChannels(request(undefined,token,false),{},transport,transport)).status,404);await login(owner);assert.equal((await workspace('snapshot') as {bookings:unknown[]}).bookings.length,1);pass('disconnect revokes export URL and preserves real records');
  await login(owner);const roomB=await workspace('save','properties',null,{title:'Generic Stay',basePrice:500000,published:true}) as {id:string};
  remote=calendar(event('ota-a',day(20),day(22)));const g1=await api({action:'connect',platform:'ical',propertyId:roomB.id,url:'https://ical.ota-feed.com/a.ics',label:'Traveloka'});assert.equal(g1.synced,true);
  remote=calendar(event('ota-b',day(25),day(27)));const g2=await api({action:'connect',platform:'ical',propertyId:roomB.id,url:'https://ical.ota-feed.com/b.ics'});assert.equal(g2.synced,true);
  assert.equal((await api({action:'connect',platform:'ical',propertyId:roomB.id,url:'https://ical.ota-feed.com/a.ics'})).status,400);
  const listed=(await api()).connections as {id:string;label:string;platform:string;exportToken:string}[];assert.equal(listed.find(c=>c.id===g1.id)?.label,'Traveloka');
- const feedA=await (await handleChannels(request(undefined,listed.find(c=>c.id===g1.id)!.exportToken,false),{},transport)).text();assert.ok(feedA.includes(day(25).replaceAll('-','')));assert.ok(!feedA.includes(day(20).replaceAll('-','')));
+ const feedA=await (await handleChannels(request(undefined,listed.find(c=>c.id===g1.id)!.exportToken,false),{},transport,transport)).text();assert.ok(feedA.includes(day(25).replaceAll('-','')));assert.ok(!feedA.includes(day(20).replaceAll('-','')));
  pass('several generic iCal feeds per room: duplicates refused, labels kept, each export carries the other feeds but not its own');
  await login(owner);await assert.rejects(()=>channels('save',null,{platform:'ical',propertyId:roomB.id,url:'https://127.0.0.1/x.ics'}),/HTTPS/);await assert.rejects(()=>channels('save',null,{platform:'vrbo',propertyId:roomB.id,url:'https://ical.ota-feed.com:444/x.ics'}),/HTTPS/);
  pass('database independently refuses IP and port calendar URLs when the API is bypassed');
+ // Regression (audit finding channels-default-global-fetch-bypasses-dns-guard): without an explicit calendar
+ // transport, remote calendars must NOT go through the Supabase/global fetch, only through the DNS-guarded publicFetch.
+ const globalFetch=globalThis.fetch;let leaked=0;globalThis.fetch=(async(input:RequestInfo|URL,init?:RequestInit)=>{if(String(input).includes('ota-feed.com'))leaked++;return globalFetch(input,init);}) as typeof fetch;
+ try{const before=remoteCalls;await login(owner);const roomC=await workspace('save','properties',null,{title:'Default Transport Stay',basePrice:1,published:true}) as {id:string};
+  const response=await handleChannels(request({action:'connect',platform:'ical',propertyId:roomC.id,url:'https://ical.ota-feed.com/default-path.ics'}),{},transport);const body=await response.json() as {saved?:boolean;synced?:boolean};
+  assert.equal(remoteCalls,before);assert.equal(leaked,0);assert.equal(body.saved,true);assert.notEqual(body.synced,true);}
+ finally{globalThis.fetch=globalFetch;}
+ pass('production default sends remote calendar fetches only through the DNS-guarded transport');
  assert.equal(initial.workspaceId.length,36);console.log(`${checks} iCal parser, SSRF, tenant isolation, reconciliation and availability checks passed`);
 }finally{await db.close();}

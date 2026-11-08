@@ -47,6 +47,7 @@ try {
     if(!url.includes('/rpc/maoki_calendar_feed')) assert.equal(new Headers(options.headers).get('Authorization'), 'Bearer artifact-token');
     if (url.includes('/auth/v1/user')) return Response.json({ id: '22222222-2222-4222-8222-222222222222', email: 'artifact@example.test', is_anonymous: false });
     if(url.includes('/rpc/maoki_channels')) return Response.json([]);
+    if(url.includes('/rpc/maoki_ai_settings')) return Response.json({ message: 'function not found', code: 'PGRST202' }, { status: 404 });
     if(url.includes('/rpc/maoki_calendar_feed')) return Response.json({events:[{uid:'maoki-artifact@maokihouse',checkIn:'2026-11-01',checkOut:'2026-11-03'}]});
     if (url.includes('/rest/v1/maoki_members')) return Response.json({ workspace_id: '33333333-3333-4333-8333-333333333333', role: 'owner' });
     throw new Error('Unexpected artifact request');

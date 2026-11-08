@@ -1,7 +1,9 @@
 -- More calendar sources (any channel that exports iCal) and per-workspace AI
 -- settings. The OpenRouter key is stored in a private table: it is never part
 -- of a snapshot or status response, only of the role-gated 'secret' operation
--- that the server-side /api/assistant function calls.
+-- that the server-side /api/assistant function calls. Callers holding that role can
+-- also call 'secret' directly; the UI states this, and OPENROUTER_API_KEY on the
+-- server keeps a key out of the database entirely.
 begin;
 
 -- 1. Calendar sources ---------------------------------------------------------
@@ -149,10 +151,13 @@ begin
    'model',coalesce(s.model,'nvidia/nemotron-3.5-super-vl:free'),'allowAgents',coalesce(s.allow_agents,false),'updatedAt',s.updated_at,'updatedBy',coalesce(s.updated_by,''),
    'canManage',member_role in ('owner','manager'),'canUse',member_role in ('owner','manager') or (member_role='agent' and coalesce(s.allow_agents,false)));
  end if;
- if op='secret' then
+ if op in ('secret','use') then
+  -- Every provider call goes through one of these, so role, staff permission and the durable
+  -- per-workspace budget apply whichever key (workspace or server) pays for the request.
   if member_role not in ('owner','manager','agent') then raise exception 'Vai trò hiện tại chưa được sử dụng trợ lý AI'; end if;
   if member_role='agent' and not coalesce(s.allow_agents,false) then raise exception 'Chủ không gian chưa cho phép nhân viên dùng trợ lý AI'; end if;
   perform maoki_private.budget(w,'ai',12);
+  if op='use' then return '{"ok":true}'; end if;
   return jsonb_build_object('apiKey',coalesce(s.api_key,''),'model',coalesce(s.model,'nvidia/nemotron-3.5-super-vl:free'));
  end if;
  if member_role not in ('owner','manager') then raise exception 'Chỉ chủ không gian và quản lý được thay đổi cài đặt AI'; end if;

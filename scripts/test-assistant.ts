@@ -10,7 +10,7 @@ let role = 'owner'; let validUser = true; let providerStatus = 200; let mismatch
 let providerCalls = 0; let snapshotCalls = 0; let outgoing = ''; let incomingURL = ''; let apiKeyHeader = ''; let memberRequest = '';
 const env = { GEMINI_API_KEY: 'test-key-not-a-credential', GEMINI_MODEL: 'gemini-flash-latest' };
 let workspace = '11111111-1111-4111-8111-111111111111';
-let aiSettings: { configured: boolean; allowAgents: boolean } | null = null; let orCalls = 0; let orStatus = 200; let orBody = ''; let orAuth = ''; let secretCalls = 0;
+let aiSettings: { configured: boolean; allowAgents: boolean; model?: string } | null = null; let useCalls = 0; let orCalls = 0; let orStatus = 200; let orBody = ''; let orAuth = ''; let secretCalls = 0;
 const workspaceKey = 'sk-or-v1-workspace0000000000000000';
 const fetchStub: typeof fetch = async (input, options) => {
   const url = String(input);
@@ -22,7 +22,8 @@ const fetchStub: typeof fetch = async (input, options) => {
     if (!aiSettings) return Response.json({ message: 'not found', code: 'PGRST202' }, { status: 404 });
     const op = JSON.parse(String(options?.body)).op;
     const agentBlocked = role === 'agent' && !aiSettings.allowAgents;
-    if (op === 'status') return Response.json({ configured: aiSettings.configured, keyHint: aiSettings.configured ? '0000' : '', model: 'nvidia/nemotron-3.5-super-vl:free', allowAgents: aiSettings.allowAgents, canManage: ['owner', 'manager'].includes(role), canUse: ['owner', 'manager'].includes(role) || (role === 'agent' && aiSettings.allowAgents), updatedAt: null, updatedBy: '' });
+    if (op === 'status') return Response.json({ configured: aiSettings.configured, keyHint: aiSettings.configured ? '0000' : '', model: aiSettings.model || 'nvidia/nemotron-3.5-super-vl:free', allowAgents: aiSettings.allowAgents, canManage: ['owner', 'manager'].includes(role), canUse: ['owner', 'manager'].includes(role) || (role === 'agent' && aiSettings.allowAgents), updatedAt: null, updatedBy: '' });
+    if (op === 'use') { useCalls++; return agentBlocked ? Response.json({ message: 'Chủ không gian chưa cho phép nhân viên dùng trợ lý AI', code: 'P0001' }, { status: 400 }) : Response.json({ ok: true }); }
     if (op === 'secret') { secretCalls++; return agentBlocked ? Response.json({ message: 'Chủ không gian chưa cho phép nhân viên dùng trợ lý AI', code: 'P0001' }, { status: 400 }) : Response.json({ apiKey: aiSettings.configured ? workspaceKey : '', model: 'nvidia/nemotron-3.5-super-vl:free' }); }
   }
   if (url.includes('generativelanguage.googleapis.com')) {
@@ -77,6 +78,9 @@ assert.equal(new RegExp('^' + vercel.rewrites[0].source + '$').test('/api/assist
 assert.equal(new RegExp('^' + vercel.rewrites[0].source + '$').test('/api/workspace'), true);
 const localRequire=createRequire(import.meta.url);const runtimeRequire=createRequire(localRequire.resolve('@vercel/node/package.json'));const {pathToRegexp}=runtimeRequire('path-to-regexp');
 for(const rule of vercel.rewrites)pathToRegexp(rule.source);
+for(const rule of vercel.headers)pathToRegexp(rule.source);
+const framing=pathToRegexp(vercel.headers[1].source);assert.equal(framing.test('/admin/dashboard'),true);assert.equal(framing.test('/'),true);assert.equal(framing.test('/chat/abc123'),false);
+assert.ok(JSON.stringify(vercel.headers[1]).includes("frame-ancestors 'self'"));
 const routing=pathToRegexp(vercel.rewrites[0].source);assert.equal(routing.test('/api/assistant'),false);assert.equal(routing.test('/api/channels'),false);assert.equal(routing.test('/api/workspace'),true);
  pass('Vercel routes the Supabase assistant independently of the Firebase API');
 // ---- OpenRouter with a key saved in the web settings ----
@@ -101,6 +105,18 @@ workspace = '55555555-5555-4555-8555-555555555555'; const secretsBefore = secret
 response = await handleAssistant(request(question), { OPENROUTER_API_KEY: 'sk-or-v1-serverkey00000000000000' }, fetchStub);
 assert.equal(response.status, 200); assert.equal(orAuth, 'Bearer sk-or-v1-serverkey00000000000000'); assert.equal(secretCalls, secretsBefore);
 pass('a server OPENROUTER_API_KEY takes precedence and the database key is not read');
+// Regression (audit finding api/_lib/assistant.ts:tenant-model-on-operator-openrouter-key)
+workspace = '77777777-7777-4777-8777-777777777777'; aiSettings = { configured: false, allowAgents: false, model: 'openai/expensive-model' };
+const usesBefore = useCalls;
+response = await handleAssistant(request(question), { OPENROUTER_API_KEY: 'sk-or-v1-serverkey00000000000000', OPENROUTER_MODEL: 'nvidia/nemotron-3.5-super-vl:free' }, fetchStub);
+assert.equal(response.status, 200); assert.equal(JSON.parse(orBody).model, 'nvidia/nemotron-3.5-super-vl:free'); assert.equal(useCalls, usesBefore + 1);
+response = await handleAssistant(request(question), { OPENROUTER_API_KEY: 'sk-or-v1-serverkey00000000000000' }, fetchStub);
+assert.equal(JSON.parse(orBody).model, 'nvidia/nemotron-3.5-super-vl:free');
+pass('a server key only bills the operator model and every call is charged to the durable workspace budget');
+role = 'agent'; const orBefore = orCalls;
+assert.equal((await handleAssistant(request(question), { OPENROUTER_API_KEY: 'sk-or-v1-serverkey00000000000000' }, fetchStub)).status, 403); assert.equal(orCalls, orBefore);
+const agentStatus = await (await handleAssistant(request(), { OPENROUTER_API_KEY: 'sk-or-v1-serverkey00000000000000' }, fetchStub)).json(); assert.equal(agentStatus.canUse, false); role = 'owner';
+pass('the owner\'s allow-staff switch also governs server-paid keys');
 aiSettings = null; workspace = '66666666-6666-4666-8666-666666666666';
 const upgrade = await (await handleAssistant(request(), {}, fetchStub)).json(); assert.equal(upgrade.needsUpgrade, true); assert.equal(upgrade.configured, false);
 assert.equal((await handleAssistant(request(question), {}, fetchStub)).status, 503); pass('databases without the AI settings migration report the upgrade step');

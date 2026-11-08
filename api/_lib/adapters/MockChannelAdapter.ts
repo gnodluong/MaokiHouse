@@ -1,6 +1,6 @@
 import type { ChannelAdapter } from './ChannelAdapter';
 import type { Booking } from '../models/Booking';
-import { ChannelConnectionModel } from '../models/ChannelConnection';
+import { ChannelConnectionModel, channelConnectionId } from '../models/ChannelConnection';
 import type { ChannelPlatform } from '../models/ChannelConnection';
 
 /**
@@ -13,7 +13,7 @@ export class MockChannelAdapter implements ChannelAdapter {
   constructor(public platform: ChannelPlatform) {}
 
   async connect(hostId: string): Promise<void> {
-    await ChannelConnectionModel.upsert(hostId, this.platform, {
+    await ChannelConnectionModel.upsert(hostId, channelConnectionId(hostId, this.platform), {
       hostId,
       platform: this.platform,
       status: 'connected',
@@ -22,7 +22,7 @@ export class MockChannelAdapter implements ChannelAdapter {
   }
 
   async disconnect(hostId: string): Promise<void> {
-    await ChannelConnectionModel.upsert(hostId, this.platform, {
+    await ChannelConnectionModel.upsert(hostId, channelConnectionId(hostId, this.platform), {
       hostId,
       platform: this.platform,
       status: 'disconnected',

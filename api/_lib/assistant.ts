@@ -116,10 +116,13 @@ export async function handleAssistant(request: Request, env: NodeJS.ProcessEnv =
     const serverKey = env.OPENROUTER_API_KEY && keyPattern.test(env.OPENROUTER_API_KEY) ? env.OPENROUTER_API_KEY : '';
     const envModel = env.OPENROUTER_MODEL && modelPattern.test(env.OPENROUTER_MODEL) ? env.OPENROUTER_MODEL : '';
     const geminiKey = env.GEMINI_API_KEY && env.GEMINI_API_KEY !== 'your_gemini_api_key' ? env.GEMINI_API_KEY : '';
-    const model = settings?.model && modelPattern.test(settings.model) ? settings.model : envModel || DEFAULT_OPENROUTER_MODEL;
+    // A server key is the operator's money: only the operator's model (env or default) may be billed to it.
+    // A workspace's own key may use the model that workspace chose.
+    const model = serverKey ? envModel || DEFAULT_OPENROUTER_MODEL : settings?.model && modelPattern.test(settings.model) ? settings.model : envModel || DEFAULT_OPENROUTER_MODEL;
     const source = serverKey ? 'server' : settings?.configured ? 'workspace' : geminiKey ? 'server' : null;
     const provider = serverKey || settings?.configured ? 'OpenRouter' : geminiKey ? 'Gemini' : 'OpenRouter';
-    const canUse = role === 'viewer' ? false : serverKey || (!settings?.configured && geminiKey) ? true : Boolean(settings?.canUse);
+    // The owner's “allow staff” switch applies to every key source; without the AI settings table (not upgraded yet) fall back to role.
+    const canUse = role === 'viewer' ? false : settings ? Boolean(settings.canUse) : ['owner', 'manager', 'agent'].includes(role);
 
     if (request.method === 'GET') return json(200, {
       configured: Boolean(source), provider, model: provider === 'Gemini' ? env.GEMINI_MODEL || 'gemini-flash-latest' : model, source,
@@ -131,11 +134,16 @@ export async function handleAssistant(request: Request, env: NodeJS.ProcessEnv =
     if (test && !['owner', 'manager'].includes(role)) return json(403, { error: 'Chỉ chủ không gian và quản lý được kiểm tra kết nối AI.' });
 
     let credential: Credential | null = null;
+    if (serverKey || (!settings?.configured && geminiKey)) {
+      // Server-paid paths: enforce role, staff permission and the durable per-workspace budget in the database.
+      const use = await client.rpc('maoki_ai_settings', { op: 'use', payload: {} });
+      if (use.error && use.error.code !== 'PGRST202') return json(use.error.code === 'P0001' ? (/quá nhiều/i.test(use.error.message) ? 429 : 403) : 503, { error: use.error.code === 'P0001' ? use.error.message : 'Chưa đọc được cài đặt AI. Hãy thử lại.' });
+    }
     if (serverKey) credential = { provider: 'OpenRouter', key: serverKey, model, source: 'server' };
     else if (settings?.configured) {
       // Role-gated in the database (agents need the owner's permission) and counted against a per-workspace budget.
       const secret = await client.rpc('maoki_ai_settings', { op: 'secret', payload: {} });
-      if (secret.error) return json(secret.error.code === 'P0001' ? 403 : 503, { error: secret.error.code === 'P0001' ? secret.error.message : 'Chưa đọc được cài đặt AI. Hãy thử lại.' });
+      if (secret.error) return json(secret.error.code === 'P0001' ? (/quá nhiều/i.test(secret.error.message) ? 429 : 403) : 503, { error: secret.error.code === 'P0001' ? secret.error.message : 'Chưa đọc được cài đặt AI. Hãy thử lại.' });
       const value = secret.data as { apiKey?: string; model?: string } | null;
       if (value?.apiKey && keyPattern.test(value.apiKey)) credential = { provider: 'OpenRouter', key: value.apiKey, model: value.model && modelPattern.test(value.model) ? value.model : DEFAULT_OPENROUTER_MODEL, source: 'workspace' };
     } else if (geminiKey) {
