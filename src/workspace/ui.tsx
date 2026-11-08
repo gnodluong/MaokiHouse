@@ -1,14 +1,27 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { FiX, FiPlus, FiInbox, FiArrowUpRight, FiLoader } from 'react-icons/fi';
+import { FiX, FiPlus, FiInbox, FiArrowUpRight, FiLoader, FiHelpCircle, FiChevronDown, FiInfo } from 'react-icons/fi';
+import type { PageGuide as Guide } from './guides';
 import { enumLabels } from './definitions';
 
 export function Button({ children, onClick, kind = 'secondary', type = 'button', disabled = false, busy = false, className = '', title }: { children: ReactNode; onClick?: () => void; kind?: 'primary' | 'secondary' | 'danger' | 'quiet'; type?: 'button' | 'submit'; disabled?: boolean; busy?: boolean; className?: string; title?: string }) {
   return <button type={type} className={`mk-button ${kind} ${className}`} onClick={onClick} disabled={disabled || busy} aria-busy={busy || undefined} title={title}>{busy && <FiLoader className="mk-spin" aria-hidden="true" />}{children}</button>;
 }
-export function PageHeader({ eyebrow, title, description, children }: { eyebrow?: string; title: string; description: string; children?: ReactNode }) {
-  return <header className="mk-page-header"><div>{eyebrow && <div className="mk-eyebrow">{eyebrow}</div>}<h1>{title}</h1><p>{description}</p></div><div className="mk-page-actions">{children}</div></header>;
+// `eyebrow` is accepted for older call sites but no longer rendered: the heading carries the page.
+export function PageHeader({ title, description, children }: { eyebrow?: string; title: string; description: string; children?: ReactNode }) {
+  return <header className="mk-page-header"><div><h1>{title}</h1><p>{description}</p></div><div className="mk-page-actions">{children}</div></header>;
+}
+/** Collapsible “how to use this page”. Open on first visit; the choice is remembered per page. */
+export function PageGuide({ id, guide }: { id: string; guide: Guide }) {
+  const key = 'maoki:guide-closed:' + (id || 'overview');
+  const [open, setOpen] = useState(() => { try { return window.localStorage.getItem(key) !== '1'; } catch { return true; } });
+  const bodyId = useId();
+  const toggle = () => { const next = !open; setOpen(next); try { if (next) window.localStorage.removeItem(key); else window.localStorage.setItem(key, '1'); } catch { /* not persisted */ } };
+  return <section className={`mk-guide-panel ${open ? 'is-open' : ''}`} aria-label="Hướng dẫn nhanh">
+    <button type="button" className="mk-guide-toggle" aria-expanded={open} aria-controls={bodyId} onClick={toggle}><FiHelpCircle aria-hidden="true" /><span>Hướng dẫn nhanh</span><FiChevronDown aria-hidden="true" className="mk-guide-chevron" /></button>
+    {open && <div id={bodyId} className="mk-guide-body"><ol>{guide.steps.map(step => <li key={step}>{step}</li>)}</ol>{guide.tip && <p className="mk-guide-tip"><FiInfo aria-hidden="true" />{guide.tip}</p>}</div>}
+  </section>;
 }
 export function Badge({ value, children }: { value?: string; children?: ReactNode }) { return <span className={`mk-badge ${value || ''}`}>{children || enumLabels[value || ''] || value}</span>; }
 export function Empty({ title = 'Một khởi đầu mới', text, action, onAction }: { title?: string; text: string; action?: string; onAction?: () => void }) {
@@ -30,7 +43,7 @@ export function Dialog({ title, children, onClose, busy = false, wide = false }:
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
       if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     }
-  }}><header><div><span className="mk-eyebrow">MAOKIHOUSE</span><h2 id={headingId}>{title}</h2></div><button className="mk-icon-button" aria-label="Đóng cửa sổ" onClick={onClose} disabled={busy}><FiX /></button></header>{children}</div></div>, document.body);
+  }}><header><div><h2 id={headingId}>{title}</h2></div><button className="mk-icon-button" aria-label="Đóng cửa sổ" onClick={onClose} disabled={busy}><FiX /></button></header>{children}</div></div>, document.body);
 }
 export function Stat({ label, value, note, icon }: { label: string; value: ReactNode; note: string; icon: ReactNode }) { return <div className="mk-stat"><div className="mk-stat-heading">{label}<span>{icon}</span></div><strong>{value}</strong><span className="mk-stat-note">{note}</span></div>; }
 export function SectionTitle({ title, children }: { title: string; children?: ReactNode }) { return <div className="mk-section-title"><h2>{title}</h2>{children}</div>; }

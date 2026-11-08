@@ -23,7 +23,8 @@
     "server:ai": "node --use-env-proxy --import tsx --watch api/_lib/assistantServer.ts",
     "test:ai": "tsx scripts/test-assistant.ts",
     "test:ai:deployment": "node scripts/test-assistant-deployment.mjs",
-    "test:calendars": "tsx scripts/test-calendars.ts"
+    "test:calendars": "tsx scripts/test-calendars.ts",
+    "screenshots:admin": "node scripts/admin-screenshots.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",

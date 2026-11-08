@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import ICAL from 'ical.js';
-import { calendarURL, parseCalendar, fetchCalendar } from '../api/_lib/calendars';
+import { calendarURL, parseCalendar, fetchCalendar, isPublicAddress, publicFetch } from '../api/_lib/calendars';
 import { handleChannels } from '../api/_lib/channelApi';
 
 let checks=0; const pass=(name:string)=>{checks++;console.log('PASS',name);};
@@ -12,6 +12,13 @@ const calendar=(body:string)=>`BEGIN:VCALENDAR\r\nVERSION:2.0\r\n${body}END:VCAL
 const validURL='https://www.airbnb.com/calendar/ical/123.ics?s=private-test-feed';
 for(const url of ['http://www.airbnb.com/calendar/ical/123.ics','https://127.0.0.1/a.ics','https://www.airbnb.com.attacker.test/calendar/ical/a.ics','https://x:pass@www.airbnb.com/calendar/ical/123.ics','https://admin.booking.com/other','https://[::1]/calendar.ics']) assert.throws(()=>calendarURL(url,url.includes('booking')?'booking':'airbnb'));
 assert.equal(calendarURL(validURL,'airbnb').hostname,'www.airbnb.com');pass('calendar fetch permits only official HTTPS hosts and calendar paths');
+for(const [url,platform] of [['https://10.0.0.5/feed.ics','ical'],['https://[::ffff:127.0.0.1]/a.ics','ical'],['https://localhost/a.ics','ical'],['https://calendar.internal/a.ics','agoda'],['https://ical.ota-feed.com:8443/a.ics','vrbo'],['https://169.254.169.254/latest','ical'],['https://calendar.google.com/settings','google'],['https://evil.test/calendar/ical/a.ics','google'],['https://ical.ota-feed.com/a.ics','unknown']] as const)assert.throws(()=>calendarURL(url,platform),Error,url);
+assert.equal(calendarURL('https://ICAL.OTA-FEED.com/Feed.ics?k=1','ical').toString(),'https://ical.ota-feed.com/Feed.ics?k=1');assert.equal(calendarURL('https://calendar.google.com/calendar/ical/abc%40group/private-x/basic.ics','google').hostname,'calendar.google.com');
+pass('generic channels accept public DNS hosts only; IP literals, ports, internal names and unknown platforms refused');
+for(const ip of ['127.0.0.1','10.1.2.3','172.20.0.1','192.168.1.1','169.254.169.254','100.64.0.1','0.0.0.0','::1','fe80::1','fd00::1','::ffff:10.0.0.1','::ffff:8.8.8.8','64:ff9b::a00:1','2002:a00:1::'])assert.equal(isPublicAddress(ip),false,ip);
+for(const ip of ['8.8.8.8','1.1.1.1','151.101.1.140','2606:4700:4700::1111'])assert.equal(isPublicAddress(ip),true,ip);
+await assert.rejects(()=>publicFetch('https://localhost:1/never.ics'),(error:{code?:string})=>error.code==='EMAOKIPRIVATE');
+pass('socket-level DNS guard refuses private, loopback, link-local and mapped addresses (DNS rebinding safe)');
 assert.deepEqual(parseCalendar(calendar(event('first'))),[{uid:'first',checkIn:day(2),checkOut:day(4)}]);
 assert.equal(parseCalendar(calendar(event('maoki-self@maokihouse')+event('cancelled').replace('SUMMARY:','STATUS:CANCELLED\r\nSUMMARY:'))).length,0);pass('all-day checkout is exclusive, cancelled and echoed Maoki events are ignored');
 for(const body of [calendar(event('duplicate')+event('duplicate')),calendar(event('bad','2026-02-30','2026-03-02')),calendar(event('recurring').replace('SUMMARY:','RRULE:FREQ=DAILY\r\nSUMMARY:')),calendar(event('time').replace('DTSTART;VALUE=DATE:','DTSTART:').replace('DTEND;VALUE=DATE:','DTEND:')),calendar(event('backwards',day(4),day(2))),'<html>Sign in</html>']) assert.throws(()=>parseCalendar(body));
@@ -33,7 +40,7 @@ const channels=async(op:string,id:string|null=null,payload:unknown={})=>rpc('mao
 let remote=calendar(event('airbnb-one'));let remoteCalls=0;let identity=owner;
 const transport:typeof fetch=async(input,options)=>{
  const url=String(input);
- if(url.startsWith('https://www.airbnb.com/calendar/ical/')||url.startsWith('https://admin.booking.com/hotel/hoteladmin/ical.html')){remoteCalls++;return new Response(remote,{headers:{'content-type':'text/calendar'}});}
+ if(url.startsWith('https://www.airbnb.com/calendar/ical/')||url.startsWith('https://admin.booking.com/hotel/hoteladmin/ical.html')||url.startsWith('https://ical.ota-feed.com/')){remoteCalls++;return new Response(remote,{headers:{'content-type':'text/calendar'}});}
  if(url.includes('/auth/v1/user'))return Response.json({id:identity,email:'owner@example.test',is_anonymous:false});
  if(url.includes('/rest/v1/rpc/')){
   const body=JSON.parse(String(options?.body));const name=new URL(url).pathname.split('/').at(-1)!;
@@ -65,5 +72,14 @@ try{
  remote=calendar(event('airbnb-one',day(10),day(11)));result=await api({action:'sync',id:connection});assert.equal(result.synced,true);assert.equal(result.conflictCount,1);await login(owner);assert.equal((await workspace('snapshot') as {bookings:{id:string}[]}).bookings[0].id,booking.id);pass('remote conflicts are reported while existing bookings are preserved');
  remote=calendar('');result=await api({action:'sync',id:connection});assert.equal(result.synced,true);await login(owner);assert.equal((await channels('busy') as unknown[]).length,1);assert.equal((await workspace('snapshot') as {bookings:unknown[]}).bookings.length,1);pass('remote cancellation removes only imported availability, not real bookings');
  result=await api({action:'disconnect',id:connection});assert.equal(result.disconnected,true);assert.equal((await handleChannels(request(undefined,token,false),{},transport)).status,404);await login(owner);assert.equal((await workspace('snapshot') as {bookings:unknown[]}).bookings.length,1);pass('disconnect revokes export URL and preserves real records');
+ await login(owner);const roomB=await workspace('save','properties',null,{title:'Generic Stay',basePrice:500000,published:true}) as {id:string};
+ remote=calendar(event('ota-a',day(20),day(22)));const g1=await api({action:'connect',platform:'ical',propertyId:roomB.id,url:'https://ical.ota-feed.com/a.ics',label:'Traveloka'});assert.equal(g1.synced,true);
+ remote=calendar(event('ota-b',day(25),day(27)));const g2=await api({action:'connect',platform:'ical',propertyId:roomB.id,url:'https://ical.ota-feed.com/b.ics'});assert.equal(g2.synced,true);
+ assert.equal((await api({action:'connect',platform:'ical',propertyId:roomB.id,url:'https://ical.ota-feed.com/a.ics'})).status,400);
+ const listed=(await api()).connections as {id:string;label:string;platform:string;exportToken:string}[];assert.equal(listed.find(c=>c.id===g1.id)?.label,'Traveloka');
+ const feedA=await (await handleChannels(request(undefined,listed.find(c=>c.id===g1.id)!.exportToken,false),{},transport)).text();assert.ok(feedA.includes(day(25).replaceAll('-','')));assert.ok(!feedA.includes(day(20).replaceAll('-','')));
+ pass('several generic iCal feeds per room: duplicates refused, labels kept, each export carries the other feeds but not its own');
+ await login(owner);await assert.rejects(()=>channels('save',null,{platform:'ical',propertyId:roomB.id,url:'https://127.0.0.1/x.ics'}),/HTTPS/);await assert.rejects(()=>channels('save',null,{platform:'vrbo',propertyId:roomB.id,url:'https://ical.ota-feed.com:444/x.ics'}),/HTTPS/);
+ pass('database independently refuses IP and port calendar URLs when the API is bypassed');
  assert.equal(initial.workspaceId.length,36);console.log(`${checks} iCal parser, SSRF, tenant isolation, reconciliation and availability checks passed`);
 }finally{await db.close();}

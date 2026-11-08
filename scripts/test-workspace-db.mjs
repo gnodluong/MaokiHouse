@@ -65,6 +65,22 @@ try {
  await rpc('message','conversations',conversation.id,{text:'How can we help?'});
  await login(null); const reply=await pub('widget',null,widget,{session:chat.session}); ok(reply.messages.at(-1).text==='How can we help?','visitor receives actual host reply');
  await login(a); const final=await rpc('snapshot'); ok(final.bookings.find(x=>x.id===receipt.reference).payoutAmount===2400000,'stored public booking uses server total');
+ const ai=async(op,payload={})=>(await db.query('select public.maoki_ai_settings($1,$2) as result',[op,JSON.stringify(payload)])).rows[0].result;
+ await login(a); ok((await ai('status')).configured===false,'AI settings start without a key');
+ await denied(()=>ai('save',{apiKey:'not-a-key'}),'malformed OpenRouter key rejected');
+ await denied(()=>ai('save',{model:'bad model; drop'}),'malformed model name rejected');
+ await ai('save',{apiKey:'sk-or-v1-'+'a'.repeat(40)+'wxyz'}); const aiStatus=await ai('status');
+ ok(aiStatus.configured && aiStatus.keyHint==='wxyz' && !JSON.stringify(aiStatus).includes('aaaa') && aiStatus.model==='nvidia/nemotron-3.5-super-vl:free','status shows only the last 4 key characters and the default model');
+ ok(!JSON.stringify(await rpc('snapshot')).includes('sk-or-'),'workspace snapshot never contains the AI key');
+ ok((await ai('secret')).apiKey.endsWith('wxyz'),'owner can resolve the key for the server function');
+ await login(agent,'agent@example.test'); await denied(()=>ai('save',{model:'x/y'}),'agent cannot change AI settings');
+ await denied(()=>ai('secret'),'agent cannot read the key until the owner allows staff AI');
+ await login(a); await ai('save',{allowAgents:true}); ok((await ai('status')).keyHint==='wxyz','saving other fields keeps the stored key');
+ await login(agent,'agent@example.test'); ok((await ai('secret')).apiKey.length>20,'allowed agent can use workspace AI');
+ await login(b,'other@example.test'); ok((await ai('status')).configured===false,'AI key is isolated per workspace');
+ await denied(()=>db.query('select * from maoki_private.ai_settings'),'AI settings table cannot be read directly');
+ await login(null); await denied(()=>ai('status'),'anonymous cannot call AI settings');
+ await login(a); await ai('clear'); ok((await ai('status')).configured===false,'owner can remove the key');
  await rpc('revoke_member','',null,{id:agent}); await login(agent,'agent@example.test'); ok((await db.query('select * from public.maoki_records')).rows.length===0,'revoked membership immediately loses RLS access');
  console.log(`${checks} database checks passed`);
 } finally { await db.close(); }

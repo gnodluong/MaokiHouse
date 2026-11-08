@@ -38,7 +38,7 @@ function markSeen() {
  */
 export default function BlossomIntro() {
   const { pathname, hash } = useLocation();
-  const [active, setActive] = useState(() => pathname === '/' && !hash && !alreadySeen());
+  const [active, setActive] = useState(() => pathname === '/' && !hash && !alreadySeen() && !document.hidden);
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const skipRef = useRef<() => void>(() => {});
@@ -146,6 +146,8 @@ export default function BlossomIntro() {
       raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
+    // Background tabs pause animation frames; never leave the page locked behind the scene.
+    const safety = window.setTimeout(finish, (reduced ? REDUCED_HOLD_MS + 500 : BLOOM_MS + HOLD_MS + EXIT_MS) + 2500);
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') skipRef.current();
@@ -153,6 +155,7 @@ export default function BlossomIntro() {
     window.addEventListener('keydown', onKey);
 
     return () => {
+      window.clearTimeout(safety);
       window.removeEventListener('keydown', onKey);
       cancelAnimationFrame(raf);
       behind.forEach(el => el.removeAttribute('inert'));

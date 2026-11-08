@@ -9,9 +9,22 @@ const pass = (message: string) => { checks++; console.log('PASS', message); };
 let role = 'owner'; let validUser = true; let providerStatus = 200; let mismatch = false;
 let providerCalls = 0; let snapshotCalls = 0; let outgoing = ''; let incomingURL = ''; let apiKeyHeader = ''; let memberRequest = '';
 const env = { GEMINI_API_KEY: 'test-key-not-a-credential', GEMINI_MODEL: 'gemini-flash-latest' };
-const workspace = '11111111-1111-4111-8111-111111111111';
+let workspace = '11111111-1111-4111-8111-111111111111';
+let aiSettings: { configured: boolean; allowAgents: boolean } | null = null; let orCalls = 0; let orStatus = 200; let orBody = ''; let orAuth = ''; let secretCalls = 0;
+const workspaceKey = 'sk-or-v1-workspace0000000000000000';
 const fetchStub: typeof fetch = async (input, options) => {
   const url = String(input);
+  if (url.startsWith('https://openrouter.ai/')) {
+    orCalls++; orBody = String(options?.body); orAuth = new Headers(options?.headers).get('Authorization') || '';
+    return Response.json(orStatus === 200 ? { choices: [{ message: { content: '<think>hidden chain</think>Xin chào từ OpenRouter.' } }] } : { error: { message: 'upstream-openrouter-detail' } }, { status: orStatus });
+  }
+  if (url.includes('/rest/v1/rpc/maoki_ai_settings')) {
+    if (!aiSettings) return Response.json({ message: 'not found', code: 'PGRST202' }, { status: 404 });
+    const op = JSON.parse(String(options?.body)).op;
+    const agentBlocked = role === 'agent' && !aiSettings.allowAgents;
+    if (op === 'status') return Response.json({ configured: aiSettings.configured, keyHint: aiSettings.configured ? '0000' : '', model: 'nvidia/nemotron-3.5-super-vl:free', allowAgents: aiSettings.allowAgents, canManage: ['owner', 'manager'].includes(role), canUse: ['owner', 'manager'].includes(role) || (role === 'agent' && aiSettings.allowAgents), updatedAt: null, updatedBy: '' });
+    if (op === 'secret') { secretCalls++; return agentBlocked ? Response.json({ message: 'Chủ không gian chưa cho phép nhân viên dùng trợ lý AI', code: 'P0001' }, { status: 400 }) : Response.json({ apiKey: aiSettings.configured ? workspaceKey : '', model: 'nvidia/nemotron-3.5-super-vl:free' }); }
+  }
   if (url.includes('generativelanguage.googleapis.com')) {
     providerCalls++; outgoing = String(options?.body); incomingURL = url;
     apiKeyHeader = new Headers(options?.headers).get('x-goog-api-key') || '';
@@ -66,4 +79,29 @@ const localRequire=createRequire(import.meta.url);const runtimeRequire=createReq
 for(const rule of vercel.rewrites)pathToRegexp(rule.source);
 const routing=pathToRegexp(vercel.rewrites[0].source);assert.equal(routing.test('/api/assistant'),false);assert.equal(routing.test('/api/channels'),false);assert.equal(routing.test('/api/workspace'),true);
  pass('Vercel routes the Supabase assistant independently of the Firebase API');
-console.log(`${checks} AI authentication, privacy and provider checks passed (mocked network; no live Gemini request)`);
+// ---- OpenRouter with a key saved in the web settings ----
+workspace = '44444444-4444-4444-8444-444444444444'; // fresh per-instance burst window
+aiSettings = { configured: true, allowAgents: false };
+const statusText = await (await handleAssistant(request(), {}, fetchStub)).text();
+assert.ok(statusText.includes('"provider":"OpenRouter"')); assert.ok(statusText.includes('nvidia/nemotron-3.5-super-vl:free')); assert.ok(!statusText.includes(workspaceKey)); assert.equal(secretCalls, 0);
+pass('status reports OpenRouter, default model and key hint without reading or returning the key');
+const history = { history: [{ role: 'user', text: 'Chào' }, { role: 'model', text: 'Chào bạn' }, { role: 'user', text: 'Soạn tin' }], includeContext: false };
+response = await handleAssistant(request(history), {}, fetchStub); const orReply = await response.text();
+assert.equal(response.status, 200); assert.ok(orReply.includes('Xin chào từ OpenRouter.')); assert.ok(!orReply.includes('hidden chain')); assert.ok(!orReply.includes(workspaceKey));
+assert.equal(orAuth, 'Bearer ' + workspaceKey); const sent = JSON.parse(orBody); assert.equal(sent.model, 'nvidia/nemotron-3.5-super-vl:free'); assert.deepEqual(sent.messages.map((m: { role: string }) => m.role), ['system', 'user', 'assistant', 'user']);
+pass('OpenRouter call uses the saved key only in the server Authorization header, maps roles and strips reasoning');
+role = 'agent'; const before = orCalls; response = await handleAssistant(request(question), {}, fetchStub);
+assert.equal(response.status, 403); assert.equal(orCalls, before); aiSettings.allowAgents = true;
+assert.equal((await handleAssistant(request(question), {}, fetchStub)).status, 200); assert.equal((await handleAssistant(request({ action: 'test' }), {}, fetchStub)).status, 403); role = 'owner';
+pass('agents need the owner\'s permission to spend the workspace key and cannot run connection tests');
+response = await handleAssistant(request({ action: 'test' }), {}, fetchStub); assert.equal(response.status, 200); assert.equal((await response.json()).ok, true); pass('owners can test the saved key');
+orStatus = 401; response = await handleAssistant(request(question), {}, fetchStub); const orError = await response.text(); assert.equal(response.status, 502); assert.ok(orError.includes('API key OpenRouter')); assert.ok(!orError.includes('upstream-openrouter-detail')); orStatus = 200;
+pass('OpenRouter errors are explained without returning upstream bodies');
+workspace = '55555555-5555-4555-8555-555555555555'; const secretsBefore = secretCalls;
+response = await handleAssistant(request(question), { OPENROUTER_API_KEY: 'sk-or-v1-serverkey00000000000000' }, fetchStub);
+assert.equal(response.status, 200); assert.equal(orAuth, 'Bearer sk-or-v1-serverkey00000000000000'); assert.equal(secretCalls, secretsBefore);
+pass('a server OPENROUTER_API_KEY takes precedence and the database key is not read');
+aiSettings = null; workspace = '66666666-6666-4666-8666-666666666666';
+const upgrade = await (await handleAssistant(request(), {}, fetchStub)).json(); assert.equal(upgrade.needsUpgrade, true); assert.equal(upgrade.configured, false);
+assert.equal((await handleAssistant(request(question), {}, fetchStub)).status, 503); pass('databases without the AI settings migration report the upgrade step');
+console.log(`${checks} AI authentication, privacy and provider checks passed (mocked network; no live Gemini/OpenRouter request)`);

@@ -6,6 +6,7 @@ import { requireSupabase, databaseError } from '../lib/supabase/client';
 import { useSession } from './Session';
 import { Button } from './ui';
 import { errorMessage } from './utils';
+import { useAdminTheme } from './theme';
 import './workspace.css';
 import './zones.css';
 
@@ -13,6 +14,7 @@ export default function Login() {
   const navigate = useNavigate(); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
   const { user, loading, demoAvailable, startDemo, selectPrimary } = useSession(); const [params] = useSearchParams(); const invite = params.get('invite');
   const [register, setRegister] = useState(false); const [notice, setNotice] = useState('');
+  useAdminTheme();
   const login = async (demo = false) => {
     setBusy(true); setError('');
     try {
@@ -42,8 +44,7 @@ export default function Login() {
     <section className="mk-admin-login-story">
       <div className="mk-admin-login-top"><Brand to="/admin" tagline="" /><span className="mk-admin-badge"><FiShield />Khu vực quản trị</span></div>
       <div>
-        <span className="mk-admin-eyebrow">MAOKIHOUSE ADMIN CONSOLE</span>
-        <h1>Bảng điều hành<br />dành cho đội ngũ.</h1>
+                <h1>Bảng điều hành<br />dành cho đội ngũ.</h1>
         <p>Quản lý phòng, đặt phòng, hộp thư khách, công việc và doanh thu. Chỉ chủ nhà và nhân viên được mời mới có quyền truy cập.</p>
         <ul className="mk-admin-login-points">
           <li><FiCheck />Phân quyền theo vai trò: chủ không gian, quản lý, nhân viên, chỉ xem</li>
@@ -56,8 +57,7 @@ export default function Login() {
     <section className="mk-login-form-wrap">
       <div className="mk-login-form">
         <div className="mk-admin-guest-notice" role="note"><FiInfo /><div><strong>Bạn là khách muốn đặt phòng?</strong><span>Bạn không cần tài khoản. <Link to="/#stays">Xem phòng và đặt ngay</Link></span></div></div>
-        <span className="mk-admin-eyebrow">{register ? 'TẠO TÀI KHOẢN QUẢN TRỊ' : 'ĐĂNG NHẬP QUẢN TRỊ'}</span>
-        <h2>{register ? 'Tạo tài khoản quản lý' : 'Đăng nhập nhân viên'}</h2>
+                <h2>{register ? 'Tạo tài khoản quản lý' : 'Đăng nhập nhân viên'}</h2>
         <p>{register ? 'Dùng email công việc. Nếu được mời, hãy dùng đúng email nhận lời mời.' : 'Dùng email và mật khẩu được cấp cho đội ngũ MaokiHouse.'}</p>
         {notice && <div className="mk-alert" role="status">{notice}</div>}{invite && <div className="mk-alert">Đăng nhập bằng email được mời để tham gia không gian.</div>}{error && <div className="mk-alert error" role="alert">{error}</div>}
         <form onSubmit={event => { event.preventDefault(); void login(); }}>

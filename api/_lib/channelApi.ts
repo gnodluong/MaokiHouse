@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import publicConfig from '../../shared/supabase-public.json';
-import { CalendarInputError, calendarURL, exportCalendar, fetchCalendar } from './calendars';
+import { CalendarInputError, calendarPlatforms, calendarURL, exportCalendar, fetchCalendar } from './calendars';
 import type { CalendarEvent } from './calendars';
 
 const inputSchema = z.discriminatedUnion('action', [
-  z.object({ action: z.literal('connect'), platform: z.enum(['airbnb', 'booking']), propertyId: z.string().uuid(), url: z.string().trim().min(10).max(4096) }).strict(),
+  z.object({ action: z.literal('connect'), platform: z.enum(calendarPlatforms), propertyId: z.string().uuid(), url: z.string().trim().min(10).max(4096), label: z.string().trim().max(80).optional() }).strict(),
   z.object({ action: z.literal('sync'), id: z.string().uuid() }).strict(),
   z.object({ action: z.literal('disconnect'), id: z.string().uuid() }).strict(),
 ]);
@@ -24,7 +24,7 @@ export async function handleChannels(request: Request, env: NodeJS.ProcessEnv = 
   const sync = async (id: string) => {
     const claim = await rpc<{ nonce: string; url: string; platform: string }>('claim', id);
     try { const events = await fetchCalendar(claim.url, claim.platform, transport); return await rpc<{ synced: boolean; blockCount: number; conflictCount: number }>('finish', id, { nonce: claim.nonce, events }); }
-    catch (error) { try { await rpc('fail', id, { nonce: claim.nonce }); } catch { /* Keep previous blocks even if the lease expired. */ } throw error; }
+    catch (error) { try { await rpc('fail', id, { nonce: claim.nonce, reason: error instanceof CalendarInputError ? error.message : '' }); } catch { /* Keep previous blocks even if the lease expired. */ } throw error; }
   };
   try {
     if (feed !== null) {
@@ -44,8 +44,9 @@ export async function handleChannels(request: Request, env: NodeJS.ProcessEnv = 
     const body = parsed.data;
     if (body.action === 'disconnect') { await rpc('disconnect', body.id); return json(200, { disconnected: true }); }
     if (body.action === 'sync') return json(200, await sync(body.id));
-    calendarURL(body.url, body.platform);
-    const saved = await rpc<{ id: string }>('save', undefined, { platform: body.platform, propertyId: body.propertyId, url: body.url });
+    // Store the parsed, normalised form so the database pattern check sees lowercase hosts.
+    const url = calendarURL(body.url, body.platform).toString();
+    const saved = await rpc<{ id: string }>('save', undefined, { platform: body.platform, propertyId: body.propertyId, url, label: body.label || '' });
     try { return json(200, { saved: true, id: saved.id, ...await sync(saved.id) }); }
     catch (error) { return json(200, { saved: true, id: saved.id, synced: false, error: error instanceof CalendarInputError ? error.message : 'Đã lưu kết nối nhưng chưa tải được lịch. Hãy thử đồng bộ lại.' }); }
   } catch (error) { return json(400, { error: error instanceof CalendarInputError ? error.message : 'Không kết nối được dịch vụ lịch. Vui lòng thử lại.' }); }

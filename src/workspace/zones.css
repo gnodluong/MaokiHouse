@@ -1,61 +1,266 @@
 /*
- * Admin zone styles (chủ nhà & đội ngũ): espresso console rail, explicit "Quản trị" markers.
- * The guest zone lives in guest.css (watercolor on vintage paper).
+ * Admin zone (chủ nhà & đội ngũ). Operate mode: one sans family, a tight fixed
+ * type scale, restrained colour. Two themes chosen in the topbar or Settings and
+ * written to <html data-mk-theme>, so dialogs in portals follow them too.
+ *   light – warm paper-white workspace, ink type, terracotta only for actions/selection
+ *   dark  – low-glare charcoal for evening shifts, the same terracotta lifted for contrast
  */
 
-/* ─────────────────────────── ADMIN ZONE ─────────────────────────── */
-.mk-zone-admin { --mk-admin-ink: #1f1410; --mk-admin-panel: #2b1c17; --mk-admin-line: #4a342b; --mk-admin-text: #f3e3d3; --mk-admin-muted: #c7ab96; --mk-admin-gold: #d9b26f; }
+/* ─────────── Tokens ─────────── */
+html[data-mk-theme='light'] .maoki-ui {
+  --mk-bg: #f6f5f2; --mk-surface: #ffffff; --mk-sunken: #efede8; --mk-ink: #1f1b17; --mk-muted: #5f574f; --mk-faint: #6c635a;
+  --mk-accent: #8a4a34; --mk-accent-strong: #713a28; --mk-tint: #f5e8e1; --mk-line: #e4e0d9; --mk-line-strong: #cfc8be; --mk-hover: #f2efea; --mk-on-accent: #ffffff;
+  --mk-danger: #b3261e; --mk-danger-bg: #fbe9e7; --mk-amber: #845300; --mk-amber-bg: #fcf1d8; --mk-success: #2c6a3d; --mk-success-bg: #e5f1e7; --mk-info: #2b5a88; --mk-info-bg: #e6eef7;
+  --mk-shadow-pop: 0 12px 32px rgba(31, 27, 23, 0.14), 0 2px 6px rgba(31, 27, 23, 0.08);
+  color-scheme: light;
+}
+html[data-mk-theme='dark'] .maoki-ui {
+  --mk-bg: #141210; --mk-surface: #1c1a17; --mk-sunken: #181614; --mk-ink: #ede8e1; --mk-muted: #b0a79e; --mk-faint: #958c82;
+  --mk-accent: #e3906f; --mk-accent-strong: #eea586; --mk-tint: #38251c; --mk-line: #2e2a25; --mk-line-strong: #423c35; --mk-hover: #24211d; --mk-on-accent: #1d120c;
+  --mk-danger: #f2a097; --mk-danger-bg: #3b1e1b; --mk-amber: #e8c27c; --mk-amber-bg: #372c18; --mk-success: #92cfa2; --mk-success-bg: #1c3223; --mk-info: #9fc3e8; --mk-info-bg: #1b2938;
+  --mk-shadow-pop: 0 16px 40px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
+}
 
-.mk-admin-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: var(--mk-admin-gold); color: var(--mk-admin-ink); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
-.mk-admin-badge svg { font-size: 13px; }
-.mk-admin-badge.small { padding: 3px 8px; font-size: 10px; }
-.mk-admin-eyebrow { display: block; font-size: 11px; letter-spacing: .12em; font-weight: 700; color: var(--mk-accent); margin-bottom: 10px; }
+/* ─────────── Base ─────────── */
+html[data-mk-theme] .maoki-ui { font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.55; background: var(--mk-bg); color: var(--mk-ink); }
+html[data-mk-theme] body { background: var(--mk-bg, #f6f5f2); }
+html[data-mk-theme='dark'] body { background: #141210; }
+html[data-mk-theme] .maoki-ui h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.25; }
+html[data-mk-theme] .maoki-ui h2 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+html[data-mk-theme] .maoki-ui h3 { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+html[data-mk-theme] .maoki-ui ::selection { background: var(--mk-tint); color: var(--mk-ink); }
+html[data-mk-theme] .maoki-ui :focus-visible { outline: 2px solid var(--mk-accent); outline-offset: 2px; }
+html[data-mk-theme] .maoki-ui { scrollbar-color: var(--mk-line-strong) transparent; caret-color: var(--mk-accent); }
+html[data-mk-theme] .maoki-ui input, html[data-mk-theme] .maoki-ui select, html[data-mk-theme] .maoki-ui textarea {
+  background: var(--mk-surface); color: var(--mk-ink); border: 1px solid var(--mk-line-strong); border-radius: 8px; min-height: 38px; padding: 7px 11px; font-size: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+html[data-mk-theme] .maoki-ui textarea { padding: 9px 11px; }
+html[data-mk-theme] .maoki-ui input:hover, html[data-mk-theme] .maoki-ui select:hover, html[data-mk-theme] .maoki-ui textarea:hover { border-color: var(--mk-faint); }
+html[data-mk-theme] .maoki-ui input:focus, html[data-mk-theme] .maoki-ui select:focus, html[data-mk-theme] .maoki-ui textarea:focus { outline: none; border-color: var(--mk-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mk-accent) 22%, transparent); }
+html[data-mk-theme] .maoki-ui input::placeholder, html[data-mk-theme] .maoki-ui textarea::placeholder { color: var(--mk-faint); opacity: 1; }
+html[data-mk-theme] .maoki-ui input[type='checkbox'], html[data-mk-theme] .maoki-ui input[type='radio'] { width: 16px; height: 16px; min-height: 16px; padding: 0; accent-color: var(--mk-accent); }
+html[data-mk-theme] .mk-field { font-size: 13px; font-weight: 500; gap: 6px; color: var(--mk-ink); }
+html[data-mk-theme] .mk-field small, html[data-mk-theme] .mk-field-hint { color: var(--mk-muted); font-size: 12.5px; line-height: 1.6; }
 
-/* Sidebar becomes a dark console rail so admin never looks like the guest site. */
-.mk-zone-admin .mk-sidebar { background: var(--mk-admin-ink); border-right-color: var(--mk-admin-line); color: var(--mk-admin-text); }
-.mk-admin-sidebar-brand { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-right: 16px; }
-.mk-admin-sidebar-brand .mk-brand { padding: 22px 0 18px 20px; }
-.mk-admin-sidebar-brand .mk-brand-wordmark { width: 130px; background: transparent; padding: 0; }
-.mk-zone-admin .mk-workspace-label { border-color: var(--mk-admin-line); background: var(--mk-admin-panel); }
-.mk-zone-admin .mk-workspace-label strong { color: #fff; }
-.mk-zone-admin .mk-workspace-label small { color: var(--mk-admin-muted); }
-.mk-zone-admin .mk-workspace-label select { margin-top: 6px; min-height: 34px; padding: 4px 8px; background: var(--mk-admin-ink); color: var(--mk-admin-text); border-color: var(--mk-admin-line); }
-.mk-zone-admin .mk-business-avatar { background: var(--mk-admin-gold); color: var(--mk-admin-ink); }
-.mk-zone-admin .mk-nav-heading { color: #a88b77; }
-.mk-zone-admin .mk-nav-link { color: var(--mk-admin-muted) !important; }
-.mk-zone-admin .mk-nav-link:hover { background: var(--mk-admin-panel); color: #fff !important; }
-.mk-zone-admin .mk-nav-link.active { background: #3d2820; color: #fff !important; }
-.mk-zone-admin .mk-nav-link.active::before { background: var(--mk-admin-gold); }
-.mk-zone-admin .mk-unread-count { background: var(--mk-admin-gold); color: var(--mk-admin-ink); }
-.mk-zone-admin .mk-sidebar nav { scrollbar-color: var(--mk-admin-line) transparent; }
-.mk-zone-admin .mk-sidebar-footer { border-top-color: var(--mk-admin-line); }
-.mk-zone-admin .mk-sidebar-footer > a { color: var(--mk-admin-muted); }
-.mk-zone-admin .mk-sidebar-footer > a:hover { color: #fff; }
-.mk-zone-admin .mk-sidebar-person strong { color: #fff; }
-.mk-zone-admin .mk-sidebar-person small { color: var(--mk-admin-muted); }
-.mk-zone-admin .mk-sidebar .mk-icon-button { color: var(--mk-admin-muted); }
-.mk-zone-admin .mk-sidebar .mk-icon-button:hover { background: var(--mk-admin-panel); color: #fff; }
-.mk-zone-admin .mk-sidebar :focus-visible { outline-color: var(--mk-admin-gold); }
+/* ─────────── Buttons ─────────── */
+html[data-mk-theme] .mk-button { min-height: 36px; padding: 7px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 550; gap: 7px; border: 1px solid var(--mk-line-strong); background: var(--mk-surface); color: var(--mk-ink); transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+html[data-mk-theme] .mk-button:hover:not(:disabled) { background: var(--mk-hover); border-color: var(--mk-faint); color: var(--mk-ink); }
+html[data-mk-theme] .mk-button.primary { background: var(--mk-accent); border-color: var(--mk-accent); color: var(--mk-on-accent); }
+html[data-mk-theme] .mk-button.primary:hover:not(:disabled) { background: var(--mk-accent-strong); border-color: var(--mk-accent-strong); color: var(--mk-on-accent); filter: none; }
+html[data-mk-theme] .mk-button.danger { background: var(--mk-danger); border-color: var(--mk-danger); color: var(--mk-surface); }
+html[data-mk-theme] .mk-button.quiet { background: transparent; border-color: transparent; color: var(--mk-muted); }
+html[data-mk-theme] .mk-button svg { font-size: 15px; }
+html[data-mk-theme] .maoki-ui button:disabled { opacity: 0.5; }
+html[data-mk-theme] .mk-icon-button { width: 34px; min-width: 34px; height: 34px; border-radius: 8px; color: var(--mk-muted); }
+html[data-mk-theme] .mk-icon-button:hover { background: var(--mk-hover); color: var(--mk-ink); }
+html[data-mk-theme] .mk-text-button, html[data-mk-theme] .mk-subtle-link { color: var(--mk-accent) !important; font-weight: 550; }
 
-.mk-zone-admin .mk-topbar { border-top: 3px solid var(--mk-admin-gold); }
-.mk-admin-zone-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: var(--mk-tint); color: var(--mk-accent); font-weight: 650; }
-.mk-admin-zone-pill svg { font-size: 12px; }
-.mk-admin-role { white-space: nowrap; font-size: 12px; font-weight: 650; padding: 5px 10px; border-radius: 6px; background: var(--mk-admin-ink); color: var(--mk-admin-gold); }
+/* ─────────── Shell ─────────── */
+.mk-zone-admin.mk-app { background: var(--mk-bg); }
+.mk-zone-admin .mk-sidebar { width: 240px; background: var(--mk-sunken); border-right: 1px solid var(--mk-line); color: var(--mk-ink); }
+.mk-admin-sidebar-brand { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 18px 16px 10px 18px; }
+.mk-admin-sidebar-brand .mk-brand { padding: 0; }
+.mk-admin-sidebar-brand .mk-brand-wordmark { width: 108px; background: transparent; padding: 0; }
+/* The wordmark file is cream on transparent: ink it on the light theme. */
+html[data-mk-theme='light'] .mk-zone-admin .mk-brand-wordmark img { filter: brightness(0) invert(11%) sepia(18%) saturate(900%) hue-rotate(345deg); }
+.mk-zone-admin .mk-workspace-label { margin: 4px 12px 14px; padding: 8px 10px; gap: 10px; border: 1px solid var(--mk-line); background: var(--mk-surface); border-radius: 10px; }
+.mk-zone-admin .mk-business-avatar { width: 30px; height: 30px; border-radius: 7px; background: var(--mk-tint); color: var(--mk-accent); font-size: 13px; }
+.mk-zone-admin .mk-workspace-label strong { font-size: 13.5px; font-weight: 600; color: var(--mk-ink); }
+.mk-zone-admin .mk-workspace-label small { font-size: 12px; color: var(--mk-muted); }
+.mk-zone-admin .mk-workspace-label select { margin-top: 6px; min-height: 30px; padding: 3px 8px; font-size: 12.5px; }
+.mk-zone-admin .mk-sidebar nav { padding: 0 10px 14px; scrollbar-color: var(--mk-line-strong) transparent; }
+.mk-zone-admin .mk-nav-group { margin-bottom: 12px; }
+.mk-zone-admin .mk-nav-heading { font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; color: var(--mk-faint); padding: 6px 10px 4px; text-transform: none; }
+.mk-zone-admin .mk-nav-link { position: relative; min-height: 34px; padding: 6px 10px; gap: 10px; border-radius: 7px; margin: 1px 0; font-size: 13.5px; font-weight: 500; color: var(--mk-muted) !important; transition: background-color 0.12s ease, color 0.12s ease; }
+.mk-zone-admin .mk-nav-link svg { font-size: 16px; opacity: 1; }
+.mk-zone-admin .mk-nav-link:hover { background: var(--mk-hover); color: var(--mk-ink) !important; }
+.mk-zone-admin .mk-nav-link.active { background: var(--mk-surface); color: var(--mk-ink) !important; font-weight: 600; box-shadow: 0 0 0 1px var(--mk-line); }
+.mk-zone-admin .mk-nav-link.active svg { color: var(--mk-accent); }
+.mk-zone-admin .mk-nav-link.active::before { display: none; }
+.mk-zone-admin .mk-unread-count { background: var(--mk-accent); color: var(--mk-on-accent); border-radius: 999px; font-size: 11.5px; font-weight: 600; min-width: 20px; padding: 0 6px; line-height: 20px; }
+.mk-zone-admin .mk-sidebar-footer { padding: 10px 14px 14px; border-top: 1px solid var(--mk-line); }
+.mk-zone-admin .mk-sidebar-footer > a { font-size: 12.5px; color: var(--mk-muted); margin-bottom: 10px; padding: 4px 4px; border-radius: 6px; }
+.mk-zone-admin .mk-sidebar-footer > a:hover { color: var(--mk-ink); background: var(--mk-hover); }
+.mk-zone-admin .mk-sidebar-person strong { font-size: 13px; color: var(--mk-ink); }
+.mk-zone-admin .mk-sidebar-person small { color: var(--mk-muted); }
+.mk-zone-admin .mk-avatar { background: var(--mk-tint); color: var(--mk-accent); }
+.mk-zone-admin .mk-app-main { margin-left: 240px; }
+.mk-zone-admin .mk-topbar { height: 56px; padding: 0 28px; gap: 16px; background: color-mix(in srgb, var(--mk-bg) 92%, transparent); backdrop-filter: saturate(1.2) blur(8px); border-bottom: 1px solid var(--mk-line); border-top: 0; }
+.mk-zone-admin .mk-breadcrumb { gap: 8px; font-size: 13px; color: var(--mk-muted); }
+.mk-zone-admin .mk-breadcrumb strong { color: var(--mk-ink); font-weight: 600; }
+.mk-zone-admin .mk-global-search { width: min(340px, 34vw); }
+.mk-zone-admin .mk-global-search > label { height: 34px; padding: 0 10px; border: 1px solid var(--mk-line); border-radius: 8px; background: var(--mk-surface); }
+.mk-zone-admin .mk-global-search > label:focus-within { border-color: var(--mk-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mk-accent) 22%, transparent); }
+.mk-zone-admin .mk-global-search input { border: 0 !important; box-shadow: none !important; background: transparent !important; min-height: 30px; padding: 0; background: transparent; font-size: 13px; }
+.mk-zone-admin .mk-global-search kbd { background: var(--mk-sunken); border-color: var(--mk-line); font-size: 11px; font-family: inherit; }
+.mk-zone-admin .mk-search-results { background: var(--mk-surface); border-color: var(--mk-line); box-shadow: var(--mk-shadow-pop); border-radius: 10px; }
+.mk-zone-admin .mk-search-results a:hover { background: var(--mk-hover); }
+.mk-zone-admin .mk-topbar-right { gap: 4px; }
+.mk-zone-admin .mk-main-content { padding: 28px 32px 48px; display: flex; flex-direction: column; max-width: 1360px; width: 100%; }
+/* Page header first, the quick guide directly under it, then the page body. */
+
+.mk-zone-admin .mk-main-content > .mk-page-header { order: -2; }
+.mk-zone-admin .mk-main-content > .mk-guide-panel { order: -1; }
+
+/* ─────────── Page header & guide ─────────── */
+.mk-zone-admin .mk-page-header { align-items: flex-end; margin-bottom: 18px; gap: 20px; }
+.mk-zone-admin .mk-page-header p { margin-top: 6px; font-size: 14px; color: var(--mk-muted); max-width: 72ch; }
+.mk-zone-admin .mk-page-header .mk-eyebrow { display: none; }
+.mk-guide-panel { margin-bottom: 20px; border: 1px solid var(--mk-line); border-radius: 10px; background: var(--mk-surface); }
+.mk-guide-toggle { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 8px 14px; border: 0; background: transparent; color: var(--mk-ink); font-size: 13px; font-weight: 600; text-align: left; border-radius: 10px; }
+.mk-guide-toggle svg { font-size: 16px; color: var(--mk-accent); }
+.mk-guide-toggle:hover { background: var(--mk-hover); }
+.mk-guide-chevron { margin-left: auto; color: var(--mk-muted) !important; transition: transform 0.2s ease; }
+.mk-guide-panel.is-open .mk-guide-chevron { transform: rotate(180deg); }
+.mk-guide-body { padding: 2px 16px 14px 16px; }
+.mk-guide-body ol { list-style: none; counter-reset: guide; margin: 0; padding: 0; display: grid; gap: 8px; }
+.mk-guide-body li { counter-increment: guide; position: relative; padding-left: 30px; font-size: 13.5px; line-height: 1.6; color: var(--mk-ink); max-width: 90ch; }
+.mk-guide-body li::before { content: counter(guide); position: absolute; left: 0; top: 1px; width: 20px; height: 20px; border-radius: 50%; background: var(--mk-tint); color: var(--mk-accent); font-size: 11.5px; font-weight: 700; display: grid; place-items: center; }
+.mk-guide-tip { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px !important; padding-top: 10px; border-top: 1px dashed var(--mk-line); font-size: 13px; color: var(--mk-muted); }
+.mk-guide-tip svg { font-size: 15px; margin-top: 2px; color: var(--mk-info); }
+
+/* ─────────── Surfaces & data ─────────── */
+html[data-mk-theme] .mk-panel { background: var(--mk-surface); border: 1px solid var(--mk-line); border-radius: 10px; margin-bottom: 18px; box-shadow: none; }
+html[data-mk-theme] .mk-section-title { padding: 14px 18px; border-bottom: 1px solid var(--mk-line); }
+html[data-mk-theme] .mk-section-title h2 { font-size: 14px; }
+html[data-mk-theme] .mk-stats-grid { gap: 12px; margin-bottom: 18px; }
+html[data-mk-theme] .mk-stat { background: var(--mk-surface); border: 1px solid var(--mk-line); border-radius: 10px; padding: 14px 16px; }
+html[data-mk-theme] .mk-stat-heading { font-size: 13px; color: var(--mk-muted); }
+html[data-mk-theme] .mk-stat-heading span { color: var(--mk-faint); }
+html[data-mk-theme] .mk-stat > strong { font-size: 24px; letter-spacing: -0.02em; font-weight: 650; margin: 6px 0 2px; }
+html[data-mk-theme] .mk-stat-note { font-size: 12.5px; color: var(--mk-muted); }
+html[data-mk-theme] .mk-table { font-size: 13.5px; }
+html[data-mk-theme] .mk-table th { background: var(--mk-sunken); color: var(--mk-muted); font-size: 12.5px; font-weight: 550; letter-spacing: 0; padding: 9px 16px; border-bottom: 1px solid var(--mk-line); }
+html[data-mk-theme] .mk-table td { padding: 11px 16px; border-bottom: 1px solid var(--mk-line); }
+html[data-mk-theme] .mk-table tbody tr:hover { background: var(--mk-hover); }
+html[data-mk-theme] .mk-toolbar { padding: 10px 14px; gap: 10px; border-bottom: 1px solid var(--mk-line); }
+html[data-mk-theme] .mk-badge { border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 550; border: 0; background: var(--mk-sunken); color: var(--mk-muted); }
+html[data-mk-theme] .mk-badge.confirmed, html[data-mk-theme] .mk-badge.active, html[data-mk-theme] .mk-badge.done, html[data-mk-theme] .mk-badge.returning { background: var(--mk-success-bg); color: var(--mk-success); }
+html[data-mk-theme] .mk-badge.pending, html[data-mk-theme] .mk-badge.high, html[data-mk-theme] .mk-badge.scheduled { background: var(--mk-amber-bg); color: var(--mk-amber); }
+html[data-mk-theme] .mk-badge.cancelled { background: var(--mk-danger-bg); color: var(--mk-danger); }
+html[data-mk-theme] .mk-badge.airbnb, html[data-mk-theme] .mk-badge.instagram { background: color-mix(in srgb, #e0565f 14%, var(--mk-surface)); color: color-mix(in srgb, #c03a46 80%, var(--mk-ink)); }
+html[data-mk-theme] .mk-badge.booking, html[data-mk-theme] .mk-badge.facebook, html[data-mk-theme] .mk-badge.zalo { background: var(--mk-info-bg); color: var(--mk-info); }
+html[data-mk-theme] .mk-badge.agoda, html[data-mk-theme] .mk-badge.guest, html[data-mk-theme] .mk-badge.doing { background: color-mix(in srgb, #8a63b8 15%, var(--mk-surface)); color: color-mix(in srgb, #7a52a8 75%, var(--mk-ink)); }
+html[data-mk-theme] .mk-segment { background: var(--mk-sunken); border-color: var(--mk-line); border-radius: 8px; }
+html[data-mk-theme] .mk-segment button { font-size: 12.5px; border-radius: 6px; color: var(--mk-muted); }
+html[data-mk-theme] .mk-segment button.selected { background: var(--mk-surface); color: var(--mk-ink); box-shadow: 0 0 0 1px var(--mk-line); }
+html[data-mk-theme] .mk-alert { background: var(--mk-info-bg); color: var(--mk-ink); border: 1px solid color-mix(in srgb, var(--mk-info) 25%, transparent); border-radius: 8px; font-size: 13.5px; padding: 10px 14px; }
+html[data-mk-theme] .mk-alert.error { background: var(--mk-danger-bg); color: var(--mk-danger); border-color: color-mix(in srgb, var(--mk-danger) 30%, transparent); }
+html[data-mk-theme] .mk-alert.success { background: var(--mk-success-bg); color: var(--mk-success); border-color: color-mix(in srgb, var(--mk-success) 30%, transparent); }
+html[data-mk-theme] .mk-empty h2 { font-size: 15px; }
+html[data-mk-theme] .mk-empty p { color: var(--mk-muted); }
+html[data-mk-theme] .mk-empty-icon { background: var(--mk-sunken); color: var(--mk-muted); }
+html[data-mk-theme] .mk-tip { background: var(--mk-sunken); border: 1px solid var(--mk-line); border-radius: 10px; }
+html[data-mk-theme] .mk-tip > span { color: var(--mk-muted); letter-spacing: 0; text-transform: none; font-size: 13px; font-weight: 600; }
+html[data-mk-theme] .mk-tip p, html[data-mk-theme] .mk-tip a { color: var(--mk-ink); font-size: 13px; }
+html[data-mk-theme] .mk-tip a { color: var(--mk-accent); }
+html[data-mk-theme] .mk-eyebrow { font-size: 12px; letter-spacing: 0.02em; text-transform: none; color: var(--mk-muted); font-weight: 600; }
+
+/* ─────────── Dialogs ─────────── */
+html[data-mk-theme] .mk-dialog-backdrop { background: color-mix(in srgb, #0b0908 45%, transparent); }
+html[data-mk-theme] .mk-dialog { background: var(--mk-surface); border-color: var(--mk-line); border-radius: 12px; box-shadow: var(--mk-shadow-pop); }
+html[data-mk-theme] .mk-dialog > header { padding: 16px 20px; }
+html[data-mk-theme] .mk-dialog > header h2 { font-size: 17px; }
+html[data-mk-theme] .mk-dialog footer { padding: 12px 20px; background: var(--mk-sunken); }
+
+/* ─────────── Setup checklist (Overview) ─────────── */
+.mk-checklist { margin-bottom: 18px; }
+.mk-checklist-head { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--mk-line); }
+.mk-checklist-head > div:first-child { flex: 1; min-width: 0; }
+.mk-checklist-head p { color: var(--mk-muted); font-size: 13px; margin-top: 2px !important; }
+.mk-checklist-progress { width: 160px; height: 6px; border-radius: 999px; background: var(--mk-sunken); overflow: hidden; }
+.mk-checklist-progress > span { display: block; height: 100%; background: var(--mk-accent); border-radius: inherit; transition: width 0.3s ease; }
+.mk-checklist ol { list-style: none; margin: 0; padding: 4px 0; }
+.mk-checklist li { display: flex; align-items: center; gap: 12px; padding: 10px 18px; }
+.mk-checklist li + li { border-top: 1px solid var(--mk-line); }
+.mk-check-mark { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--mk-line-strong); color: transparent; flex: none; }
+.mk-check-mark svg { font-size: 13px; }
+.mk-checklist li.is-done .mk-check-mark { background: var(--mk-success); border-color: var(--mk-success); color: var(--mk-surface); }
+.mk-checklist li > div { flex: 1; min-width: 0; }
+.mk-checklist li strong { display: block; font-size: 13.5px; font-weight: 600; }
+.mk-checklist li.is-done strong { color: var(--mk-muted); text-decoration: line-through; text-decoration-color: var(--mk-faint); }
+.mk-checklist li small { display: block; font-size: 12.5px; color: var(--mk-muted); }
+.mk-checklist li .mk-button { min-height: 32px; padding: 5px 12px; font-size: 13px; }
+
+/* ─────────── Channels (Kết nối kênh) ─────────── */
+.mk-channel-table { width: 100%; border-collapse: collapse; }
+.mk-channel-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 12px 18px; }
+.mk-channel-row + .mk-channel-row { border-top: 1px solid var(--mk-line); }
+.mk-channel-mark { width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; font-weight: 700; font-size: 14px; color: #fff; }
+.mk-channel-row strong { font-size: 14px; font-weight: 600; display: block; }
+.mk-channel-row small { display: block; color: var(--mk-muted); font-size: 12.5px; line-height: 1.5; }
+.mk-channel-count { font-size: 12.5px; color: var(--mk-muted); white-space: nowrap; }
+.mk-sync-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 18px; border-bottom: 1px solid var(--mk-line); }
+.mk-sync-bar > span { color: var(--mk-muted); font-size: 13px; margin-right: auto; }
+.mk-calendar-links td:first-child strong { display: block; }
+.mk-calendar-links td small { display: block; color: var(--mk-muted); font-size: 12.5px; }
+.mk-calendar-links .mk-row-actions { display: flex; gap: 2px; justify-content: flex-end; }
+.mk-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap; }
+.mk-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--mk-faint); }
+.mk-status.ok::before { background: var(--mk-success); }
+.mk-status.warn::before { background: var(--mk-amber); }
+.mk-status.error::before { background: var(--mk-danger); }
+.mk-wizard-steps { display: flex; gap: 6px; margin-bottom: 16px; }
+.mk-wizard-steps span { flex: 1; height: 4px; border-radius: 999px; background: var(--mk-sunken); }
+.mk-wizard-steps span.is-done { background: var(--mk-accent); }
+.mk-howto { margin: 0 0 14px; padding: 12px 14px 12px 32px; background: var(--mk-sunken); border-radius: 8px; font-size: 13.5px; line-height: 1.65; }
+.mk-howto li + li { margin-top: 4px; }
+.mk-copy-field { display: flex; gap: 8px; }
+.mk-copy-field input { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px !important; }
+
+/* ─────────── AI settings ─────────── */
+.mk-ai-settings { padding: 16px 18px; display: grid; gap: 14px; }
+.mk-ai-settings .mk-form-grid { gap: 14px 16px; }
+.mk-key-state { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13.5px; }
+.mk-key-state code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--mk-sunken); padding: 2px 7px; border-radius: 6px; font-size: 12.5px; }
+.mk-inline-help { font-size: 12.5px; color: var(--mk-muted); line-height: 1.6; }
+.mk-inline-help a { color: var(--mk-accent); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ─────────── Badges in the shell ─────────── */
+.mk-admin-badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; background: var(--mk-tint); color: var(--mk-accent); font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.mk-admin-badge svg { font-size: 12px; }
+.mk-admin-badge.small { padding: 2px 7px; font-size: 11px; }
+.mk-admin-eyebrow { display: none; }
+.mk-zone-admin .mk-demo-badge { border-color: var(--mk-line); color: var(--mk-muted); border-radius: 999px; }
+
+/* ─────────── Responsive ─────────── */
+@media (max-width: 1000px) {
+  .mk-zone-admin .mk-sidebar { width: 224px; }
+  .mk-zone-admin .mk-app-main { margin-left: 224px; }
+  .mk-zone-admin .mk-main-content { padding: 22px 22px 40px; }
+}
+@media (max-width: 850px) {
+  .mk-zone-admin .mk-sidebar { width: 264px; }
+  .mk-zone-admin .mk-sidebar.is-open { box-shadow: var(--mk-shadow-pop); }
+  .mk-zone-admin .mk-app-main { margin-left: 0; }
+  .mk-zone-admin .mk-topbar { padding: 0 14px; }
+  .mk-channel-row { grid-template-columns: 36px minmax(0, 1fr); }
+  .mk-channel-row > :nth-child(3), .mk-channel-row > :nth-child(4) { grid-column: 2; justify-self: start; }
+}
+@media (max-width: 650px) {
+  .mk-zone-admin .mk-main-content { padding: 18px 14px 36px; }
+  .mk-zone-admin .mk-page-header { flex-direction: column; align-items: flex-start; }
+  .mk-checklist-head { flex-direction: column; align-items: flex-start; }
+  .mk-checklist li { flex-wrap: wrap; }
+  .mk-checklist li .mk-button { margin-left: 34px; }
+}
 
 /* Admin login: dark console story + plain form, unmistakably different from the guest site. */
 .mk-admin-login { min-height: 100dvh; display: grid; grid-template-columns: 1fr 1fr; }
-.mk-admin-login-story { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 34px 6vw 48px; background: radial-gradient(circle at 85% 110%, #5c2f20 0, transparent 55%), var(--mk-admin-ink); color: var(--mk-admin-text); }
+.mk-admin-login-story { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 34px 6vw 48px; background: var(--mk-sunken); border-right: 1px solid var(--mk-line); color: var(--mk-ink); }
 .mk-admin-login-story > * { position: relative; z-index: 1; }
 .mk-admin-login-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .mk-admin-login-top .mk-brand { padding: 0; }
 .mk-admin-login-top .mk-brand-wordmark { background: transparent; padding: 0; width: 150px; }
-.mk-admin-login-story .mk-admin-eyebrow { color: var(--mk-admin-gold); margin-top: 60px; }
-.maoki-ui .mk-admin-login-story h1 { color: #fff; font-size: clamp(32px, 3.6vw, 52px); font-weight: 600; line-height: 1.2; letter-spacing: -.035em; }
-.mk-admin-login-story p { color: var(--mk-admin-muted); margin: 22px 0 26px; max-width: 420px; line-height: 1.9; }
+.mk-admin-login-story .mk-admin-eyebrow { color: var(--mk-accent); margin-top: 60px; }
+.maoki-ui .mk-admin-login-story h1 { color: var(--mk-ink); font-size: 34px; font-weight: 650; line-height: 1.2; letter-spacing: -.035em; }
+.mk-admin-login-story p { color: var(--mk-muted); margin: 22px 0 26px; max-width: 420px; line-height: 1.9; }
 .mk-admin-login-points { list-style: none; margin: 0 0 40px; padding: 0; display: grid; gap: 12px; }
-.mk-admin-login-points li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--mk-admin-text); }
-.mk-admin-login-points svg { color: var(--mk-admin-gold); font-size: 16px; margin-top: 2px; }
-.mk-admin-login-story > small { font-size: 12px; color: var(--mk-admin-muted); }
+.mk-admin-login-points li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--mk-ink); }
+.mk-admin-login-points svg { color: var(--mk-accent); font-size: 16px; margin-top: 2px; }
+.mk-admin-login-story > small { font-size: 12px; color: var(--mk-muted); }
 .mk-admin-login .mk-login-form-wrap { display: flex; justify-content: center; align-items: center; padding: 50px 30px; background: var(--mk-surface); }
 .mk-admin-login .mk-login-form > h2 { font-size: 26px; margin: 4px 0 10px; }
 .mk-admin-guest-notice { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; margin-bottom: 30px; border-radius: 12px; background: var(--mk-tint); font-size: 13px; }
@@ -77,5 +282,32 @@
 }
 @media (prefers-color-scheme: dark) {
   .mk-zone-admin { --mk-admin-ink: #120b09; --mk-admin-panel: #241713; }
-  .mk-zone-admin .mk-topbar { border-top-color: var(--mk-admin-gold); }
+  .mk-zone-admin .mk-topbar { border-top-color: var(--mk-accent); }
 }
+
+/* Theme picker (Settings) */
+.mk-theme-options { border: 0; margin: 0; padding: 14px 18px 4px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.mk-theme-option { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border: 1px solid var(--mk-line-strong); border-radius: 10px; cursor: pointer; transition: border-color 0.15s ease, background-color 0.15s ease; }
+.mk-theme-option:hover { background: var(--mk-hover); }
+.mk-theme-option.is-selected { border-color: var(--mk-accent); background: var(--mk-tint); }
+.mk-theme-option input { margin-top: 3px; }
+.mk-theme-option strong { display: block; font-size: 13.5px; }
+.mk-theme-option small { display: block; font-size: 12.5px; color: var(--mk-muted); }
+.mk-settings-panel > .mk-inline-help { padding: 0 18px 14px; }
+@media (max-width: 650px) { .mk-theme-options { grid-template-columns: 1fr; } }
+
+/* Calendar chips: tinted from each channel colour over the current surface, so both themes stay legible. */
+html[data-mk-theme] .mk-calendar-booking { background: color-mix(in srgb, var(--mk-accent) 14%, var(--mk-surface)); color: var(--mk-ink); border: 1px solid color-mix(in srgb, var(--mk-accent) 35%, var(--mk-surface)); border-left: 3px solid var(--mk-accent); }
+html[data-mk-theme] .mk-calendar-booking.airbnb { background: color-mix(in srgb, #e0565f 15%, var(--mk-surface)); border-color: color-mix(in srgb, #e0565f 38%, var(--mk-surface)); border-left-color: #d9505a; }
+html[data-mk-theme] .mk-calendar-booking.booking { background: color-mix(in srgb, #3b6fd1 15%, var(--mk-surface)); border-color: color-mix(in srgb, #3b6fd1 38%, var(--mk-surface)); border-left-color: #3b6fd1; }
+html[data-mk-theme] .mk-calendar-booking.agoda { background: color-mix(in srgb, #8a63b8 16%, var(--mk-surface)); border-color: color-mix(in srgb, #8a63b8 38%, var(--mk-surface)); border-left-color: #8a63b8; }
+html[data-mk-theme] .mk-calendar-booking small, html[data-mk-theme] .mk-calendar-booking span { color: var(--mk-muted); }
+html[data-mk-theme] .mk-calendar-corner { letter-spacing: 0; text-transform: none; background: var(--mk-sunken); }
+html[data-mk-theme] .mk-calendar-day { background: var(--mk-sunken); }
+html[data-mk-theme] .mk-calendar-day.today, html[data-mk-theme] .mk-calendar-cell.today { background: var(--mk-tint); }
+html[data-mk-theme] .mk-ai-welcome h2 { font-family: inherit; font-size: 18px; font-weight: 650; }
+html[data-mk-theme] .mk-ai-prompts button { background: var(--mk-surface); border-color: var(--mk-line); color: var(--mk-ink); }
+html[data-mk-theme] .mk-ai-prompts button:hover:not(:disabled) { border-color: var(--mk-accent); background: var(--mk-hover); }
+html[data-mk-theme] .mk-ai-message.model { background: var(--mk-sunken); }
+html[data-mk-theme] .maoki-ui code { color: var(--mk-ink); background: var(--mk-sunken); border: 1px solid var(--mk-line); border-radius: 5px; padding: 1px 5px; font-size: 0.88em; }
+html[data-mk-theme] .mk-howto a { color: var(--mk-accent); text-decoration: underline; text-underline-offset: 2px; }

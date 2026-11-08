@@ -24,6 +24,13 @@ export async function channelMigrationPlan() {
   const [,version,name] = file.match(/^(\d+)_(.+)\.sql$/);
   return { file,version,name,source,hash:createHash('sha256').update(source).digest('hex'),query:upgradeSQL(version,name,source) };
 }
+export async function aiMigrationPlan() {
+  const files = (await readdir(migrationDirectory)).filter(name => /^\d+_maoki_calendars_ai\.sql$/.test(name));
+  if (files.length !== 1) throw new Error('Expected exactly one calendars/AI migration');
+  const file = files[0], source = await readFile(new URL(file, migrationDirectory), 'utf8');
+  const [,version,name] = file.match(/^(\d+)_(.+)\.sql$/);
+  return { file,version,name,source,hash:createHash('sha256').update(source).digest('hex'),query:upgradeSQL(version,name,source) };
+}
 export const statusSQL = `select
   (select coalesce(jsonb_agg(jsonb_build_object('table',c.relname,'rls',c.relrowsecurity) order by c.relname),'[]') from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ('maoki_workspaces','maoki_members','maoki_records','maoki_activity')) as tables,
   to_regprocedure('public.maoki_workspace(text,text,uuid,jsonb)') is not null as workspace_rpc,
@@ -43,9 +50,10 @@ export function verifySchema(status, permissions) {
 async function main() {
   const action = process.argv[2] || 'plan';
   if (!['plan','status','apply'].includes(action)) throw new Error('Use plan, status, or apply');
-  const plan = await migrationPlan(); const channels = await channelMigrationPlan();
+  const plan = await migrationPlan(); const channels = await channelMigrationPlan(); const ai = await aiMigrationPlan();
   console.log(JSON.stringify({ action, projectRef, migration:plan.file, sha256:plan.hash, productionURL }));
   console.log(JSON.stringify({ channelMigration:channels.file,sha256:channels.hash }));
+  console.log(JSON.stringify({ aiMigration:ai.file,sha256:ai.hash }));
   if (action === 'plan') return;
   const token = process.env.SUPABASE_ACCESS_TOKEN;
   if (!token) throw new Error('Missing SUPABASE_ACCESS_TOKEN. Add a scoped token securely in environment settings, never in chat or VITE_* variables.');
@@ -90,6 +98,20 @@ async function main() {
     if(!checks.rpc || !checks.rls || checks.anon_admin) throw new Error('Unexpected calendar RPC/RLS permissions');
   }
   console.log(JSON.stringify({channelMigrationApplied:channelsApplied}));
+  let aiApplied=false;
+  if (channelsApplied) {
+    const rows=await query(`select statements,name from supabase_migrations.schema_migrations where version=${literal(ai.version)};`);
+    if (rows.length) { if (rows[0].name!==ai.name || !rows[0].statements?.includes(ai.source)) throw new Error('Remote calendars/AI migration history differs from reviewed source'); aiApplied=true; }
+  }
+  if (action==='apply' && channelsApplied && !aiApplied) { await query(ai.query,false); aiApplied=true; }
+  if (aiApplied) {
+    const checks=(await query(`select to_regprocedure('public.maoki_ai_settings(text,jsonb)') is not null as rpc,
+      (select c.relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='maoki_private' and c.relname='ai_settings') as rls,
+      has_function_privilege('anon','public.maoki_ai_settings(text,jsonb)','execute') as anon_ai,
+      has_table_privilege('authenticated','maoki_private.ai_settings','select') as direct_read;`))[0];
+    if (!checks.rpc || !checks.rls || checks.anon_ai || checks.direct_read) throw new Error('Unexpected AI settings RPC/RLS permissions');
+  }
+  console.log(JSON.stringify({aiMigrationApplied:aiApplied}));
   console.log(JSON.stringify({ projectRef,status:project.status,migrationApplied:applied,tables:status.tables,workspaceRPC:status.workspace_rpc,publicRPC:status.public_rpc }));
   if (action==='apply') {
     if (!applied) throw new Error('Migration application not confirmed');

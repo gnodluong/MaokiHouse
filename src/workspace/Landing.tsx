@@ -222,7 +222,7 @@ export default function Landing() {
   const [activeMoment, setActiveMoment] = useState(0);
 
   const [query, setQuery] = useState('');
-  const [guestCount, setGuestCount] = useState(2);
+  const [guestCount, setGuestCount] = useState(1);
   const [dates, setDates] = useState(() => ({
     checkIn: todayIn(),
     checkOut: addDays(todayIn(), 2),
