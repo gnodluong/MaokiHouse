@@ -311,3 +311,19 @@ html[data-mk-theme] .mk-ai-prompts button:hover:not(:disabled) { border-color: v
 html[data-mk-theme] .mk-ai-message.model { background: var(--mk-sunken); }
 html[data-mk-theme] .maoki-ui code { color: var(--mk-ink); background: var(--mk-sunken); border: 1px solid var(--mk-line); border-radius: 5px; padding: 1px 5px; font-size: 0.88em; }
 html[data-mk-theme] .mk-howto a { color: var(--mk-accent); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Login: tabs and real buttons instead of text links */
+.mk-admin-login .mk-login-form { display: flex; flex-direction: column; gap: 14px; }
+.mk-admin-login .mk-login-form > .mk-admin-badge { align-self: flex-start; }
+.mk-admin-login .mk-login-form > h2 { margin: 4px 0 0; }
+.mk-admin-login .mk-login-form > p { color: var(--mk-muted); line-height: 1.6; }
+.mk-admin-login .mk-login-form form { display: flex; flex-direction: column; gap: 14px; }
+.mk-admin-login .mk-login-form form .mk-button { width: 100%; min-height: 46px; font-size: 15px; }
+.mk-login-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 10px; background: var(--mk-sunken); border: 1px solid var(--mk-line); }
+.mk-login-tabs button { min-height: 40px; border: 0; border-radius: 7px; background: transparent; color: var(--mk-muted); font-size: 14px; font-weight: 600; }
+.mk-login-tabs button.is-active { background: var(--mk-surface); color: var(--mk-ink); box-shadow: 0 0 0 1px var(--mk-line-strong); }
+.mk-login-tabs button:hover:not(.is-active) { color: var(--mk-ink); }
+.mk-login-back { min-height: 36px !important; }
+.mk-admin-login .mk-admin-login-footer { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; font-size: 13px; color: var(--mk-muted); }
+.mk-admin-login .mk-admin-login-footer .mk-button { width: 100%; }
+@media (max-width: 650px) { .mk-ai-settings .mk-form-grid { grid-template-columns: 1fr; } }

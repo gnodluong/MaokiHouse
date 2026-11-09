@@ -71,7 +71,8 @@ await context.route('**/api/channels**', route => serial(async () => {
     return route.fulfill({ json: { saved: true, id, ...await call('finish', id, { nonce: claim.nonce, events: [{ uid: 'demo-' + id, checkIn: day(10), checkOut: day(12) }] }) } });
   } catch (error) { return route.fulfill({ status: 400, json: { error: error.message } }); }
 }));
-await context.route('**/api/assistant', route => route.fulfill({ json: route.request().method() === 'GET' ? { configured: false, provider: 'OpenRouter', model: 'nvidia/nemotron-3.5-super-vl:free', source: null, keyHint: '', allowAgents: false, canManage: true, canUse: true, updatedAt: null } : { reply: 'Bản nháp mẫu.' } }));
+const aiStatus = process.env.AI_GEMINI ? { configured: true, provider: 'Gemini', model: 'gemini-flash-latest', source: 'server', keyHint: '', allowAgents: false, canManage: true, canUse: true, updatedAt: null } : { configured: false, provider: 'OpenRouter', model: 'nvidia/nemotron-3.5-super-vl:free', source: null, keyHint: '', allowAgents: false, canManage: true, canUse: true, updatedAt: null };
+await context.route('**/api/assistant', route => route.fulfill({ json: route.request().method() === 'GET' ? aiStatus : { reply: 'Bản nháp mẫu.', ok: true, model: 'nvidia/nemotron-3.5-super-vl:free' } }));
 
 if (process.env.THEME) await context.addInitScript(theme => { localStorage.setItem('maoki:admin-theme', theme); }, process.env.THEME);
 const page = await context.newPage();
@@ -87,6 +88,16 @@ for (const [i, p] of pages.entries()) {
   await page.goto(origin + '/admin/dashboard' + (p ? '/' + p : ''));
   await page.waitForTimeout(900);
   await page.screenshot({ path: `${out}/${String(i + 1).padStart(2, '0')}-${p || 'overview'}.png`, fullPage: process.env.FULL === '1' });
+}
+if (process.env.AI_GEMINI) {
+  await page.goto(origin + '/admin/dashboard/ai'); await page.waitForTimeout(900);
+  await page.getByRole('button', { name: /Cài đặt AI/ }).first().click().catch(() => {});
+  await page.locator('input[type=password]').fill('  "sk-or-v1-0123456789abcdef0123456789abcdef"\n');
+  const save = page.getByRole('button', { name: 'Lưu và kiểm tra' });
+  console.log('save enabled:', await save.isEnabled());
+  await save.click(); await page.waitForTimeout(1200);
+  await asUser(); console.log('stored:', JSON.stringify((await db.query("select public.maoki_ai_settings('status','{}') as r")).rows[0].r));
+  await page.screenshot({ path: `${out}/ai-saved.png`, fullPage: true });
 }
 if (process.env.WIZARD) {
   await page.goto(origin + '/admin/dashboard/channels'); await page.waitForTimeout(800);

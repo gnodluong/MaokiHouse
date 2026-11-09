@@ -1,7 +1,7 @@
 import Brand from './Brand';
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import { FiArrowRight, FiGrid, FiArrowLeft, FiShield, FiCheck, FiInfo, FiLock } from 'react-icons/fi';
+import { FiArrowRight, FiGrid, FiArrowLeft, FiShield, FiCheck, FiLock, FiSettings } from 'react-icons/fi';
 import { requireSupabase, databaseError } from '../lib/supabase/client';
 import { useSession } from './Session';
 import { Button } from './ui';
@@ -42,7 +42,7 @@ export default function Login() {
   if (!loading && user && !invite && !busy) return <Navigate to="/admin/dashboard" replace />;
   return <div className="maoki-ui mk-zone-admin mk-admin-login">
     <section className="mk-admin-login-story">
-      <div className="mk-admin-login-top"><Brand to="/admin" tagline="" /><span className="mk-admin-badge"><FiShield />Khu vực quản trị</span></div>
+      <div className="mk-admin-login-top"><Brand to="/admin" tagline="" /><Link className="mk-button mk-login-back" to="/"><FiArrowLeft aria-hidden="true" />Trang khách</Link></div>
       <div>
                 <h1>Bảng điều hành<br />dành cho đội ngũ.</h1>
         <p>Quản lý phòng, đặt phòng, hộp thư khách, công việc và doanh thu. Chỉ chủ nhà và nhân viên được mời mới có quyền truy cập.</p>
@@ -56,18 +56,22 @@ export default function Login() {
     </section>
     <section className="mk-login-form-wrap">
       <div className="mk-login-form">
-        <div className="mk-admin-guest-notice" role="note"><FiInfo /><div><strong>Bạn là khách muốn đặt phòng?</strong><span>Bạn không cần tài khoản. <Link to="/#stays">Xem phòng và đặt ngay</Link></span></div></div>
+        <span className="mk-admin-badge"><FiShield aria-hidden="true" />Khu vực quản trị</span>
+        <div className="mk-login-tabs" role="tablist" aria-label="Chọn thao tác">
+          <button type="button" role="tab" aria-selected={!register} className={!register ? 'is-active' : ''} disabled={busy} onClick={() => { setRegister(false); setError(''); setNotice(''); }}>Đăng nhập</button>
+          <button type="button" role="tab" aria-selected={register} className={register ? 'is-active' : ''} disabled={busy} onClick={() => { setRegister(true); setError(''); setNotice(''); }}>Tạo tài khoản</button>
+        </div>
                 <h2>{register ? 'Tạo tài khoản quản lý' : 'Đăng nhập nhân viên'}</h2>
-        <p>{register ? 'Dùng email công việc. Nếu được mời, hãy dùng đúng email nhận lời mời.' : 'Dùng email và mật khẩu được cấp cho đội ngũ MaokiHouse.'}</p>
+        <p>{register ? 'Dùng email công việc. Nếu được mời, hãy dùng đúng email nhận lời mời.' : 'Dùng email và mật khẩu được cấp cho đội ngũ MaokiHouse. Khách đặt phòng không cần tài khoản.'}</p>
         {notice && <div className="mk-alert" role="status">{notice}</div>}{invite && <div className="mk-alert">Đăng nhập bằng email được mời để tham gia không gian.</div>}{error && <div className="mk-alert error" role="alert">{error}</div>}
         <form onSubmit={event => { event.preventDefault(); void login(); }}>
           <label className="mk-field" htmlFor="login-email">Email công việc<input id="login-email" type="email" required autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} placeholder="ten@maokihouse.vn" /></label>
           <label className="mk-field" htmlFor="login-password">Mật khẩu<input id="login-password" type="password" required minLength={register ? 8 : undefined} autoComplete={register ? 'new-password' : 'current-password'} value={password} onChange={event => setPassword(event.target.value)} placeholder="Nhập mật khẩu của bạn" /></label>
           <Button kind="primary" type="submit" busy={busy}><FiLock />{register ? 'Tạo tài khoản quản trị' : 'Vào trang quản trị'}<FiArrowRight /></Button>
         </form>
-        <button className="mk-text-button" disabled={busy} onClick={() => { setRegister(value => !value); setError(''); setNotice(''); }}>{register ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Tạo tài khoản quản lý'}</button>
+        
         {demoAvailable && <><div className="mk-login-divider">hoặc khám phá trước</div><Button busy={busy} onClick={() => void login(true)}><FiGrid />Mở trang quản trị demo</Button><small className="mk-login-demo-note">Dữ liệu mẫu được lưu trong môi trường thử nghiệm riêng. Không kết nối tài khoản hoặc gửi tin nhắn bên ngoài.</small></>}
-        <div className="mk-admin-login-footer"><Link to="/" className="mk-text-button"><FiArrowLeft />Về website khách</Link><Link className="mk-subtle-link" to="/setup">Thiết lập Supabase &amp; AI</Link></div>
+        <div className="mk-admin-login-footer"><span>Lần đầu đưa MaokiHouse vào sử dụng?</span><Link className="mk-button" to="/setup"><FiSettings aria-hidden="true" />Hướng dẫn thiết lập</Link></div>
       </div>
     </section>
   </div>;

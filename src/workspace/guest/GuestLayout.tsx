@@ -31,6 +31,13 @@ export default function GuestLayout() {
 
   useEffect(() => { setOpen(false); }, [location.pathname, location.hash]);
 
+  // The guest site is a single light “paper” world: opt out of the OS dark-mode overrides used by the admin.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.mkZone = 'guest';
+    return () => { delete root.dataset.mkZone; };
+  }, []);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 18);
     onScroll();

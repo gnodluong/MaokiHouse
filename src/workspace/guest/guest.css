@@ -28,6 +28,7 @@
 
   position: relative;
   min-height: 100dvh;
+  color-scheme: light;
   background-color: var(--paper);
   background-image: var(--mk-paper-tile, none);
   color: var(--ink);
@@ -72,13 +73,13 @@
 .mk-zone-guest .mk-button {
   font-family: var(--font-body);
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 650;
   min-height: 46px;
   padding: 10px 20px;
   border-radius: 10px;
   color: var(--ink);
   background: transparent;
-  border: 1.5px solid rgba(43, 24, 16, 0.4);
+  border: 1.5px solid rgba(43, 24, 16, 0.6);
   transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.25s var(--ease);
 }
 .mk-zone-guest .mk-button:hover { background: var(--paper-hi); border-color: var(--ink); color: var(--ink); }
@@ -90,8 +91,9 @@
 .mk-zone-guest .mk-button.primary:hover { background: var(--sakura-deep); border-color: var(--sakura-deep); color: var(--paper-hi); filter: none; }
 .mk-zone-guest .mk-button:active { transform: translateY(1px); }
 .mk-zone-guest .mk-button:disabled { opacity: 0.55; cursor: not-allowed; }
-.mk-zone-guest .mk-text-button { color: var(--sakura-deep) !important; font-size: 0.95rem; text-decoration: underline; text-underline-offset: 0.25em; text-decoration-thickness: 1px; }
-.mk-zone-guest .mk-text-button:hover { color: var(--rust-deep) !important; }
+/* Navigation is always a button, never an underlined text link. */
+.mk-zone-guest .mk-text-button { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 7px 14px; border: 1.5px solid rgba(43, 24, 16, 0.55); border-radius: 10px; background: var(--paper-hi); color: var(--ink) !important; font-size: 0.92rem; font-weight: 650; text-decoration: none; transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease); }
+.mk-zone-guest .mk-text-button:hover { background: var(--paper); border-color: var(--ink); color: var(--ink) !important; text-decoration: none; }
 
 /* ─────────── Header ─────────── */
 .mk-guest-header {
@@ -150,19 +152,19 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: 1.5px solid rgba(43, 24, 16, 0.4);
+  border: 1.5px solid rgba(43, 24, 16, 0.6);
   border-radius: 10px;
-  background: transparent;
+  background: var(--paper-hi);
   color: var(--ink);
   font-size: 20px;
 }
 
 /* ─────────── Hero ─────────── */
 .mk-guest-main { overflow-x: clip; }
-.mk-hero { position: relative; padding: 36px 0 110px; isolation: isolate; }
+.mk-hero { position: relative; padding: 36px 0 110px; isolation: isolate; overflow: hidden; }
 .mk-hero-blossom { z-index: -1; opacity: 0.92; animation: mk-sway 26s ease-in-out infinite alternate; }
 .mk-hero-blossom.is-a { width: min(44vw, 600px); right: -9%; top: 3%; }
-.mk-hero-blossom.is-b { width: min(36vw, 470px); left: -12%; bottom: -22%; animation-direction: alternate-reverse; animation-duration: 32s; }
+.mk-hero-blossom.is-b { width: min(32vw, 420px); left: -10%; bottom: 2%; animation-direction: alternate-reverse; animation-duration: 32s; }
 .mk-drift-petal { z-index: -1; opacity: 0.85; animation: mk-drift 22s ease-in-out infinite alternate; }
 
 @keyframes mk-sway {
@@ -336,7 +338,7 @@
 .mk-filter-pills { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .mk-filter-pills button {
   padding: 7px 14px;
-  border: 1.5px solid rgba(43, 24, 16, 0.3);
+  border: 1.5px solid rgba(43, 24, 16, 0.5);
   border-radius: 999px;
   background: transparent;
   color: var(--ink);
@@ -381,7 +383,7 @@
 
 /* ─────────── Story ─────────── */
 .mk-story { position: relative; max-width: none; padding: 104px 0; background: color-mix(in srgb, var(--paper-deep) 70%, transparent); overflow: hidden; isolation: isolate; }
-.mk-story-blossom { z-index: -1; width: min(44vw, 560px); left: -14%; top: -8%; opacity: 0.55; animation: mk-sway 30s ease-in-out infinite alternate; }
+.mk-story-blossom { z-index: -1; width: min(40vw, 520px); right: -12%; top: -6%; opacity: 0.5; animation: mk-sway 30s ease-in-out infinite alternate; }
 .mk-story-inner { max-width: 1280px; margin: 0 auto; padding: 0 36px; display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 72px; align-items: start; }
 .mk-story-intro { margin: 0 0 36px; font-size: 1.1rem; line-height: 1.75; color: var(--ink-soft); max-width: 56ch; }
 .mk-story-intro em { font-family: var(--font-display); color: var(--ink); }
@@ -523,8 +525,10 @@
   .mk-section { padding: 68px 20px; }
   .mk-story { padding: 72px 0; }
   .mk-hero { padding: 20px 0 72px; }
-  .mk-hero-blossom.is-a { width: 70vw; right: -30%; top: -3%; opacity: 0.5; }
-  .mk-hero-blossom.is-b { width: 64vw; left: -22%; bottom: -10%; }
+  .mk-hero-blossom.is-a { width: 62vw; right: -34%; top: 0; opacity: 0.32; }
+  .mk-hero-blossom.is-b { display: none; }
+  .mk-drift-petal { display: none; }
+  .mk-story-blossom { display: none; }
   .mk-hero-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mk-slip { grid-template-columns: 1fr 1fr; }
   .mk-slip-field:nth-child(2) { border-right: 0; }

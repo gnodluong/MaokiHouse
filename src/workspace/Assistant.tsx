@@ -13,10 +13,16 @@ const keyPattern = /^sk-or-[A-Za-z0-9_-]{16,200}$/;
 const modelPattern = /^[A-Za-z0-9._-]+\/[A-Za-z0-9._:-]+$/;
 
 function AISettings({ status, onChanged }: { status: AIStatus; onChanged: () => Promise<void> }) {
-  const [apiKey, setApiKey] = useState(''); const [model, setModel] = useState(status.model || DEFAULT_AI_MODEL); const [allowAgents, setAllowAgents] = useState(status.allowAgents);
+  // Only an OpenRouter model id belongs in this field; a Gemini fallback on the server (e.g. gemini-flash-latest) must not block saving.
+  // Only a server-side OpenRouter key pins the model; a server Gemini key must not lock the OpenRouter settings.
+  const serverOpenRouter = status.source === 'server' && status.provider === 'OpenRouter';
+  const initialModel = status.provider === 'OpenRouter' && modelPattern.test(status.model) ? status.model : DEFAULT_AI_MODEL;
+  const [apiKey, setApiKey] = useState(''); const [model, setModel] = useState(initialModel); const [allowAgents, setAllowAgents] = useState(status.allowAgents);
   const [busy, setBusy] = useState<'' | 'save' | 'test' | 'clear'>(''); const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
-  useEffect(() => { setModel(status.model || DEFAULT_AI_MODEL); setAllowAgents(status.allowAgents); }, [status.model, status.allowAgents]);
-  const keyInvalid = apiKey.trim() !== '' && !keyPattern.test(apiKey.trim());
+  useEffect(() => { setModel(initialModel); setAllowAgents(status.allowAgents); }, [initialModel, status.allowAgents]);
+  // Keys pasted from a browser or e-mail often carry spaces, line breaks or quotes: strip them before checking.
+  const cleanKey = apiKey.replace(/[\s"'`]/g, '');
+  const keyInvalid = cleanKey !== '' && !keyPattern.test(cleanKey);
   const modelInvalid = !modelPattern.test(model.trim());
   const test = async () => {
     setBusy('test'); setMessage(null);
@@ -25,11 +31,14 @@ function AISettings({ status, onChanged }: { status: AIStatus; onChanged: () => 
     finally { setBusy(''); }
   };
   const save = async () => {
+    if (keyInvalid) { setMessage({ kind: 'error', text: 'API key OpenRouter phải bắt đầu bằng sk-or- (ví dụ sk-or-v1-…). Kiểm tra lại key vừa dán.' }); return; }
+    if (!cleanKey && !status.configured && !serverOpenRouter) { setMessage({ kind: 'error', text: 'Hãy dán API key OpenRouter trước khi lưu.' }); return; }
+    if (modelInvalid && !serverOpenRouter) { setMessage({ kind: 'error', text: 'Tên model chưa đúng dạng nhà-cung-cấp/tên-model. Bấm “Dùng mặc định” để dùng model miễn phí.' }); return; }
     setBusy('save'); setMessage(null);
     try {
-      await saveAISettings('save', { ...(apiKey.trim() ? { apiKey: apiKey.trim() } : {}), model: model.trim(), allowAgents });
+      await saveAISettings('save', { ...(cleanKey ? { apiKey: cleanKey } : {}), ...(serverOpenRouter ? {} : { model: model.trim() }), allowAgents });
       setApiKey(''); await onChanged();
-      if (apiKey.trim() || status.configured || status.source === 'server') await test(); else setMessage({ kind: 'success', text: 'Đã lưu cài đặt.' });
+      if (cleanKey || status.configured || serverOpenRouter) await test(); else setMessage({ kind: 'success', text: 'Đã lưu cài đặt.' });
     } catch (cause) { setMessage({ kind: 'error', text: errorMessage(cause) }); }
     finally { setBusy(prev => (prev === 'save' ? '' : prev)); }
   };
@@ -43,22 +52,22 @@ function AISettings({ status, onChanged }: { status: AIStatus; onChanged: () => 
     <SectionTitle title="Cài đặt AI" />
     <div className="mk-ai-settings">
       <div className="mk-key-state"><FiKey aria-hidden="true" />
-        {status.source === 'server' && status.provider === 'OpenRouter' ? <span>Đang dùng key OpenRouter đặt trên Vercel (<code>OPENROUTER_API_KEY</code>), được ưu tiên hơn key lưu trong web.</span>
+        {serverOpenRouter ? <span>Đang dùng key OpenRouter đặt trên Vercel (<code>OPENROUTER_API_KEY</code>), được ưu tiên hơn key lưu trong web.</span>
           : status.configured && status.provider === 'OpenRouter' ? <span>Đã lưu key OpenRouter <code>sk-or-…{status.keyHint}</code>. Key không bao giờ hiển thị lại trong trình duyệt.</span>
           : status.provider === 'Gemini' && status.configured ? <span>Đang dùng Gemini đặt trên Vercel. Dán key OpenRouter bên dưới để chuyển sang OpenRouter.</span>
           : <span>Chưa có API key. Làm theo 3 bước dưới đây.</span>}
       </div>
-      {!status.configured && <ol className="mk-howto"><li>Mở <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">openrouter.ai/keys</a>, đăng nhập và bấm <strong>Create Key</strong> (nên đặt giới hạn chi tiêu).</li><li>Sao chép key bắt đầu bằng <code>sk-or-</code> và dán vào ô bên dưới.</li><li>Bấm <strong>Lưu và kiểm tra</strong>. Khi thấy thông báo xanh là trợ lý đã sẵn sàng.</li></ol>}
+      {(!status.configured || status.provider === 'Gemini') && <ol className="mk-howto"><li>Mở <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">openrouter.ai/keys</a>, đăng nhập và bấm <strong>Create Key</strong> (nên đặt giới hạn chi tiêu).</li><li>Sao chép key bắt đầu bằng <code>sk-or-</code> và dán vào ô bên dưới.</li><li>Bấm <strong>Lưu và kiểm tra</strong>. Khi thấy thông báo xanh là trợ lý đã sẵn sàng.</li></ol>}
       <div className="mk-form-grid">
         <label className="mk-field">API key OpenRouter<input type="password" autoComplete="off" spellCheck={false} value={apiKey} placeholder={status.configured ? 'Để trống nếu giữ key hiện tại' : 'sk-or-v1-…'} aria-invalid={keyInvalid || undefined} onChange={event => setApiKey(event.target.value)} />{keyInvalid ? <small style={{ color: 'var(--mk-danger)' }}>Key OpenRouter bắt đầu bằng sk-or-</small> : <small>Lưu trong Supabase, chỉ máy chủ đọc được khi gọi AI.</small>}</label>
-        <label className="mk-field">Model<input value={status.source === 'server' ? status.model : model} spellCheck={false} disabled={status.source === 'server'} aria-invalid={modelInvalid || undefined} onChange={event => setModel(event.target.value)} /><small>{status.source === 'server' ? 'Key trên máy chủ chỉ dùng model do máy chủ quy định (OPENROUTER_MODEL).' : model.trim() === DEFAULT_AI_MODEL ? 'Mặc định: miễn phí, có giới hạn lượt dùng mỗi phút/ngày.' : <>Tên model trên OpenRouter. <button type="button" className="mk-text-button" onClick={() => setModel(DEFAULT_AI_MODEL)}>Dùng mặc định</button></>}</small></label>
+        <label className="mk-field">Model<input value={serverOpenRouter ? status.model : model} spellCheck={false} disabled={serverOpenRouter} aria-invalid={modelInvalid || undefined} onChange={event => setModel(event.target.value)} /><small>{serverOpenRouter ? 'Key trên máy chủ chỉ dùng model do máy chủ quy định (OPENROUTER_MODEL).' : model.trim() === DEFAULT_AI_MODEL ? 'Mặc định: miễn phí, có giới hạn lượt dùng mỗi phút/ngày.' : <>Tên model trên OpenRouter. <button type="button" className="mk-text-button" onClick={() => setModel(DEFAULT_AI_MODEL)}>Dùng mặc định</button></>}</small></label>
         <label className="mk-checkbox full"><input type="checkbox" checked={allowAgents} onChange={event => setAllowAgents(event.target.checked)} />Cho phép nhân viên (vai trò Nhân viên) dùng trợ lý AI</label>
       </div>
       <p className="mk-inline-help">Nhân viên được phép dùng AI về mặt kỹ thuật có thể truy xuất key qua API. Nếu cần giấu key hoàn toàn, đặt <code>OPENROUTER_API_KEY</code> trên Vercel. Model miễn phí của OpenRouter có thể lưu lời nhắc để cải thiện dịch vụ; không dán thông tin nhạy cảm của khách.</p>
       {message && <p className={`mk-alert ${message.kind}`} role={message.kind === 'error' ? 'alert' : 'status'}>{message.kind === 'success' && <FiCheckCircle aria-hidden="true" />}{message.text}</p>}
       <div className="mk-inline-actions">
-        <Button kind="primary" busy={busy === 'save'} disabled={!!busy || keyInvalid || modelInvalid} onClick={() => void save()}>Lưu và kiểm tra</Button>
-        <Button busy={busy === 'test'} disabled={!!busy || !status.configured} onClick={() => void test()}>Kiểm tra kết nối</Button>
+        <Button kind="primary" busy={busy === 'save'} disabled={!!busy} onClick={() => void save()}>Lưu và kiểm tra</Button>
+        {status.configured && <Button busy={busy === 'test'} disabled={!!busy} onClick={() => void test()}>Kiểm tra kết nối</Button>}
         {status.configured && status.source === 'workspace' && <Button kind="quiet" busy={busy === 'clear'} disabled={!!busy} onClick={() => void clear()}>Xóa key</Button>}
       </div>
     </div>
