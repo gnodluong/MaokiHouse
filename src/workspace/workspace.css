@@ -596,3 +596,5 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .maoki-ui input:not([type='checkbox']):not([type='radio']), .maoki-ui select, .maoki-ui textarea,
   html[data-mk-theme] .maoki-ui input:not([type='checkbox']):not([type='radio']), html[data-mk-theme] .maoki-ui select, html[data-mk-theme] .maoki-ui textarea { font-size: 16px !important; }
 }
+/* No double-tap zoom on phones (pinch is blocked in main.tsx and the viewport tag). */
+html { touch-action: pan-x pan-y; }

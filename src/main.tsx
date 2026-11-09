@@ -13,6 +13,12 @@ window.addEventListener('vite:preloadError', () => {
   window.location.reload();
 });
 
+// The site behaves like an app on phones: no pinch or double-tap zoom.
+// iOS Safari ignores user-scalable=no in the viewport tag, so block its pinch gesture events too.
+for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(type, event => event.preventDefault(), { passive: false });
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
