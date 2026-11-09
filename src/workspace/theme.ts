@@ -18,7 +18,8 @@ const systemDark = () => window.matchMedia('(prefers-color-scheme: dark)').match
  * Admin colour theme. The resolved value is written to <html data-mk-theme>, so
  * dialogs rendered in portals outside the shell use the same tokens.
  */
-export function useAdminTheme() {
+/** `apply` is true only in the admin shell and login page; other consumers just read or change the choice. */
+export function useAdminTheme(apply = false) {
   const [preference, setPreferenceState] = useState<ThemePreference>(readPreference);
   const [resolved, setResolved] = useState<'light' | 'dark'>(() => (preference === 'system' ? (systemDark() ? 'dark' : 'light') : preference));
 
@@ -31,10 +32,24 @@ export function useAdminTheme() {
   }, [preference]);
 
   useEffect(() => {
+    if (!apply) return;
     const root = document.documentElement;
     root.dataset.mkTheme = resolved;
-    return () => { delete root.dataset.mkTheme; };
-  }, [resolved]);
+    const color = document.getElementById('theme-color');
+    const previous = color?.getAttribute('content');
+    color?.setAttribute('content', resolved === 'dark' ? '#141210' : '#f6f5f2');
+    return () => { delete root.dataset.mkTheme; if (previous) color?.setAttribute('content', previous); };
+  }, [resolved, apply]);
+
+  // “Add to Home Screen” from any admin page installs the admin app (opens on the dashboard, no browser bar).
+  useEffect(() => {
+    if (!apply) return;
+    const manifest = document.getElementById('app-manifest');
+    const title = document.getElementById('app-title');
+    manifest?.setAttribute('href', '/admin.webmanifest');
+    title?.setAttribute('content', 'Maoki Admin');
+    return () => { manifest?.setAttribute('href', '/manifest.webmanifest'); title?.setAttribute('content', 'MaokiHouse'); };
+  }, [apply]);
 
   const setPreference = useCallback((value: ThemePreference) => {
     setPreferenceState(value);

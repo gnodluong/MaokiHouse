@@ -36,7 +36,7 @@ await rpc('save', 'contacts', null, { name: 'Morgan Louise', email: 'morgan@exam
 const user = { id: uid, email, aud: 'authenticated', role: 'authenticated', email_confirmed_at: new Date().toISOString(), created_at: new Date().toISOString(), app_metadata: { provider: 'email' }, user_metadata: {} };
 const token = [{ alg: 'HS256', typ: 'JWT' }, { sub: uid, email, role: 'authenticated', aud: 'authenticated', exp: Math.floor(Date.now() / 1000) + 3600 }, 'stub'].map((x, i) => i < 2 ? Buffer.from(JSON.stringify(x)).toString('base64url') : x).join('.');
 const browser = await chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium' });
-const context = await browser.newContext({ viewport: { width, height: 900 } });
+const context = await browser.newContext({ viewport: { width, height: 900 }, ...(process.env.IPHONE ? { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1', isMobile: true, hasTouch: true } : {}) });
 let queue = Promise.resolve();
 const serial = job => { const p = queue.then(job); queue = p.catch(() => {}); return p; };
 await context.route('https://*.supabase.co/**', route => serial(async () => {
@@ -109,5 +109,6 @@ if (process.env.WIZARD) {
   await page.getByRole('button', { name: 'Xong' }).click(); await page.waitForTimeout(500);
   await page.screenshot({ path: `${out}/channels-connected.png` });
 }
+console.log('manifest:', await page.evaluate(() => document.getElementById('app-manifest')?.getAttribute('href')));
 console.log('errors:', JSON.stringify(errors));
 await browser.close(); await db.close();

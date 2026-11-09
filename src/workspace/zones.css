@@ -327,3 +327,22 @@ html[data-mk-theme] .mk-howto a { color: var(--mk-accent); text-decoration: unde
 .mk-admin-login .mk-admin-login-footer { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; font-size: 13px; color: var(--mk-muted); }
 .mk-admin-login .mk-admin-login-footer .mk-button { width: 100%; }
 @media (max-width: 650px) { .mk-ai-settings .mk-form-grid { grid-template-columns: 1fr; } }
+
+/* Installed app (standalone, edge to edge): keep bars clear of the notch / status bar. */
+.mk-zone-admin .mk-topbar { height: calc(56px + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); }
+.mk-zone-admin .mk-sidebar { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+.mk-admin-login-story { padding-top: calc(34px + env(safe-area-inset-top)) !important; }
+.mk-admin-login .mk-login-form-wrap { padding-bottom: calc(50px + env(safe-area-inset-bottom)); }
+.mk-zone-admin .mk-main-content { padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
+
+/* Install-as-app hint */
+.mk-zone-admin .mk-main-content > .mk-install-banner { order: -3; }
+.mk-install-banner { margin-bottom: 16px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--mk-accent) 35%, var(--mk-line)); border-radius: 10px; background: var(--mk-tint); display: grid; gap: 8px; font-size: 13.5px; }
+.mk-install-head { display: flex; align-items: center; gap: 8px; }
+.mk-install-head svg { color: var(--mk-accent); font-size: 17px; }
+.mk-install-head .mk-icon-button { margin-left: auto; width: 30px; min-width: 30px; height: 30px; }
+.mk-install-steps { margin: 0; padding-left: 20px; display: grid; gap: 3px; line-height: 1.55; }
+.mk-install-steps svg { font-size: 15px; vertical-align: -2px; }
+.mk-install-panel { padding: 14px 18px; display: grid; gap: 10px; }
+.mk-install-panel .mk-install-head { font-size: 15px; }
+.mk-install-banner .mk-button, .mk-install-panel .mk-button { justify-self: start; }

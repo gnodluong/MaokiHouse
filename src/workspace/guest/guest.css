@@ -650,3 +650,8 @@
 @media (prefers-reduced-motion: reduce) {
   .mk-blossom-title { animation: none; }
 }
+
+/* Installed app (standalone, edge to edge): keep the header clear of the notch / status bar. */
+.mk-guest-header { padding-top: env(safe-area-inset-top); }
+.mk-guest-footer-bottom { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
+.mk-blossom-intro .mk-blossom-skip { bottom: calc(clamp(16px, 3vw, 32px) + env(safe-area-inset-bottom)); }

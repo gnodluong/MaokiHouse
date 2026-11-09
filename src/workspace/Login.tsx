@@ -14,7 +14,7 @@ export default function Login() {
   const navigate = useNavigate(); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
   const { user, loading, demoAvailable, startDemo, selectPrimary } = useSession(); const [params] = useSearchParams(); const invite = params.get('invite');
   const [register, setRegister] = useState(false); const [notice, setNotice] = useState('');
-  useAdminTheme();
+  useAdminTheme(true);
   const login = async (demo = false) => {
     setBusy(true); setError('');
     try {
