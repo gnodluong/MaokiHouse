@@ -40,7 +40,7 @@ const channels=async(op:string,id:string|null=null,payload:unknown={})=>rpc('mao
 let remote=calendar(event('airbnb-one'));let remoteCalls=0;let identity=owner;
 const transport:typeof fetch=async(input,options)=>{
  const url=String(input);
- if(url.startsWith('https://www.airbnb.com/calendar/ical/')||url.startsWith('https://admin.booking.com/hotel/hoteladmin/ical.html')||url.startsWith('https://ical.ota-feed.com/')){remoteCalls++;return new Response(remote,{headers:{'content-type':'text/calendar'}});}
+ if(url.startsWith('https://www.airbnb.com/calendar/ical/')||url.startsWith('https://admin.booking.com/hotel/hoteladmin/ical.html')||url.startsWith('https://ical.ota-feed.com/')||url.startsWith('https://www.airbnb.com/calendar/ical/room-')){remoteCalls++;return new Response(remote,{headers:{'content-type':'text/calendar'}});}
  if(url.includes('/auth/v1/user'))return Response.json({id:identity,email:'owner@example.test',is_anonymous:false});
  if(url.includes('/rest/v1/rpc/')){
   const body=JSON.parse(String(options?.body));const name=new URL(url).pathname.split('/').at(-1)!;
@@ -89,5 +89,17 @@ try{
   assert.equal(remoteCalls,before);assert.equal(leaked,0);assert.equal(body.saved,true);assert.notEqual(body.synced,true);}
  finally{globalThis.fetch=globalFetch;}
  pass('production default sends remote calendar fetches only through the DNS-guarded transport');
+ // A room syncs several calendars: two Airbnb listings, Booking.com and Agoda.
+ await login(owner);const multi=await workspace('save','properties',null,{title:'Multi Channel Room',basePrice:1,published:true}) as {id:string};
+ remote=calendar(event('air-a',day(30),day(32)));const airA=await api({action:'connect',platform:'airbnb',propertyId:multi.id,url:'https://www.airbnb.com/calendar/ical/room-a.ics?s=1'});assert.equal(airA.synced,true);
+ remote=calendar(event('air-b',day(33),day(35)));const airB=await api({action:'connect',platform:'airbnb',propertyId:multi.id,url:'https://www.airbnb.com/calendar/ical/room-b.ics?s=1'});assert.equal(airB.synced,true);
+ remote=calendar(event('bk',day(36),day(37)));assert.equal((await api({action:'connect',platform:'booking',propertyId:multi.id,url:'https://admin.booking.com/hotel/hoteladmin/ical.html?t=multi-room'})).synced,true);
+ remote=calendar(event('ag',day(38),day(39)));assert.equal((await api({action:'connect',platform:'agoda',propertyId:multi.id,url:'https://ical.ota-feed.com/agoda-multi.ics'})).synced,true);
+ assert.equal((await api({action:'connect',platform:'airbnb',propertyId:multi.id,url:'https://www.airbnb.com/calendar/ical/room-a.ics?s=1'})).status,400);
+ await login(owner);const busy=(await channels('busy') as {propertyId:string;platform:string;connectionId:string}[]).filter(b=>b.propertyId===multi.id);
+ assert.deepEqual(busy.map(b=>b.platform).sort(),['agoda','airbnb','airbnb','booking']);assert.ok(busy.every(b=>b.connectionId));
+ const multiList=(await api()).connections as {id:string;exportToken:string}[];const exportA=await (await handleChannels(request(undefined,multiList.find(c=>c.id===airA.id)!.exportToken,false),{},transport,transport)).text();
+ assert.ok(exportA.includes(day(33).replaceAll('-','')));assert.ok(!exportA.includes(day(30).replaceAll('-','')));assert.ok(exportA.includes(day(36).replaceAll('-','')));
+ pass('one room syncs several calendars (two listings on one channel too); busy dates keep their channel; each export blocks the other listings');
  assert.equal(initial.workspaceId.length,36);console.log(`${checks} iCal parser, SSRF, tenant isolation, reconciliation and availability checks passed`);
 }finally{await db.close();}

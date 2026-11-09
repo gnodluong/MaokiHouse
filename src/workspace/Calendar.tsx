@@ -4,6 +4,10 @@ import { FiChevronLeft, FiChevronRight, FiPlus, FiCalendar } from 'react-icons/f
 import { useEditor, useWorkspace } from './context';
 import { addDays, dateLabel, money, todayIn } from './utils';
 import { Badge, Button, Empty, PageHeader } from './ui';
+import { calendarChannels } from './Connections';
+import type { CalendarBlock } from '../../shared/workspace';
+
+const blockName = (block: CalendarBlock) => { const name = calendarChannels[block.platform]?.name || 'Lịch kênh'; return block.label ? `${name} · ${block.label}` : name; };
 
 export default function Calendar() {
   const { data } = useWorkspace(); const editor = useEditor();
@@ -18,11 +22,16 @@ export default function Calendar() {
       const reserved = data.bookings.some(booking => booking.propertyId === property.id && booking.status !== 'cancelled' && booking.checkIn <= day && booking.checkOut > day);
       const blocks = (data.channelBlocks || []).filter(block => block.propertyId === property.id && block.checkIn <= day && block.checkOut > day);
       const closed = [...data.rates].filter(rate => rate.propertyId === property.id && rate.startDate <= day && rate.endDate >= day).sort((a,b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]?.closed;
-      return <button key={day} className={`mk-calendar-cell ${day === today ? 'today' : ''} ${closed || blocks.length ? 'closed' : ''}`} style={{ gridColumn: dateIndex + 2, gridRow: 1 }} aria-label={`${property.title}, ${dateLabel(day)}${reserved ? ', đã có khách' : blocks.length ? ', bận theo iCal' : closed ? ', ngừng nhận khách' : ', thêm đặt phòng'}`} title={blocks.map(block => block.platform === 'airbnb' ? 'Airbnb · Ngày bận' : 'Booking.com · Ngày bận').join(', ')} disabled={reserved || closed || blocks.length > 0} onClick={() => editor.open('bookings', undefined, { propertyId: property.id, checkIn: day, checkOut: addDays(day, 1), payoutAmount: property.basePrice })}>{blocks.length ? 'iCal' : closed ? 'Đóng' : <FiPlus />}</button>;
+      return <button key={day} className={`mk-calendar-cell ${day === today ? 'today' : ''} ${closed || blocks.length ? 'closed' : ''}`} style={{ gridColumn: dateIndex + 2, gridRow: 1 }} aria-label={`${property.title}, ${dateLabel(day)}${reserved ? ', đã có khách' : blocks.length ? `, đã khóa từ ${blocks.map(blockName).join(', ')}` : closed ? ', ngừng nhận khách' : ', thêm đặt phòng'}`} title={blocks.map(block => `${blockName(block)} · đã có khách đặt`).join('\n')} disabled={reserved || closed || blocks.length > 0} onClick={() => editor.open('bookings', undefined, { propertyId: property.id, checkIn: day, checkOut: addDays(day, 1), payoutAmount: property.basePrice })}>{blocks.length ? '' : closed ? 'Đóng' : <FiPlus />}</button>;
+    })}{(data.channelBlocks || []).filter(block => block.propertyId === property.id && block.checkIn < end && block.checkOut > start).map(block => {
+      const from = Math.max(0, Math.round((Date.parse(block.checkIn) - Date.parse(start)) / 86400000));
+      const to = Math.min(days, Math.round((Date.parse(block.checkOut) - Date.parse(start)) / 86400000));
+      const channel = calendarChannels[block.platform];
+      return <div className="mk-calendar-block" key={block.id} style={{ gridColumn: `${from + 2} / ${to + 2}`, gridRow: 1, ['--chip' as string]: channel?.color || '#6b6259' }} title={`${blockName(block)} · ${dateLabel(block.checkIn)} – ${dateLabel(block.checkOut)}`}><strong>{blockName(block)}</strong><span>Khóa từ kênh</span></div>;
     })}{bookings.filter(booking => booking.propertyId === property.id).map(booking => {
       const from = Math.max(0, Math.round((Date.parse(booking.checkIn) - Date.parse(start)) / 86400000));
       const to = Math.min(days, Math.round((Date.parse(booking.checkOut) - Date.parse(start)) / 86400000));
       return <button className={`mk-calendar-booking ${booking.source} ${booking.status}`} key={booking.id} style={{ gridColumn: `${from + 2} / ${to + 2}`, gridRow: 1 }} title={`${booking.guestName} · ${dateLabel(booking.checkIn)} – ${dateLabel(booking.checkOut)}`} onClick={() => editor.open('bookings', booking)}><strong>{booking.guestName}</strong><span>{booking.source === 'direct' ? 'Trực tiếp' : booking.source === 'booking' ? 'Booking.com' : booking.source === 'agoda' ? 'Agoda' : 'Airbnb'}</span></button>;
     })}</div>)}</div></div>}
-    <div className="mk-calendar-legend"><Link className="mk-subtle-link" to="../channels">iCal · Kiểm tra và đồng bộ lịch kênh</Link><span><i className="direct" />Trực tiếp</span><span><i className="airbnb" />Airbnb</span><span><i className="booking" />Booking.com</span><span><i className="agoda" />Agoda</span><Badge value="pending">Viền đứt: chờ xác nhận</Badge><span><FiCalendar />Chọn ô trống để thêm kỳ nghỉ</span></div></div></>;
+    <div className="mk-calendar-legend"><Link className="mk-button" to="../channels">Kết nối kênh</Link><span><i className="blocked" />Sọc: khóa từ kênh (Airbnb, Booking.com…)</span><span><i className="direct" />Trực tiếp</span><span><i className="airbnb" />Airbnb</span><span><i className="booking" />Booking.com</span><span><i className="agoda" />Agoda</span><Badge value="pending">Viền đứt: chờ xác nhận</Badge><span><FiCalendar />Chọn ô trống để thêm kỳ nghỉ</span></div></div></>;
 }

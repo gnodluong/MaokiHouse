@@ -86,7 +86,7 @@ export default function Connections() {
     if (!wizard) return;
     setBusy(true); setError('');
     try {
-      const result = await channelRequest<SyncResult>({ action: 'connect', platform: wizard.platform, propertyId: wizard.propertyId, url: wizard.url, ...(wizard.platform === 'ical' && wizard.label.trim() ? { label: wizard.label.trim() } : {}) });
+      const result = await channelRequest<SyncResult>({ action: 'connect', platform: wizard.platform, propertyId: wizard.propertyId, url: wizard.url, ...(wizard.label.trim() ? { label: wizard.label.trim() } : {}) });
       const list = await load(); await reload();
       const saved = list.find(item => item.id === result.id);
       setWizard({ ...wizard, step: 3, result: saved, syncError: result.synced ? '' : result.error || 'Đã lưu nhưng chưa tải được lịch; bấm Đồng bộ để thử lại.' });
@@ -116,47 +116,37 @@ export default function Connections() {
     catch (cause) { setError(errorMessage(cause)); }
     finally { setBusy(false); }
   };
-  const counts = (platform: CalendarPlatform) => connections.filter(item => item.platform === platform).length;
   const info = wizard ? calendarChannels[wizard.platform] : null;
+  const channelTitle = (connection: CalendarConnection) => connection.label ? `${calendarChannels[connection.platform].name} · ${connection.label}` : calendarChannels[connection.platform].name;
+  const rooms = data.properties.filter(property => property.status === 'active' || connections.some(connection => connection.propertyId === property.id));
+  const startWizard = (propertyId: string) => { setError(''); setWizard({ platform: 'airbnb', step: 1, propertyId, url: '', label: '' }); };
 
   return <>
-    <PageHeader title="Kết nối kênh" description="Đồng bộ ngày bận giữa MaokiHouse và Airbnb, Booking.com, Agoda, Google Calendar… để không bán trùng phòng.">
+    <PageHeader title="Kết nối kênh" description="Mỗi phòng có thể nối nhiều lịch (Airbnb, Booking.com, Agoda, Google Calendar…) để ngày đặt ở kênh này tự khóa ở các kênh còn lại.">
       {enabled && connections.length > 0 && <Button busy={syncing === 'all'} disabled={!!syncing} onClick={() => void syncAll(false)}><FiRefreshCw />{syncing === 'all' && progress ? `Đang đồng bộ ${progress}` : 'Đồng bộ tất cả'}</Button>}
     </PageHeader>
     {mode === 'demo' ? <p className="mk-alert">Đăng nhập bằng tài khoản Supabase để kết nối lịch thật. Dữ liệu demo không gửi sang kênh ngoài.</p> : !canEdit(data) && <p className="mk-alert">Chủ không gian hoặc quản lý thực hiện kết nối. Bạn vẫn xem được ngày bận trên Lịch phòng.</p>}
-    {error && <p className="mk-alert error" role="alert">{error} {/iCal|Thiết lập|cập nhật/i.test(error) && <Link className="mk-subtle-link" to="/setup?mode=upgrade">Mở trang Thiết lập</Link>}</p>}
+    {error && <p className="mk-alert error" role="alert">{error} {/iCal|Thiết lập|cập nhật/i.test(error) && <Link className="mk-button" to="/setup?mode=upgrade">Mở trang Thiết lập</Link>}</p>}
     {notice && <p className="mk-alert success" role="status">{notice}</p>}
-    {enabled && !data.properties.length && <p className="mk-alert">Hãy <Link className="mk-subtle-link" to="../properties">thêm phòng</Link> trước, rồi quay lại để gắn lịch cho từng phòng.</p>}
+    {enabled && !data.properties.length && <p className="mk-alert">Chưa có phòng nào. <Link className="mk-button" to="../properties">Thêm phòng</Link></p>}
+    {connections.length > 0 && <p className="mk-inline-help" style={{ marginBottom: 12 }}>Lịch tự đồng bộ khi bạn mở trang quản trị nếu lần gần nhất đã quá 1 giờ. {loading && 'Đang tải…'}</p>}
 
-    <section className="mk-panel">
-      <SectionTitle title={`Lịch đã kết nối (${connections.length})`}>{loading && <small role="status">Đang tải…</small>}</SectionTitle>
-      {connections.length ? <>
-        <div className="mk-sync-bar"><span>Lịch tự đồng bộ mỗi khi bạn mở trang quản trị nếu đã quá 1 giờ. Đặt phòng trên MaokiHouse được gửi sang kênh qua “liên kết MaokiHouse”.</span><Button disabled={!!syncing} onClick={() => void syncAll(true)}><FiRefreshCw />Đồng bộ lịch cũ</Button></div>
-        <div className="mk-table-scroll"><table className="mk-table mk-calendar-links"><thead><tr><th>Phòng</th><th>Kênh</th><th>Trạng thái</th><th>Ngày bận</th><th><span className="mk-sr">Thao tác</span></th></tr></thead><tbody>
-          {connections.map(connection => <tr key={connection.id}>
-            <td><strong>{room(connection.propertyId)}</strong></td>
-            <td><strong>{calendarChannels[connection.platform].name}</strong>{connection.label && <small>{connection.label}</small>}</td>
-            <td><span className={`mk-status ${connection.lastError ? 'error' : connection.lastSyncedAt ? (isStale(connection) ? 'warn' : 'ok') : 'warn'}`}>{connection.lastError ? 'Lỗi · giữ lịch cũ' : ago(connection.lastSyncedAt)}</span>{connection.lastError && <small>{connection.lastError}</small>}</td>
-            <td>{connection.blockCount} khoảng</td>
-            <td><div className="mk-row-actions">
-              <Button busy={syncing === connection.id} disabled={!!syncing} onClick={() => void syncOne(connection)}><FiRefreshCw />Đồng bộ</Button>
-              <Button onClick={() => setWizard({ platform: connection.platform, step: 3, propertyId: connection.propertyId, url: '', label: connection.label, result: connection })}><FiLink />Link MaokiHouse</Button>
-              <button className="mk-icon-button" aria-label={`Gỡ kết nối ${calendarChannels[connection.platform].name} của ${room(connection.propertyId)}`} title="Gỡ kết nối" onClick={() => setRemove(connection)}><FiTrash2 /></button>
-            </div></td>
-          </tr>)}
-        </tbody></table></div>
-      </> : <p className="mk-quiet-empty" style={{ padding: '16px 18px' }}>Chưa có lịch nào. Chọn một kênh bên dưới để kết nối phòng đầu tiên.</p>}
-    </section>
-
-    <section className="mk-panel">
-      <SectionTitle title="Lịch đặt phòng (iCal)" />
-      {order.map(platform => { const channel = calendarChannels[platform]; const count = counts(platform); return <div className="mk-channel-row" key={platform}>
-        <span className="mk-channel-mark" style={{ background: channel.color }} aria-hidden="true">{channel.mark}</span>
-        <div><strong>{channel.name}</strong><small>{channel.summary}</small></div>
-        <span className="mk-channel-count">{count ? `${count} phòng đã kết nối` : 'Chưa kết nối'}</span>
-        <Button disabled={!enabled || !data.properties.length} onClick={() => { setError(''); setWizard({ platform, step: 1, propertyId: data.properties.length === 1 ? data.properties[0].id : '', url: '', label: '' }); }}><FiLink />Kết nối</Button>
-      </div>; })}
-    </section>
+    {rooms.map(property => {
+      const list = connections.filter(connection => connection.propertyId === property.id);
+      return <section className="mk-panel mk-room-calendars" key={property.id} aria-label={`Lịch của ${property.title}`}>
+        <div className="mk-room-calendars-head"><div><h2>{property.title}</h2><small>{list.length ? `${list.length} lịch đang đồng bộ` : 'Chưa nối lịch nào'}</small></div>
+          <Button kind={list.length ? 'secondary' : 'primary'} disabled={!enabled} onClick={() => startWizard(property.id)}><FiLink />Thêm lịch</Button></div>
+        {list.map(connection => { const channel = calendarChannels[connection.platform]; return <div className="mk-channel-row" key={connection.id}>
+          <span className="mk-channel-mark" style={{ background: channel.color }} aria-hidden="true">{channel.mark}</span>
+          <div><strong>{channelTitle(connection)}</strong><small><span className={`mk-status ${connection.lastError ? 'error' : connection.lastSyncedAt ? (isStale(connection) ? 'warn' : 'ok') : 'warn'}`}>{connection.lastError ? 'Lỗi · giữ lịch cũ' : ago(connection.lastSyncedAt)}</span> · {connection.blockCount} khoảng ngày bận</small>{connection.lastError && <small>{connection.lastError}</small>}</div>
+          <Button busy={syncing === connection.id} disabled={!!syncing} onClick={() => void syncOne(connection)}><FiRefreshCw />Đồng bộ</Button>
+          <div className="mk-row-actions">
+            <Button onClick={() => setWizard({ platform: connection.platform, step: 3, propertyId: connection.propertyId, url: '', label: connection.label, result: connection })}><FiLink />Link MaokiHouse</Button>
+            <button className="mk-icon-button" aria-label={`Gỡ lịch ${channelTitle(connection)} của ${property.title}`} title="Gỡ kết nối" onClick={() => setRemove(connection)}><FiTrash2 /></button>
+          </div>
+        </div>; })}
+      </section>;
+    })}
 
     <section className="mk-panel">
       <SectionTitle title="Tin nhắn" />
@@ -165,34 +155,35 @@ export default function Connections() {
     </section>
     <p className="mk-inline-help">iCal chỉ trao đổi ngày bận/trống; giá, tin nhắn và thông tin khách vẫn quản lý trên từng kênh. Các kênh lấy lịch MaokiHouse theo chu kỳ riêng (thường 1–3 giờ).</p>
 
-    {wizard && info && <Dialog wide title={wizard.step === 3 ? `Hoàn tất: ${info.name}` : `Kết nối ${info.name}`} onClose={() => setWizard(null)} busy={busy}>
+    {wizard && info && <Dialog wide title={wizard.step === 3 ? `Hoàn tất: ${info.name}` : `Thêm lịch cho ${room(wizard.propertyId)}`} onClose={() => setWizard(null)} busy={busy}>
       <div className="mk-dialog-body">
         <div className="mk-wizard-steps" aria-hidden="true">{[1, 2, 3].map(step => <span key={step} className={wizard.step >= step ? 'is-done' : ''} />)}</div>
-        <p className="mk-inline-help" style={{ marginBottom: 12 }}>Bước {wizard.step}/3 · {wizard.step === 1 ? 'Chọn phòng' : wizard.step === 2 ? `Dán liên kết lịch từ ${info.name}` : `Gửi lịch MaokiHouse sang ${info.name}`}</p>
+        <p className="mk-inline-help" style={{ marginBottom: 12 }}>Bước {wizard.step}/3 · {wizard.step === 1 ? 'Chọn phòng và kênh' : wizard.step === 2 ? `Dán liên kết lịch từ ${info.name}` : `Gửi lịch MaokiHouse sang ${info.name}`}</p>
         {error && <p className="mk-alert error" role="alert">{error}</p>}
-        {wizard.step === 1 && <div className="mk-form-grid">
-          <label className="mk-field full">Phòng / căn hộ<select value={wizard.propertyId} onChange={event => setWizard({ ...wizard, propertyId: event.target.value })}><option value="">Chọn phòng…</option>{data.properties.map(property => <option key={property.id} value={property.id}>{property.title}</option>)}</select></label>
-          {wizard.platform === 'ical' && <label className="mk-field full">Tên gợi nhớ (không bắt buộc)<input maxLength={80} value={wizard.label} placeholder="Ví dụ: Traveloka, Lịch dọn phòng" onChange={event => setWizard({ ...wizard, label: event.target.value })} /></label>}
-        </div>}
+        {wizard.step === 1 && <>
+          <label className="mk-field">Phòng / căn hộ<select value={wizard.propertyId} onChange={event => setWizard({ ...wizard, propertyId: event.target.value })}><option value="">Chọn phòng…</option>{data.properties.map(property => <option key={property.id} value={property.id}>{property.title}</option>)}</select></label>
+          <fieldset className="mk-channel-picker"><legend>Kênh</legend>{order.map(platform => { const channel = calendarChannels[platform]; const has = connections.filter(item => item.propertyId === wizard.propertyId && item.platform === platform).length; return <label key={platform} className={wizard.platform === platform ? 'is-selected' : ''}><input type="radio" name="calendar-channel" value={platform} checked={wizard.platform === platform} onChange={() => setWizard({ ...wizard, platform })} /><span className="mk-channel-mark" style={{ background: channel.color }} aria-hidden="true">{channel.mark}</span><span>{channel.name}{has > 0 && <small>Đã nối {has}</small>}</span></label>; })}</fieldset>
+          <label className="mk-field">Tên gợi nhớ (không bắt buộc)<input maxLength={80} value={wizard.label} placeholder="Ví dụ: Listing nguyên căn, Phòng 2 trên Airbnb" onChange={event => setWizard({ ...wizard, label: event.target.value })} /><small>Hữu ích khi một phòng có nhiều listing trên cùng một kênh.</small></label>
+        </>}
         {wizard.step === 2 && <>
           <ol className="mk-howto">{info.exportSteps.map(step => <li key={step}>{step}</li>)}</ol>
           {info.note && <p className="mk-inline-help" style={{ marginBottom: 12 }}>{info.note}</p>}
           <label className="mk-field">Liên kết xuất lịch của {info.name}<input type="url" inputMode="url" autoComplete="off" spellCheck={false} value={wizard.url} placeholder={info.placeholder} onChange={event => setWizard({ ...wizard, url: event.target.value })} /><small>Chỉ nhận liên kết HTTPS công khai. Liên kết này được lưu riêng và không hiển thị lại.</small></label>
         </>}
         {wizard.step === 3 && wizard.result && <>
-          {wizard.syncError ? <p className="mk-alert error" role="alert">{wizard.syncError}</p> : wizard.url ? <p className="mk-alert success" role="status">Đã kết nối {room(wizard.result.propertyId)} và nhập {wizard.result.blockCount} khoảng ngày bận.</p> : null}
-          <label className="mk-field">Liên kết lịch MaokiHouse cho phòng này<CopyField label="Liên kết lịch MaokiHouse" value={exportLink(wizard.result.exportToken)} /></label>
+          {wizard.syncError ? <p className="mk-alert error" role="alert">{wizard.syncError}</p> : wizard.url ? <p className="mk-alert success" role="status">Đã nối {info.name} cho {room(wizard.result.propertyId)} và nhập {wizard.result.blockCount} khoảng ngày bận.</p> : null}
+          <label className="mk-field">Liên kết lịch MaokiHouse cho lịch này<CopyField label="Liên kết lịch MaokiHouse" value={exportLink(wizard.result.exportToken)} /></label>
           <ol className="mk-howto" style={{ marginTop: 12 }}>{info.importSteps.map(step => <li key={step}>{step}</li>)}</ol>
-          <p className="mk-inline-help">Liên kết chứa mã riêng: chỉ dán vào kênh của bạn. Gỡ kết nối sẽ vô hiệu hóa liên kết này.</p>
+          <p className="mk-inline-help">Mỗi lịch có liên kết riêng: liên kết này chứa ngày bận của mọi lịch khác của phòng, nên {info.name} sẽ thấy ngày đã bán ở kênh khác. Gỡ kết nối sẽ vô hiệu hóa liên kết.</p>
         </>}
       </div>
       <footer>
         {wizard.step === 1 && <><Button onClick={() => setWizard(null)}>Hủy</Button><Button kind="primary" disabled={!wizard.propertyId} onClick={() => setWizard({ ...wizard, step: 2 })}>Tiếp tục<FiArrowRight /></Button></>}
         {wizard.step === 2 && <><Button disabled={busy} onClick={() => setWizard({ ...wizard, step: 1 })}>Quay lại</Button><Button kind="primary" busy={busy} disabled={wizard.url.trim().length < 10} onClick={() => void connect()}><FiLink />Kết nối và đồng bộ</Button></>}
-        {wizard.step === 3 && <Button kind="primary" onClick={() => setWizard(null)}>Xong</Button>}
+        {wizard.step === 3 && <>{wizard.url && <Button onClick={() => startWizard(wizard.propertyId)}><FiLink />Thêm lịch khác cho phòng này</Button>}<Button kind="primary" onClick={() => setWizard(null)}>Xong</Button></>}
       </footer>
     </Dialog>}
 
-    {remove && <Dialog title="Gỡ kết nối lịch?" onClose={() => setRemove(null)} busy={busy}><div className="mk-dialog-body"><p>Ngày bận đã nhập từ {calendarChannels[remove.platform].name} cho {room(remove.propertyId)} sẽ bị xóa khỏi MaokiHouse. Đặt phòng đang có được giữ nguyên. Liên kết lịch MaokiHouse của kết nối này hết hiệu lực; hãy xóa nó khỏi {calendarChannels[remove.platform].name}.</p></div><footer><Button disabled={busy} onClick={() => setRemove(null)}>Hủy</Button><Button kind="danger" busy={busy} onClick={() => void disconnect(remove)}>Gỡ kết nối</Button></footer></Dialog>}
+    {remove && <Dialog title="Gỡ kết nối lịch?" onClose={() => setRemove(null)} busy={busy}><div className="mk-dialog-body"><p>Ngày bận đã nhập từ {channelTitle(remove)} cho {room(remove.propertyId)} sẽ bị xóa khỏi MaokiHouse. Đặt phòng đang có được giữ nguyên. Liên kết lịch MaokiHouse của kết nối này hết hiệu lực; hãy xóa nó khỏi {calendarChannels[remove.platform].name}.</p></div><footer><Button disabled={busy} onClick={() => setRemove(null)}>Hủy</Button><Button kind="danger" busy={busy} onClick={() => void disconnect(remove)}>Gỡ kết nối</Button></footer></Dialog>}
   </>;
 }

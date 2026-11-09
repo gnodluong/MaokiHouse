@@ -31,6 +31,13 @@ export async function aiMigrationPlan() {
   const [,version,name] = file.match(/^(\d+)_(.+)\.sql$/);
   return { file,version,name,source,hash:createHash('sha256').update(source).digest('hex'),query:upgradeSQL(version,name,source) };
 }
+export async function roomsMigrationPlan() {
+  const files = (await readdir(migrationDirectory)).filter(name => /^\d+_maoki_calendar_rooms\.sql$/.test(name));
+  if (files.length !== 1) throw new Error('Expected exactly one calendar rooms migration');
+  const file = files[0], source = await readFile(new URL(file, migrationDirectory), 'utf8');
+  const [,version,name] = file.match(/^(\d+)_(.+)\.sql$/);
+  return { file,version,name,source,hash:createHash('sha256').update(source).digest('hex'),query:upgradeSQL(version,name,source) };
+}
 export const statusSQL = `select
   (select coalesce(jsonb_agg(jsonb_build_object('table',c.relname,'rls',c.relrowsecurity) order by c.relname),'[]') from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ('maoki_workspaces','maoki_members','maoki_records','maoki_activity')) as tables,
   to_regprocedure('public.maoki_workspace(text,text,uuid,jsonb)') is not null as workspace_rpc,
@@ -50,7 +57,7 @@ export function verifySchema(status, permissions) {
 async function main() {
   const action = process.argv[2] || 'plan';
   if (!['plan','status','apply'].includes(action)) throw new Error('Use plan, status, or apply');
-  const plan = await migrationPlan(); const channels = await channelMigrationPlan(); const ai = await aiMigrationPlan();
+  const plan = await migrationPlan(); const channels = await channelMigrationPlan(); const ai = await aiMigrationPlan(); const rooms = await roomsMigrationPlan();
   console.log(JSON.stringify({ action, projectRef, migration:plan.file, sha256:plan.hash, productionURL }));
   console.log(JSON.stringify({ channelMigration:channels.file,sha256:channels.hash }));
   console.log(JSON.stringify({ aiMigration:ai.file,sha256:ai.hash }));
@@ -112,6 +119,13 @@ async function main() {
     if (!checks.rpc || !checks.rls || checks.anon_ai || checks.direct_read) throw new Error('Unexpected AI settings RPC/RLS permissions');
   }
   console.log(JSON.stringify({aiMigrationApplied:aiApplied}));
+  let roomsApplied=false;
+  if (aiApplied) {
+    const rows=await query(`select statements,name from supabase_migrations.schema_migrations where version=${literal(rooms.version)};`);
+    if (rows.length) { if (rows[0].name!==rooms.name || !rows[0].statements?.includes(rooms.source)) throw new Error('Remote calendar rooms migration history differs from reviewed source'); roomsApplied=true; }
+  }
+  if (action==='apply' && aiApplied && !roomsApplied) { await query(rooms.query,false); roomsApplied=true; }
+  console.log(JSON.stringify({roomsMigrationApplied:roomsApplied}));
   console.log(JSON.stringify({ projectRef,status:project.status,migrationApplied:applied,tables:status.tables,workspaceRPC:status.workspace_rpc,publicRPC:status.public_rpc }));
   if (action==='apply') {
     if (!applied) throw new Error('Migration application not confirmed');

@@ -346,3 +346,35 @@ html[data-mk-theme] .mk-howto a { color: var(--mk-accent); text-decoration: unde
 .mk-install-panel { padding: 14px 18px; display: grid; gap: 10px; }
 .mk-install-panel .mk-install-head { font-size: 15px; }
 .mk-install-banner .mk-button, .mk-install-panel .mk-button { justify-self: start; }
+
+/* Channels grouped by room */
+.mk-room-calendars-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--mk-line); }
+.mk-room-calendars-head h2 { font-size: 15px; }
+.mk-room-calendars-head small { color: var(--mk-muted); font-size: 12.5px; }
+.mk-room-calendars .mk-channel-row { grid-template-columns: 36px minmax(0, 1fr) auto auto; }
+.mk-room-calendars .mk-channel-row small .mk-status { font-size: 12.5px; }
+.mk-channel-picker { border: 0; margin: 14px 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.mk-channel-picker legend { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+.mk-channel-picker label { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--mk-line-strong); border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.mk-channel-picker label.is-selected { border-color: var(--mk-accent); background: var(--mk-tint); }
+.mk-channel-picker input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.mk-channel-picker label:focus-within { outline: 2px solid var(--mk-accent); outline-offset: 2px; }
+.mk-channel-picker .mk-channel-mark { width: 26px; height: 26px; border-radius: 7px; font-size: 11px; flex: none; }
+.mk-channel-picker small { display: block; font-size: 11px; color: var(--mk-muted); font-weight: 500; }
+@media (max-width: 650px) {
+  .mk-channel-picker { grid-template-columns: 1fr 1fr; }
+  .mk-room-calendars .mk-channel-row { grid-template-columns: 36px minmax(0, 1fr); }
+  .mk-room-calendars .mk-channel-row > :nth-child(n+3) { grid-column: 2; justify-self: start; }
+}
+
+/* Room calendar: dates closed by a connected channel, labelled with that channel */
+.mk-calendar-block { align-self: center; min-width: 0; min-height: 44px; margin: 8px 4px; padding: 6px 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; z-index: 1; pointer-events: auto; cursor: default;
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--chip) 16%, var(--mk-surface)) 0 6px, color-mix(in srgb, var(--chip) 9%, var(--mk-surface)) 6px 12px);
+  border: 1px dashed color-mix(in srgb, var(--chip) 55%, var(--mk-surface)); border-left: 3px solid var(--chip); color: var(--mk-ink); }
+.mk-calendar-block strong { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mk-calendar-block span { font-size: 11.5px; color: var(--mk-muted); white-space: nowrap; }
+.mk-calendar-legend i.blocked { background: repeating-linear-gradient(135deg, #8a8178 0 2px, transparent 2px 4px); border: 1px dashed #8a8178; }
+.mk-channel-picker legend { grid-column: 1 / -1; float: left; width: 100%; padding: 0; }
+.mk-zone-admin .mk-workspace-switch { display: block; margin: 0 12px 12px; }
+.mk-zone-admin .mk-workspace-switch select { min-height: 34px; font-size: 13px; }
+.mk-zone-admin .mk-admin-sidebar-brand { padding-bottom: 16px; }

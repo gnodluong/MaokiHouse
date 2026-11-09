@@ -8,10 +8,11 @@ import { bootstrapSQL, upgradeSQL } from '../../shared/supabase-bootstrap.mjs';
 import migration from '../../supabase/migrations/20261017131312_maoki_workspace.sql?raw';
 import channelMigration from '../../supabase/migrations/20261018085535_maoki_channel_calendars.sql?raw';
 import aiMigration from '../../supabase/migrations/20261108120000_maoki_calendars_ai.sql?raw';
+import roomsMigration from '../../supabase/migrations/20261109090000_maoki_calendar_rooms.sql?raw';
 import './workspace.css';
 
 // Both upgrades are idempotent: an already-applied, unchanged migration is skipped.
-const upgrade = upgradeSQL('20261018085535', 'maoki_channel_calendars', channelMigration) + '\n\n' + upgradeSQL('20261108120000', 'maoki_calendars_ai', aiMigration);
+const upgrade = upgradeSQL('20261018085535', 'maoki_channel_calendars', channelMigration) + '\n\n' + upgradeSQL('20261108120000', 'maoki_calendars_ai', aiMigration) + '\n\n' + upgradeSQL('20261109090000', 'maoki_calendar_rooms', roomsMigration);
 const initial = bootstrapSQL('20261017131312', 'maoki_workspace', migration) + '\n\n' + upgrade;
 const dashboard = 'https://supabase.com/dashboard/project/msucrkkxuplgijxanzxu';
 const site = 'https://maokihousemvc.vercel.app';

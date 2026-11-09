@@ -16,7 +16,7 @@ export const pageGuides: Record<string, PageGuide> = {
     steps: [
       'Mỗi hàng là một phòng, mỗi cột là một ngày. Ô có màu là đã có khách hoặc đã bận.',
       'Bấm vào ô trống để tạo đặt phòng cho đúng phòng và ngày đó.',
-      'Ô ghi “iCal” là ngày bận lấy từ Airbnb, Booking.com hoặc kênh khác; muốn thay đổi thì sửa ở kênh đó rồi đồng bộ lại.',
+      'Dải sọc ghi tên kênh (Airbnb, Booking.com, Agoda…) là ngày đã có khách đặt ở kênh đó; muốn thay đổi thì sửa ở kênh đó rồi đồng bộ lại.',
     ],
     tip: 'Lịch các kênh tự đồng bộ khi bạn mở trang quản trị (nếu lần gần nhất đã quá 1 giờ). Có thể bấm “Đồng bộ tất cả” trong Kết nối kênh.',
   },
@@ -107,7 +107,7 @@ export const pageGuides: Record<string, PageGuide> = {
   },
   channels: {
     steps: [
-      'Chọn kênh (Airbnb, Booking.com, Agoda, Google Calendar…) và phòng cần kết nối.',
+      'Ở mỗi phòng, bấm “Thêm lịch” và chọn kênh. Một phòng nối được nhiều lịch (Airbnb, Booking.com, Agoda…, kể cả nhiều listing trên cùng một kênh).',
       'Trên kênh đó, sao chép “liên kết xuất lịch (iCal / .ics)” rồi dán vào MaokiHouse.',
       'Sao chép “liên kết lịch MaokiHouse” và dán vào phần nhập lịch của kênh để kênh thấy ngày bạn đã bán ở nơi khác.',
     ],

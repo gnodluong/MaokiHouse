@@ -18,6 +18,10 @@ window.addEventListener('vite:preloadError', () => {
 for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
   document.addEventListener(type, event => event.preventDefault(), { passive: false });
 }
+// Newer iOS versions can still start a pinch from touch events: cancel any multi-finger move.
+document.addEventListener('touchmove', event => {
+  if (event.touches.length > 1 || ((event as TouchEvent & { scale?: number }).scale ?? 1) !== 1) event.preventDefault();
+}, { passive: false });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

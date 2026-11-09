@@ -37,7 +37,7 @@ const user = { id: uid, email, aud: 'authenticated', role: 'authenticated', emai
 const token = [{ alg: 'HS256', typ: 'JWT' }, { sub: uid, email, role: 'authenticated', aud: 'authenticated', exp: Math.floor(Date.now() / 1000) + 3600 }, 'stub'].map((x, i) => i < 2 ? Buffer.from(JSON.stringify(x)).toString('base64url') : x).join('.');
 const browser = await chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium' });
 const context = await browser.newContext({ viewport: { width, height: Number(process.env.HEIGHT || 900) }, deviceScaleFactor: Number(process.env.DSF || 1), ...(process.env.IPHONE ? { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1', isMobile: true, hasTouch: true } : {}) });
-let queue = Promise.resolve();
+let queue = Promise.resolve(); let blockOffset = 0;
 const serial = job => { const p = queue.then(job); queue = p.catch(() => {}); return p; };
 await context.route('https://*.supabase.co/**', route => serial(async () => {
   const request = route.request(); const url = new URL(request.url());
@@ -68,7 +68,7 @@ await context.route('**/api/channels**', route => serial(async () => {
     if (body.action === 'disconnect') { await call('disconnect', body.id); return route.fulfill({ json: { disconnected: true } }); }
     let id = body.id; if (body.action === 'connect') id = (await call('save', null, body)).id;
     const claim = await call('claim', id);
-    return route.fulfill({ json: { saved: true, id, ...await call('finish', id, { nonce: claim.nonce, events: [{ uid: 'demo-' + id, checkIn: day(10), checkOut: day(12) }] }) } });
+    return route.fulfill({ json: { saved: true, id, ...await call('finish', id, { nonce: claim.nonce, events: [{ uid: 'demo-' + id, checkIn: day(2 + (blockOffset % 4) * 3), checkOut: day(4 + (blockOffset++ % 4) * 3) }] }) } });
   } catch (error) { return route.fulfill({ status: 400, json: { error: error.message } }); }
 }));
 const aiStatus = process.env.AI_GEMINI ? { configured: true, provider: 'Gemini', model: 'gemini-flash-latest', source: 'server', keyHint: '', allowAgents: false, canManage: true, canUse: true, updatedAt: null } : { configured: false, provider: 'OpenRouter', model: 'nvidia/nemotron-3.5-super-vl:free', source: null, keyHint: '', allowAgents: false, canManage: true, canUse: true, updatedAt: null };
@@ -109,6 +109,17 @@ if (process.env.AI_GEMINI) {
   await save.click(); await page.waitForTimeout(1200);
   await asUser(); console.log('stored:', JSON.stringify((await db.query("select public.maoki_ai_settings('status','{}') as r")).rows[0].r));
   await page.screenshot({ path: `${out}/ai-saved.png`, fullPage: true });
+}
+if (process.env.MULTI) {
+  // Seed three calendars on the last room through the real channel RPC (same path as the wizard).
+  const call = async (op, id = null, payload = {}) => { await asUser(); return (await db.query('select public.maoki_channels($1,$2,$3) as result', [op, id, JSON.stringify(payload)])).rows[0].result; };
+  const target = rooms[3].id; let n = 0;
+  for (const [platform, url, label] of [['airbnb', 'https://www.airbnb.com/calendar/ical/1.ics?s=a', ''], ['booking', 'https://admin.booking.com/hotel/hoteladmin/ical.html?t=b', ''], ['agoda', 'https://ical.agoda-feed.com/c.ics', ''], ['airbnb', 'https://www.airbnb.com/calendar/ical/2.ics?s=d', 'Listing phòng riêng']]) {
+    const { id } = await call('save', null, { platform, propertyId: target, url, label }); const claim = await call('claim', id);
+    await call('finish', id, { nonce: claim.nonce, events: [{ uid: 'm' + n, checkIn: day(1 + n * 3), checkOut: day(3 + n * 3) }] }); n++;
+  }
+  for (const p of ['calendar', 'channels']) { await page.goto(origin + '/admin/dashboard/' + p); await page.waitForTimeout(1000); await page.screenshot({ path: `${out}/multi-${p}.png`, fullPage: true }); }
+  await page.getByRole('button', { name: 'Thêm lịch' }).first().click(); await page.waitForTimeout(400); await page.screenshot({ path: `${out}/multi-wizard.png` });
 }
 if (process.env.WIZARD) {
   await page.goto(origin + '/admin/dashboard/channels'); await page.waitForTimeout(800);
