@@ -89,6 +89,17 @@ for (const [i, p] of pages.entries()) {
   await page.waitForTimeout(900);
   await page.screenshot({ path: `${out}/${String(i + 1).padStart(2, '0')}-${p || 'overview'}.png`, fullPage: process.env.FULL === '1' });
 }
+if (process.env.SWIPE2) {
+  const touch = async (type, x, y, sel = 'body') => page.evaluate(([type, x, y, sel]) => { const target = document.querySelector(sel) || document.body; const t = new Touch({ identifier: 1, target, clientX: x, clientY: y }); target.dispatchEvent(new TouchEvent(type, { touches: type === 'touchend' ? [] : [t], changedTouches: [t], bubbles: true })); }, [type, x, y, sel]);
+  await page.goto(origin + '/admin/dashboard'); await page.waitForTimeout(800);
+  await touch('touchstart', 150, 400, '.mk-page-header'); await touch('touchend', 320, 410, '.mk-page-header'); await page.waitForTimeout(300);
+  console.log('mid-screen swipe opens:', await page.locator('.mk-sidebar').evaluate(e => e.classList.contains('is-open')));
+  await touch('touchstart', 220, 400, '.mk-sidebar'); await touch('touchend', 40, 405, '.mk-sidebar'); await page.waitForTimeout(300);
+  console.log('swipe left closes:', !(await page.locator('.mk-sidebar').evaluate(e => e.classList.contains('is-open'))));
+  await page.goto(origin + '/admin/dashboard/calendar'); await page.waitForTimeout(800);
+  await touch('touchstart', 150, 600, '.mk-calendar-scroll'); await touch('touchend', 330, 605, '.mk-calendar-scroll'); await page.waitForTimeout(300);
+  console.log('swipe inside the calendar stays closed:', !(await page.locator('.mk-sidebar').evaluate(e => e.classList.contains('is-open'))));
+}
 if (process.env.SWIPE) {
   await page.goto(origin + '/admin/dashboard'); await page.waitForTimeout(900);
   const touch = async (type, x, y) => page.evaluate(([type, x, y]) => { const t = new Touch({ identifier: 1, target: document.body, clientX: x, clientY: y }); document.dispatchEvent(new TouchEvent(type, { touches: type === 'touchend' ? [] : [t], changedTouches: [t], bubbles: true })); }, [type, x, y]);
@@ -98,7 +109,7 @@ if (process.env.SWIPE) {
   await touch('touchstart', 220, 400); await touch('touchend', 40, 405); await page.waitForTimeout(400);
   console.log('open after swipe left:', await page.locator('.mk-sidebar').evaluate(e => e.classList.contains('is-open')));
   await touch('touchstart', 200, 400); await touch('touchend', 380, 405); await page.waitForTimeout(300);
-  console.log('open after mid-screen swipe (should stay closed):', await page.locator('.mk-sidebar').evaluate(e => e.classList.contains('is-open')));
+  console.log('open after mid-screen swipe (now opens):', await page.locator('.mk-sidebar').evaluate(e => e.classList.contains('is-open')));
 }
 if (process.env.AI_GEMINI) {
   await page.goto(origin + '/admin/dashboard/ai'); await page.waitForTimeout(900);

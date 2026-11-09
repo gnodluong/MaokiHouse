@@ -57,22 +57,31 @@ function Shell() {
     };
     document.addEventListener('keydown', handler); return () => document.removeEventListener('keydown', handler);
   }, []);
-  // Phone gesture: swipe right from the left side opens the menu, swipe left closes it.
-  // In the installed app there is no browser Back gesture, so the very edge works too.
+  // Phone gesture: swipe right anywhere opens the menu, swipe left closes it. The outer screen edge
+  // belongs to the browser/OS Back gesture, which no web page can override, so the swipe does not
+  // need to start there. Swipes inside horizontally scrollable areas (room calendar, tables) are left alone.
   useEffect(() => {
     let start: { x: number; y: number; open: boolean } | null = null;
+    const scrollsSideways = (node: EventTarget | null) => {
+      for (let element = node instanceof Element ? node : null; element && element !== document.body; element = element.parentElement) {
+        if (element.matches('input, textarea, select, [contenteditable="true"]')) return true;
+        const overflow = getComputedStyle(element).overflowX;
+        if ((overflow === 'auto' || overflow === 'scroll') && element.scrollWidth > element.clientWidth + 4) return true;
+      }
+      return false;
+    };
     const onStart = (event: TouchEvent) => {
       if (window.innerWidth > 850 || event.touches.length !== 1) { start = null; return; }
-      const touch = event.touches[0];
       const open = Boolean(sidebarRef.current?.classList.contains('is-open'));
-      // The outermost ~20px belongs to the browser's own Back gesture; start anywhere in the left 80px.
-      start = open || touch.clientX <= 80 ? { x: touch.clientX, y: touch.clientY, open } : null;
+      if (!open && scrollsSideways(event.target)) { start = null; return; }
+      const touch = event.touches[0];
+      start = { x: touch.clientX, y: touch.clientY, open };
     };
     const onEnd = (event: TouchEvent) => {
       if (!start) return;
       const touch = event.changedTouches[0];
       const dx = touch.clientX - start.x; const dy = Math.abs(touch.clientY - start.y);
-      if (dy < 60 && Math.abs(dx) > 60) {
+      if (Math.abs(dx) > 70 && Math.abs(dx) > dy * 2) {
         if (!start.open && dx > 0) setDrawer(true);
         if (start.open && dx < 0) setDrawer(false);
       }
