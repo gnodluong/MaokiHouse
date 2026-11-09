@@ -57,6 +57,29 @@ function Shell() {
     };
     document.addEventListener('keydown', handler); return () => document.removeEventListener('keydown', handler);
   }, []);
+  // Phone gesture: swipe right from the left edge opens the menu, swipe left closes it.
+  useEffect(() => {
+    let start: { x: number; y: number; open: boolean } | null = null;
+    const onStart = (event: TouchEvent) => {
+      if (window.innerWidth > 850 || event.touches.length !== 1) { start = null; return; }
+      const touch = event.touches[0];
+      const open = Boolean(sidebarRef.current?.classList.contains('is-open'));
+      start = open || touch.clientX <= 28 ? { x: touch.clientX, y: touch.clientY, open } : null;
+    };
+    const onEnd = (event: TouchEvent) => {
+      if (!start) return;
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - start.x; const dy = Math.abs(touch.clientY - start.y);
+      if (dy < 60 && Math.abs(dx) > 60) {
+        if (!start.open && dx > 0) setDrawer(true);
+        if (start.open && dx < 0) setDrawer(false);
+      }
+      start = null;
+    };
+    document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchend', onEnd, { passive: true });
+    return () => { document.removeEventListener('touchstart', onStart); document.removeEventListener('touchend', onEnd); };
+  }, []);
   useEffect(() => {
     if (!drawer) return;
     const previous = document.body.style.overflow; document.body.style.overflow = 'hidden';

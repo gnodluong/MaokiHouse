@@ -588,3 +588,11 @@
 .mk-connected-calendar > .mk-inline-actions { align-items: center; align-self: start; }
 .mk-nav-link { position: relative; }
 .mk-nav-link.active::before { left: -12px; top: 50%; transform: translateY(-50%); }
+
+/* iOS Safari zooms the page when a focused field's text is smaller than 16px.
+   On touch screens every field uses 16px so tapping an input never zooms the app. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+@media (pointer: coarse), (max-width: 850px) {
+  .maoki-ui input:not([type='checkbox']):not([type='radio']), .maoki-ui select, .maoki-ui textarea,
+  html[data-mk-theme] .maoki-ui input:not([type='checkbox']):not([type='radio']), html[data-mk-theme] .maoki-ui select, html[data-mk-theme] .maoki-ui textarea { font-size: 16px !important; }
+}

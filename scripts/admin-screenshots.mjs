@@ -89,6 +89,17 @@ for (const [i, p] of pages.entries()) {
   await page.waitForTimeout(900);
   await page.screenshot({ path: `${out}/${String(i + 1).padStart(2, '0')}-${p || 'overview'}.png`, fullPage: process.env.FULL === '1' });
 }
+if (process.env.SWIPE) {
+  await page.goto(origin + '/admin/dashboard'); await page.waitForTimeout(900);
+  const touch = async (type, x, y) => page.evaluate(([type, x, y]) => { const t = new Touch({ identifier: 1, target: document.body, clientX: x, clientY: y }); document.dispatchEvent(new TouchEvent(type, { touches: type === 'touchend' ? [] : [t], changedTouches: [t], bubbles: true })); }, [type, x, y]);
+  await touch('touchstart', 8, 400); await touch('touchend', 220, 410); await page.waitForTimeout(400);
+  console.log('open after edge swipe:', await page.locator('.mk-sidebar').evaluate(e => e.classList.contains('is-open')));
+  await page.screenshot({ path: `${out}/swipe-open.png` });
+  await touch('touchstart', 220, 400); await touch('touchend', 40, 405); await page.waitForTimeout(400);
+  console.log('open after swipe left:', await page.locator('.mk-sidebar').evaluate(e => e.classList.contains('is-open')));
+  await touch('touchstart', 200, 400); await touch('touchend', 380, 405); await page.waitForTimeout(300);
+  console.log('open after mid-screen swipe (should stay closed):', await page.locator('.mk-sidebar').evaluate(e => e.classList.contains('is-open')));
+}
 if (process.env.AI_GEMINI) {
   await page.goto(origin + '/admin/dashboard/ai'); await page.waitForTimeout(900);
   await page.getByRole('button', { name: /Cài đặt AI/ }).first().click().catch(() => {});
