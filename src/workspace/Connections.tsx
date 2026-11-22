@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { apiOrigin } from './apiBase';
 import { Link } from 'react-router-dom';
 import { FiCheck, FiCopy, FiLink, FiRefreshCw, FiTrash2, FiArrowRight } from 'react-icons/fi';
 import { useWorkspace } from './context';
@@ -47,7 +48,7 @@ const messaging = [
   { key: 'zalo', name: 'Zalo OA', mark: 'Z', color: '#0068ff', text: 'Cần Zalo Official Account và ứng dụng nhà phát triển Zalo được cấp quyền.' },
 ];
 
-const exportLink = (token: string) => `${window.location.origin}/api/channels?feed=${token}`;
+const exportLink = (token: string) => `${apiOrigin() || window.location.origin}/api/channels?feed=${token}`;
 const ago = (iso: string | null) => {
   if (!iso) return 'Chưa đồng bộ';
   const minutes = Math.round((Date.now() - Date.parse(iso)) / 60000);

@@ -1,0 +1,58 @@
+/** Strings written for the desktop shell itself. Keys are stable ids; Vietnamese is the reference language. */
+export type Lang = 'vi' | 'en';
+
+export const ui = {
+  vi: {
+    appName: 'Maoki Admin', admin: 'Quản trị', skip: 'Đến nội dung chính', mainNav: 'Điều hướng chính',
+    'nav.overview': 'Tổng quan', 'nav.daily': 'Hằng ngày', 'nav.calendar': 'Lịch phòng', 'nav.bookings': 'Đặt phòng', 'nav.messages': 'Hộp thư', 'nav.tasks': 'Công việc',
+    'nav.stays': 'Phòng & giá', 'nav.properties': 'Phòng & căn hộ', 'nav.rates': 'Giá & tình trạng', 'nav.guidebooks': 'Sổ tay lưu trú',
+    'nav.guests': 'Khách hàng', 'nav.contacts': 'Khách hàng', 'nav.replies': 'Mẫu trả lời', 'nav.automations': 'Tự động hóa', 'nav.campaigns': 'Chiến dịch',
+    'nav.business': 'Kinh doanh', 'nav.revenue': 'Thu & chi', 'nav.reports': 'Báo cáo', 'nav.owners': 'Chủ sở hữu', 'nav.hr': 'Đội ngũ',
+    'nav.setup': 'Thiết lập', 'nav.channels': 'Kết nối kênh', 'nav.ai': 'Trợ lý AI', 'nav.settings': 'Cài đặt cơ sở', 'nav.preferences': 'Giao diện & ngôn ngữ',
+    'role.owner': 'Chủ không gian', 'role.manager': 'Quản lý', 'role.agent': 'Nhân viên', 'role.viewer': 'Chỉ xem', 'role.member': 'Thành viên',
+    switchWorkspace: 'Chuyển không gian', searchPlaceholder: 'Tìm khách, đặt phòng, công việc…', searchLabel: 'Tìm trong không gian', searchResults: 'Kết quả tìm kiếm', noResults: 'Không tìm thấy kết quả phù hợp.',
+    themeToLight: 'Chuyển sang giao diện sáng', themeToDark: 'Chuyển sang giao diện tối', refresh: 'Làm mới dữ liệu', inbox: 'Hộp thư', unreadN: '{n} chưa đọc', logout: 'Đăng xuất', language: 'Ngôn ngữ',
+    retry: 'Thử lại', setupGuide: 'Hướng dẫn thiết lập Supabase', opening: 'Đang mở không gian của bạn…', calendarsSynced: 'Đã cập nhật lịch từ {n} kết nối kênh',
+    // login
+    'login.title': 'Bảng điều hành cho đội ngũ', 'login.lead': 'Quản lý phòng, đặt phòng, hộp thư khách, công việc và doanh thu. Chỉ chủ nhà và nhân viên được mời mới có quyền truy cập.',
+    'login.p1': 'Phân quyền theo vai trò: chủ không gian, quản lý, nhân viên, chỉ xem', 'login.p2': 'Mọi thay đổi được ghi lại trong nhật ký hoạt động', 'login.p3': 'Dữ liệu khách được bảo vệ bằng phân quyền phía máy chủ',
+    'login.signin': 'Đăng nhập', 'login.signup': 'Tạo tài khoản', 'login.email': 'Email', 'login.password': 'Mật khẩu', 'login.submitIn': 'Đăng nhập', 'login.submitUp': 'Tạo tài khoản',
+    'login.invite': 'Bạn được mời tham gia một không gian. Đăng nhập hoặc tạo tài khoản bằng đúng email được mời để chấp nhận.', 'login.checkEmail': 'Kiểm tra email để xác nhận tài khoản, rồi đăng nhập tại đây.',
+    'login.errConfirm': 'Vui lòng xác nhận email trước khi đăng nhập.', 'login.errNetwork': 'Chưa kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.', 'login.errCreds': 'Email hoặc mật khẩu chưa đúng.',
+    'login.setup': 'Lần đầu sử dụng? Xem hướng dẫn thiết lập', 'login.footer': 'Maoki House · Hệ thống nội bộ', 'login.checking': 'Đang kiểm tra phiên đăng nhập…', 'login.minPassword': 'Mật khẩu tối thiểu 8 ký tự.',
+    // preferences
+    'pref.title': 'Giao diện & ngôn ngữ', 'pref.desc': 'Tuỳ chỉnh cách ứng dụng hiển thị trên máy này. Các thiết lập được lưu cục bộ.',
+    'pref.appearance': 'Chế độ hiển thị', 'pref.system': 'Theo hệ thống', 'pref.systemD': 'Tự đổi sáng/tối theo Windows, macOS hoặc Linux.', 'pref.light': 'Sáng', 'pref.lightD': 'Nền sáng, dễ đọc ban ngày.', 'pref.dark': 'Tối', 'pref.darkD': 'Nền tối, dịu mắt khi làm việc ban đêm.',
+    'pref.accent': 'Tông màu', 'pref.accentD': 'Màu nhấn dùng cho nút chính, mục đang chọn và biểu đồ.',
+    'accent.blue': 'Xanh dương', 'accent.indigo': 'Chàm', 'accent.teal': 'Xanh ngọc', 'accent.green': 'Xanh lá', 'accent.amber': 'Hổ phách', 'accent.rose': 'Hồng đỏ', 'accent.graphite': 'Than chì',
+    'pref.language': 'Ngôn ngữ', 'pref.languageD': 'Áp dụng cho toàn bộ ứng dụng ngay lập tức.',
+    'pref.server': 'Máy chủ API', 'pref.serverD': 'Địa chỉ website Maoki đã triển khai (ví dụ https://maokihouse.vercel.app). Cần cho Trợ lý AI và Kết nối kênh. Để trống nếu chưa dùng.', 'pref.serverSave': 'Lưu', 'pref.serverSaved': 'Đã lưu địa chỉ máy chủ', 'pref.serverBad': 'Địa chỉ phải bắt đầu bằng https:// (hoặc http://localhost).',
+    'pref.about': 'Về ứng dụng', 'pref.version': 'Phiên bản', 'pref.platform': 'Nền tảng', 'pref.preview': 'Xem trước', 'pref.previewText': 'Nút chính, nhãn trạng thái và mục đang chọn sẽ dùng tông màu này.', 'pref.sample': 'Nút chính', 'pref.sampleBadge': 'Đã xác nhận',
+  },
+  en: {
+    appName: 'Maoki Admin', admin: 'Admin', skip: 'Skip to main content', mainNav: 'Main navigation',
+    'nav.overview': 'Overview', 'nav.daily': 'Daily', 'nav.calendar': 'Room calendar', 'nav.bookings': 'Bookings', 'nav.messages': 'Inbox', 'nav.tasks': 'Tasks',
+    'nav.stays': 'Rooms & pricing', 'nav.properties': 'Rooms & apartments', 'nav.rates': 'Rates & availability', 'nav.guidebooks': 'Guest guidebooks',
+    'nav.guests': 'Guests', 'nav.contacts': 'Guests', 'nav.replies': 'Reply templates', 'nav.automations': 'Automations', 'nav.campaigns': 'Campaigns',
+    'nav.business': 'Business', 'nav.revenue': 'Income & expenses', 'nav.reports': 'Reports', 'nav.owners': 'Owners', 'nav.hr': 'Team',
+    'nav.setup': 'Setup', 'nav.channels': 'Channel connections', 'nav.ai': 'AI assistant', 'nav.settings': 'Business settings', 'nav.preferences': 'Appearance & language',
+    'role.owner': 'Workspace owner', 'role.manager': 'Manager', 'role.agent': 'Staff', 'role.viewer': 'View only', 'role.member': 'Member',
+    switchWorkspace: 'Switch workspace', searchPlaceholder: 'Search guests, bookings, tasks…', searchLabel: 'Search the workspace', searchResults: 'Search results', noResults: 'No matching results.',
+    themeToLight: 'Switch to light theme', themeToDark: 'Switch to dark theme', refresh: 'Refresh data', inbox: 'Inbox', unreadN: '{n} unread', logout: 'Sign out', language: 'Language',
+    retry: 'Try again', setupGuide: 'Supabase setup guide', opening: 'Opening your workspace…', calendarsSynced: 'Updated calendars from {n} channel connections',
+    'login.title': 'Operations console for your team', 'login.lead': 'Manage rooms, bookings, guest inbox, tasks and revenue. Only the owner and invited staff can sign in.',
+    'login.p1': 'Role-based access: owner, manager, staff, view only', 'login.p2': 'Every change is recorded in the activity log', 'login.p3': 'Guest data is protected by server-side permissions',
+    'login.signin': 'Sign in', 'login.signup': 'Create account', 'login.email': 'Email', 'login.password': 'Password', 'login.submitIn': 'Sign in', 'login.submitUp': 'Create account',
+    'login.invite': 'You have been invited to a workspace. Sign in or create an account with the invited email to accept.', 'login.checkEmail': 'Check your email to confirm the account, then sign in here.',
+    'login.errConfirm': 'Please confirm your email before signing in.', 'login.errNetwork': 'Cannot reach the server. Check your connection and try again.', 'login.errCreds': 'Incorrect email or password.',
+    'login.setup': 'First time? See the setup guide', 'login.footer': 'Maoki House · Internal system', 'login.checking': 'Checking your session…', 'login.minPassword': 'Password must be at least 8 characters.',
+    'pref.title': 'Appearance & language', 'pref.desc': 'Customize how the app looks on this computer. Settings are stored locally.',
+    'pref.appearance': 'Display mode', 'pref.system': 'Match system', 'pref.systemD': 'Switches between light and dark with Windows, macOS or Linux.', 'pref.light': 'Light', 'pref.lightD': 'Bright surfaces, easy to read in daylight.', 'pref.dark': 'Dark', 'pref.darkD': 'Dark surfaces, easier on the eyes at night.',
+    'pref.accent': 'Color tone', 'pref.accentD': 'Accent color for primary buttons, the selected item and charts.',
+    'accent.blue': 'Blue', 'accent.indigo': 'Indigo', 'accent.teal': 'Teal', 'accent.green': 'Green', 'accent.amber': 'Amber', 'accent.rose': 'Rose', 'accent.graphite': 'Graphite',
+    'pref.language': 'Language', 'pref.languageD': 'Applies to the whole app immediately.',
+    'pref.server': 'API server', 'pref.serverD': 'Address of your deployed Maoki website (e.g. https://maokihouse.vercel.app). Needed for the AI assistant and channel connections. Leave empty if unused.', 'pref.serverSave': 'Save', 'pref.serverSaved': 'Server address saved', 'pref.serverBad': 'The address must start with https:// (or http://localhost).',
+    'pref.about': 'About', 'pref.version': 'Version', 'pref.platform': 'Platform', 'pref.preview': 'Preview', 'pref.previewText': 'Primary buttons, status badges and the selected item use this tone.', 'pref.sample': 'Primary button', 'pref.sampleBadge': 'Confirmed',
+  },
+} as const;
+export type UiKey = keyof typeof ui.vi;

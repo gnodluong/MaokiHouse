@@ -1,0 +1,148 @@
+/*
+ * Maoki Admin desktop theme. Loaded after the shared admin styles (src/workspace), so it re-skins them
+ * through the --mk-* tokens: a neutral, low-saturation surface palette in light and dark, plus one
+ * accent tone chosen by the user (html[data-mk-accent]). Nothing here is decorative: flat surfaces,
+ * 1px borders, small radii, restrained shadows.
+ */
+
+/* ── Neutral surfaces ─────────────────────────────────────────── */
+html[data-mk-desktop][data-mk-theme='light'] .maoki-ui {
+  --mk-bg: #f4f5f7; --mk-surface: #ffffff; --mk-sunken: #eceef2; --mk-ink: #161a22; --mk-muted: #566070; --mk-faint: #6b7586;
+  --mk-line: #e2e5ea; --mk-line-strong: #cdd2da; --mk-hover: #eef0f4; --mk-on-accent: #ffffff;
+  --mk-success: #1f7a47; --mk-success-bg: #e4f4ea; --mk-danger: #b42318; --mk-danger-bg: #fdecea; --mk-amber: #8a5a00; --mk-amber-bg: #fdf2d6; --mk-info: #1d5fa8; --mk-info-bg: #e7f0fb;
+  --mk-shadow-pop: 0 12px 32px rgba(16, 24, 40, 0.14), 0 2px 6px rgba(16, 24, 40, 0.08);
+  --dk-sidebar: #ffffff; --dk-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+html[data-mk-desktop][data-mk-theme='dark'] .maoki-ui {
+  --mk-bg: #101216; --mk-surface: #171a20; --mk-sunken: #13151a; --mk-ink: #e9ecf1; --mk-muted: #a2aab8; --mk-faint: #8a93a2;
+  --mk-line: #262b34; --mk-line-strong: #353b46; --mk-hover: #1f232b; --mk-on-accent: #0b0d11;
+  --mk-success: #7fd1a0; --mk-success-bg: #14291e; --mk-danger: #f4a39a; --mk-danger-bg: #351a18; --mk-amber: #e9c27a; --mk-amber-bg: #30260f; --mk-info: #9ec3ee; --mk-info-bg: #16253a;
+  --mk-shadow-pop: 0 16px 40px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --dk-sidebar: #13151a; --dk-shadow: none;
+}
+html[data-mk-desktop][data-mk-theme='dark'] body { background: #101216; }
+html[data-mk-desktop][data-mk-theme='light'] body { background: #f4f5f7; }
+
+/* ── Accent tones (light value / dark value) ──────────────────── */
+html[data-mk-desktop][data-mk-theme='light'][data-mk-accent='blue'] .maoki-ui { --mk-accent: #1f5fd6; --mk-accent-strong: #1949ab; --mk-tint: #e6eefc; }
+html[data-mk-desktop][data-mk-theme='dark'][data-mk-accent='blue'] .maoki-ui { --mk-accent: #6fa0ff; --mk-accent-strong: #8ab4ff; --mk-tint: #172640; }
+html[data-mk-desktop][data-mk-theme='light'][data-mk-accent='indigo'] .maoki-ui { --mk-accent: #4a42d6; --mk-accent-strong: #3932b4; --mk-tint: #ecebfc; }
+html[data-mk-desktop][data-mk-theme='dark'][data-mk-accent='indigo'] .maoki-ui { --mk-accent: #9a96ff; --mk-accent-strong: #b0adff; --mk-tint: #211f43; }
+html[data-mk-desktop][data-mk-theme='light'][data-mk-accent='teal'] .maoki-ui { --mk-accent: #0c7a74; --mk-accent-strong: #095f5a; --mk-tint: #def4f1; }
+html[data-mk-desktop][data-mk-theme='dark'][data-mk-accent='teal'] .maoki-ui { --mk-accent: #46cfc4; --mk-accent-strong: #6fe0d6; --mk-tint: #123432; }
+html[data-mk-desktop][data-mk-theme='light'][data-mk-accent='green'] .maoki-ui { --mk-accent: #25793f; --mk-accent-strong: #1b5f30; --mk-tint: #e1f3e7; }
+html[data-mk-desktop][data-mk-theme='dark'][data-mk-accent='green'] .maoki-ui { --mk-accent: #6fcf8d; --mk-accent-strong: #8fdca7; --mk-tint: #16301f; }
+html[data-mk-desktop][data-mk-theme='light'][data-mk-accent='amber'] .maoki-ui { --mk-accent: #9a5b00; --mk-accent-strong: #7b4900; --mk-tint: #fbefd6; }
+html[data-mk-desktop][data-mk-theme='dark'][data-mk-accent='amber'] .maoki-ui { --mk-accent: #f0b252; --mk-accent-strong: #f5c57b; --mk-tint: #38290e; }
+html[data-mk-desktop][data-mk-theme='light'][data-mk-accent='rose'] .maoki-ui { --mk-accent: #b8264a; --mk-accent-strong: #961d3b; --mk-tint: #fbe6ec; }
+html[data-mk-desktop][data-mk-theme='dark'][data-mk-accent='rose'] .maoki-ui { --mk-accent: #ff8da6; --mk-accent-strong: #ffa9bb; --mk-tint: #3d1a24; }
+html[data-mk-desktop][data-mk-theme='light'][data-mk-accent='graphite'] .maoki-ui { --mk-accent: #353c48; --mk-accent-strong: #1f242c; --mk-tint: #e8eaee; }
+html[data-mk-desktop][data-mk-theme='dark'][data-mk-accent='graphite'] .maoki-ui { --mk-accent: #c9cfd9; --mk-accent-strong: #e2e6ec; --mk-tint: #262a32; }
+
+/* ── Typography: system UI fonts only (works offline) ─────────── */
+html[data-mk-desktop] .maoki-ui { font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, 'SF Pro Text', Roboto, 'Helvetica Neue', sans-serif; font-size: 13.5px; line-height: 1.5; }
+html[data-mk-desktop] .maoki-ui h1 { font-size: 20px; font-weight: 650; letter-spacing: -0.015em; }
+html[data-mk-desktop] .maoki-ui h2 { font-size: 14px; font-weight: 620; letter-spacing: 0; }
+html[data-mk-desktop] .mk-eyebrow { letter-spacing: .08em; }
+
+/* ── Shared components: flatter, tighter ──────────────────────── */
+html[data-mk-desktop] .mk-panel, html[data-mk-desktop] .mk-stat { border-radius: 10px; box-shadow: var(--dk-shadow); border-color: var(--mk-line); }
+html[data-mk-desktop] .mk-button { border-radius: 7px; min-height: 34px; font-weight: 560; }
+html[data-mk-desktop] .mk-button.primary { background: var(--mk-accent); border-color: var(--mk-accent); }
+html[data-mk-desktop] .maoki-ui input, html[data-mk-desktop] .maoki-ui select, html[data-mk-desktop] .maoki-ui textarea { border-radius: 7px; min-height: 36px; }
+html[data-mk-desktop] .mk-badge { border-radius: 5px; font-weight: 560; }
+html[data-mk-desktop] .mk-page-header { margin-bottom: 22px; }
+html[data-mk-desktop] .mk-page-header p { margin-top: 4px; font-size: 13.5px; }
+html[data-mk-desktop] .mk-dialog { border-radius: 12px; box-shadow: var(--mk-shadow-pop); }
+html[data-mk-desktop] .mk-stat > strong { font-size: clamp(20px, 1.8vw, 28px); letter-spacing: -0.03em; }
+html[data-mk-desktop] .maoki-ui table th { text-transform: none; letter-spacing: 0; }
+
+html[data-mk-desktop] body { margin: 0; }
+
+/* ── App frame ────────────────────────────────────────────────── */
+.dk-app { display: grid; grid-template-columns: 244px minmax(0, 1fr); height: 100vh; overflow: hidden; }
+.dk-sidebar { display: flex; flex-direction: column; background: var(--dk-sidebar); border-right: 1px solid var(--mk-line); min-height: 0; }
+.dk-brand { display: flex; align-items: center; gap: 8px; padding: 16px 18px 14px; color: var(--mk-ink) !important; }
+.dk-wordmark { display: block; width: 104px; height: 28px; background-color: var(--mk-ink); -webkit-mask: url('../../src/assets/images/logo.png') left center / contain no-repeat; mask: url('../../src/assets/images/logo.png') left center / contain no-repeat; }
+.dk-brand small { align-self: flex-end; margin-bottom: 2px; padding-left: 2px; display: block; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--mk-muted); }
+.dk-workspace { display: block; margin: 0 12px 8px; }
+.dk-sidebar nav { flex: 1; overflow-y: auto; padding: 4px 10px 12px; scrollbar-width: thin; scrollbar-color: var(--mk-line-strong) transparent; }
+.dk-nav-group { margin-bottom: 12px; }
+.dk-nav-heading { display: block; padding: 6px 10px 4px; font-size: 11px; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; color: var(--mk-faint); }
+.dk-nav-link { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; margin: 1px 0; border-radius: 7px; color: var(--mk-muted) !important; font-size: 13.5px; font-weight: 500; }
+.dk-nav-link svg { font-size: 16px; }
+.dk-nav-link:hover { background: var(--mk-hover); color: var(--mk-ink) !important; }
+.dk-nav-link.active { background: var(--mk-tint); color: var(--mk-accent) !important; font-weight: 620; }
+.dk-count { margin-left: auto; min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--mk-accent); color: var(--mk-on-accent); font-size: 11.5px; font-weight: 650; text-align: center; line-height: 20px; }
+.dk-person { display: flex; align-items: center; gap: 9px; padding: 11px 12px; border-top: 1px solid var(--mk-line); }
+.dk-person > div { flex: 1; min-width: 0; }
+.dk-person strong { display: block; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dk-person small { display: block; font-size: 12px; color: var(--mk-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dk-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.dk-topbar { display: flex; align-items: center; gap: 18px; height: 52px; flex-shrink: 0; padding: 0 24px; background: var(--mk-surface); border-bottom: 1px solid var(--mk-line); position: relative; z-index: 20; }
+.dk-crumb { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--mk-muted); white-space: nowrap; }
+.dk-crumb strong { color: var(--mk-ink); font-weight: 600; }
+.dk-search { position: relative; margin: 0 auto 0 8px; width: min(420px, 100%); flex: 1; }
+.dk-search label { display: flex; align-items: center; gap: 8px; padding: 0 10px; height: 34px; border: 1px solid var(--mk-line-strong); border-radius: 8px; background: var(--mk-bg); }
+.dk-search label:focus-within { border-color: var(--mk-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mk-accent) 22%, transparent); }
+.dk-search input { border: 0 !important; background: transparent !important; box-shadow: none !important; min-height: 30px !important; padding: 0 !important; }
+.dk-search svg { color: var(--mk-muted); font-size: 15px; }
+.dk-search kbd { font: inherit; font-size: 11px; color: var(--mk-muted); border: 1px solid var(--mk-line-strong); border-radius: 4px; padding: 1px 5px; white-space: nowrap; background: var(--mk-surface); }
+.dk-search .mk-search-results { left: 0; right: 0; top: calc(100% + 6px); }
+.dk-tools { display: flex; align-items: center; gap: 4px; }
+.dk-lang { display: inline-flex; padding: 2px; border: 1px solid var(--mk-line-strong); border-radius: 8px; background: var(--mk-bg); margin-right: 6px; }
+.dk-lang button { border: 0; background: transparent; color: var(--mk-muted); font-size: 12px; font-weight: 650; padding: 3px 9px; border-radius: 6px; min-height: 26px; }
+.dk-lang button.on { background: var(--mk-surface); color: var(--mk-accent); box-shadow: 0 1px 2px rgba(16, 24, 40, .12); }
+.dk-inbox { position: relative; }
+.dk-inbox i { position: absolute; top: 7px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--mk-accent); outline: 2px solid var(--mk-surface); }
+.mk-zone-admin .mk-main-content.dk-content { flex: 1; overflow-y: auto; max-width: none; width: auto; min-height: 0; margin: 0; padding: 26px max(32px, calc((100% - 1360px) / 2)) 40px; }
+
+/* ── Sign-in ──────────────────────────────────────────────────── */
+.dk-login { display: grid; grid-template-columns: minmax(380px, 5fr) minmax(420px, 6fr); min-height: 100vh; }
+.dk-login-story { display: flex; flex-direction: column; justify-content: space-between; gap: 32px; padding: 32px 48px; background: var(--dk-sidebar); border-right: 1px solid var(--mk-line); }
+.dk-login-story .dk-brand { padding: 0; }
+.dk-login-story h1 { font-size: 30px !important; line-height: 1.2; letter-spacing: -0.025em !important; max-width: 14em; }
+.dk-login-story p { margin-top: 14px; color: var(--mk-muted); max-width: 34em; font-size: 14.5px; }
+.dk-login-story ul { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 12px; }
+.dk-login-story li { display: flex; gap: 10px; align-items: flex-start; color: var(--mk-ink); }
+.dk-login-story li svg { color: var(--mk-accent); margin-top: 3px; }
+.dk-login-story > small { color: var(--mk-faint); }
+.dk-login-form-wrap { display: flex; flex-direction: column; padding: 20px 28px; background: var(--mk-bg); }
+.dk-login-tools { display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
+.dk-login-form { margin: auto; width: min(380px, 100%); display: grid; gap: 14px; padding: 28px; background: var(--mk-surface); border: 1px solid var(--mk-line); border-radius: 12px; box-shadow: var(--dk-shadow); }
+.dk-login-form .mk-field { display: grid; gap: 6px; }
+.dk-login-form .mk-button { width: 100%; min-height: 40px; }
+.dk-tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; gap: 3px; background: var(--mk-bg); border: 1px solid var(--mk-line); border-radius: 8px; }
+.dk-tabs button { border: 0; background: transparent; color: var(--mk-muted); border-radius: 6px; padding: 7px; font-weight: 600; font-size: 13px; }
+.dk-tabs button.on { background: var(--mk-surface); color: var(--mk-ink); box-shadow: 0 1px 2px rgba(16, 24, 40, .12); }
+
+/* ── Preferences page ─────────────────────────────────────────── */
+.dk-pref { padding-bottom: 20px; max-width: 880px; }
+.dk-pref > *:not(.mk-section-title) { margin-left: 22px; margin-right: 22px; }
+.dk-pref > .mk-section-title + * { margin-top: 0; }
+.dk-hint { color: var(--mk-muted); margin-top: -8px; margin-bottom: 14px; }
+.dk-choice-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.dk-choice-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dk-choice { display: grid; gap: 4px; text-align: left; padding: 14px; background: var(--mk-bg); border: 1px solid var(--mk-line-strong); border-radius: 10px; color: var(--mk-ink); }
+.dk-choice:hover { border-color: var(--mk-faint); }
+.dk-choice.on { border-color: var(--mk-accent); box-shadow: 0 0 0 1px var(--mk-accent); background: var(--mk-surface); }
+.dk-choice strong { display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
+.dk-choice strong svg { color: var(--mk-accent); }
+.dk-choice small { color: var(--mk-muted); font-size: 12.5px; }
+.dk-mode-swatch { height: 46px; border-radius: 6px; border: 1px solid var(--mk-line-strong); margin-bottom: 6px; }
+.dk-mode-swatch.light { background: linear-gradient(90deg, #fff 0 28%, #f4f5f7 28%); }
+.dk-mode-swatch.dark { background: linear-gradient(90deg, #171a20 0 28%, #101216 28%); }
+.dk-mode-swatch.system { background: linear-gradient(115deg, #fff 0 50%, #171a20 50%); }
+.dk-swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.dk-swatch { display: inline-flex; align-items: center; gap: 9px; padding: 7px 14px 7px 8px; background: var(--mk-bg); border: 1px solid var(--mk-line-strong); border-radius: 999px; color: var(--mk-ink); font-size: 13px; font-weight: 550; }
+.dk-swatch > span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: #fff; }
+.dk-swatch.on { border-color: var(--mk-accent); box-shadow: 0 0 0 1px var(--mk-accent); }
+.dk-swatch[data-accent='blue'] > span { background: #1f5fd6; } .dk-swatch[data-accent='indigo'] > span { background: #4a42d6; } .dk-swatch[data-accent='teal'] > span { background: #0c7a74; }
+.dk-swatch[data-accent='green'] > span { background: #25793f; } .dk-swatch[data-accent='amber'] > span { background: #b8730a; } .dk-swatch[data-accent='rose'] > span { background: #b8264a; } .dk-swatch[data-accent='graphite'] > span { background: #353c48; }
+.dk-preview { margin-top: 18px; padding: 14px 16px; border: 1px dashed var(--mk-line-strong); border-radius: 10px; }
+.dk-preview p { color: var(--mk-muted); margin: 2px 0 12px; }
+.dk-preview > div { display: flex; align-items: center; gap: 12px; }
+.dk-inline { display: flex; gap: 10px; }
+.dk-about { display: flex; gap: 40px; margin-bottom: 0; }
+.dk-about dt { font-size: 12px; color: var(--mk-muted); font-weight: 500; } .dk-about dd { margin: 2px 0 0; font-weight: 600; }
+.dk-content > * { flex-shrink: 0; }

@@ -1,4 +1,5 @@
 import { requireSupabase } from '../lib/supabase/client';
+import { apiUrl } from './apiBase';
 
 export type CalendarPlatform = 'airbnb' | 'booking' | 'agoda' | 'vrbo' | 'expedia' | 'traveloka' | 'tripcom' | 'google' | 'ical';
 export interface CalendarConnection { id: string; propertyId: string; platform: CalendarPlatform; label: string; exportToken: string; lastSyncedAt: string | null; lastError: string; blockCount: number }
@@ -7,7 +8,7 @@ export interface SyncResult { synced?: boolean; saved?: boolean; disconnected?: 
 export async function channelRequest<T>(body?: unknown): Promise<T> {
   const { data: { session } } = await requireSupabase().auth.getSession();
   if (!session) throw new Error('Vui lòng đăng nhập lại.');
-  const response = await fetch('/api/channels', { method: body ? 'POST' : 'GET', signal: AbortSignal.timeout(45000), headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
+  const response = await fetch(apiUrl('/api/channels'), { method: body ? 'POST' : 'GET', signal: AbortSignal.timeout(45000), headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
   const result = await response.json().catch(() => null);
   if (!response.ok || !result) throw new Error(result?.error || `Dịch vụ kết nối chưa hoạt động (HTTP ${response.status}). Kiểm tra bản triển khai mới nhất.`);
   return result as T;

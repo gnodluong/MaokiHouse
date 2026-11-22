@@ -31,3 +31,6 @@ dist-ssr
 supabase/.temp/
 supabase/.branches/
 __pycache__/
+
+desktop/dist
+release
