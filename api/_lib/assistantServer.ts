@@ -16,9 +16,9 @@ app.post('/api/messaging', async (req, res) => {
   const response = await handleMessaging(new Request('http://maoki.internal/api/messaging', { method: 'POST', headers: { authorization: req.headers.authorization || '' }, body: JSON.stringify(req.body) }));
   res.status(response.status).send(await response.text());
 });
-app.post('/api/inbound', express.text({ type: '*/*', limit: '64kb' }), async (req, res) => {
-  const headers = new Headers(); for (const name of ['content-type', 'x-zevent-signature']) { const value = req.headers[name]; if (typeof value === 'string') headers.set(name, value); }
-  const response = await handleInbound(new Request(new URL(req.originalUrl, 'http://maoki.internal'), { method: 'POST', headers }), typeof req.body === 'string' ? req.body : '');
+app.all('/api/inbound', express.text({ type: '*/*', limit: '256kb' }), async (req, res) => {
+  const headers = new Headers(); for (const name of ['content-type', 'x-zevent-signature', 'x-hub-signature-256']) { const value = req.headers[name]; if (typeof value === 'string') headers.set(name, value); }
+  const response = await handleInbound(new Request(new URL(req.originalUrl, 'http://maoki.internal'), { method: req.method, headers }), req.method === 'POST' && typeof req.body === 'string' ? req.body : '');
   res.status(response.status).send(await response.text());
 });
 app.listen(Number(process.env.AI_PORT || 5001), '127.0.0.1', () => console.log('Maoki Supabase AI API ready'));

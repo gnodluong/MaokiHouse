@@ -6,7 +6,7 @@ let checks = 0; const ok = (condition: unknown, message: string) => { assert.ok(
 const CONV = '11111111-1111-4111-8111-111111111111'; const TOKEN = 'a'.repeat(64);
 const j = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
-interface World { context: Record<string, unknown>; zalo: { error: number; message?: string }[]; calls: string[]; tokens: unknown[]; rpcError?: { code: string; message: string }; user: boolean }
+interface World { context: Record<string, unknown>; zalo: { error: number; message?: string }[]; calls: string[]; tokens: unknown[]; meta: object[]; metaStatus: number; rpcError?: { code: string; message: string }; user: boolean }
 function fakeFetch(world: World): typeof fetch {
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input); world.calls.push(url);
@@ -16,13 +16,15 @@ function fakeFetch(world: World): typeof fetch {
       if (body.op === 'tokens') { world.tokens.push(body.payload); return j({ ok: true }); }
       return j(world.context);
     }
+    if (url.includes('/rest/v1/rpc/maoki_channel_verify')) { const body = JSON.parse(String(init?.body)); return j(body.verify === 'good-verify'); }
+    if (url.startsWith('https://graph.facebook.com/')) { world.calls.push('graph:' + String(init?.headers && (init.headers as Record<string, string>).Authorization) + ':' + String(init?.body)); return j(world.meta.shift() || { recipient_id: 'x' }, world.metaStatus); }
     if (url.includes('/rest/v1/rpc/maoki_channel_inbound')) { const body = JSON.parse(String(init?.body)); world.calls.push('inbound:' + JSON.stringify(body)); return j({ ok: true }); }
     if (url.startsWith('https://openapi.zalo.me/')) return j(world.zalo.shift() || { error: 0 });
     if (url.startsWith('https://oauth.zaloapp.com/')) return j({ access_token: 'new-at', refresh_token: 'new-rt', expires_in: '3600' });
     throw new Error('unexpected request ' + url);
   }) as typeof fetch;
 }
-const fresh = (): World => ({ context: {}, zalo: [], calls: [], tokens: [], user: true });
+const fresh = (): World => ({ context: {}, zalo: [], calls: [], tokens: [], meta: [], metaStatus: 200, user: true });
 const send = (world: World, text = 'Xin chào', mailer?: Mailer, auth = 'Bearer tok') => handleMessaging(new Request('http://x/api/messaging', { method: 'POST', headers: { authorization: auth }, body: JSON.stringify({ conversationId: CONV, text }) }), { SUPABASE_URL: 'https://p.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' } as NodeJS.ProcessEnv, fakeFetch(world), mailer);
 
 // Zalo
@@ -40,6 +42,15 @@ world = fresh(); world.context = { thread: true, configured: true, platform: 'em
 body = await (await send(world, 'x', mailer)).json(); ok(body.sent === false && /chưa đầy đủ/.test(body.error), 'incomplete email setup is reported, not sent');
 world = fresh(); world.context = { thread: true, configured: true, platform: 'email', externalId: 'g@x.test', config: { provider: 'smtp', fromAddress: 'a@b.co', smtpHost: 'h' } };
 body = await (await send(world, 'x', async () => { throw new Error('SMTP 535 auth failed'); })).json(); ok(body.sent === false && /535/.test(body.error), 'mail provider errors are surfaced to the host');
+// Facebook / Instagram
+world = fresh(); world.context = { thread: true, configured: true, platform: 'facebook', externalId: 'psid-1', config: { pageId: 'P1', pageAccessToken: 'EAA' } };
+body = await (await send(world, 'Chào bạn')).json(); ok(body.sent === true && world.calls.some(call => call.startsWith('graph:Bearer EAA:') && call.includes('"id":"psid-1"') && call.includes('RESPONSE')), 'messenger reply goes through the Send API with the page token');
+world = fresh(); world.context = { thread: true, configured: true, platform: 'instagram', externalId: 'igsid-1', config: { pageId: 'IG1', pageAccessToken: 'EAA' } }; ok((await (await send(world)).json()).sent === true && world.calls.some(call => call.includes('/IG1/messages')), 'instagram reply uses the linked account id');
+world = fresh(); world.context = { thread: true, configured: true, platform: 'facebook', externalId: 'p', config: { pageAccessToken: 'EAA' } }; world.metaStatus = 400; world.meta = [{ error: { message: 'Invalid OAuth access token', code: 190 } }];
+body = await (await send(world)).json(); ok(body.sent === false && /hết hạn/.test(body.error), 'expired page token is explained');
+world = fresh(); world.context = { thread: true, configured: true, platform: 'facebook', externalId: 'p', config: { pageAccessToken: 'EAA' } }; world.metaStatus = 400; world.meta = [{ error: { message: 'This message is sent outside of allowed window.', code: 10, error_subcode: 2534022 } }];
+body = await (await send(world)).json(); ok(body.sent === false && /24 giờ/.test(body.error), 'meta 24-hour window error is explained');
+world = fresh(); world.context = { thread: true, configured: true, platform: 'facebook', externalId: 'p', config: {} }; body = await (await send(world)).json(); ok(body.sent === false && /Page access token/.test(body.error), 'missing page token is reported');
 // Non-channel conversations and auth
 world = fresh(); world.context = { thread: false }; body = await (await send(world)).json(); ok(body.skipped === true, 'web chat conversations are skipped without error');
 world = fresh(); world.context = { thread: true, configured: false, platform: 'zalo' }; body = await (await send(world)).json(); ok(body.sent === false && /chưa được bật/.test(body.error), 'disabled channel is reported');
@@ -58,5 +69,11 @@ const inboundCall = (token: string, raw: string, headers: Record<string, string>
 world = fresh(); res = await inboundCall(TOKEN, JSON.stringify({ app_id: '1', event_name: 'user_send_text', timestamp: '1' }), { 'x-zevent-signature': 'mac=abc' }, world); ok(res.status === 200 && world.calls.some(call => call.includes('"raw"') && call.includes('"signature":"mac=abc"')), 'zalo webhook forwards the raw body and signature untouched');
 world = fresh(); res = await inboundCall(TOKEN, JSON.stringify({ from: 'g@x.test', text: 'hi' }), { 'content-type': 'application/json' }, world); ok(res.status === 200 && world.calls.some(call => call.startsWith('inbound:') && call.includes('g@x.test')), 'email webhook forwards the normalised message');
 res = await inboundCall('short', '{}', {}, fresh()); ok(res.status === 404, 'malformed inbound token is rejected before any lookup');
-res = await handleInbound(new Request(`http://x/api/inbound?token=${TOKEN}`, { method: 'GET' }), ''); ok(res.status === 405, 'inbound endpoint is POST only');
+world = fresh(); res = await inboundCall(TOKEN, JSON.stringify({ object: 'page', entry: [] }), { 'x-hub-signature-256': 'sha256=abc' }, world); ok(res.status === 200 && world.calls.some(call => call.includes('"signature":"sha256=abc"')), 'meta webhook forwards the raw body and x-hub-signature-256');
+world = fresh(); res = await inboundCall(TOKEN, JSON.stringify({ object: 'instagram', entry: [] }), {}, world); ok(world.calls.some(call => call.includes('"raw"')), 'unsigned meta payloads still go to the verifier, which rejects them');
+const handshake = (verify: string, extra = '') => handleInbound(new Request(`http://x/api/inbound?token=${TOKEN}&hub.mode=subscribe&hub.challenge=12345&hub.verify_token=${verify}${extra}`, { method: 'GET' }), '', { SUPABASE_URL: 'https://p.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' } as NodeJS.ProcessEnv, fakeFetch(fresh()));
+res = await handshake('good-verify'); ok(res.status === 200 && await res.text() === '12345', 'meta handshake echoes the challenge for the right verify token');
+res = await handshake('wrong'); ok(res.status === 403, 'meta handshake rejects a wrong verify token');
+res = await handleInbound(new Request(`http://x/api/inbound?token=${TOKEN}`, { method: 'GET' }), ''); ok(res.status === 400, 'a bare GET without hub parameters is rejected');
+res = await handleInbound(new Request(`http://x/api/inbound?token=${TOKEN}`, { method: 'DELETE' }), ''); ok(res.status === 405, 'inbound endpoint only allows GET and POST');
 console.log(`${checks} messaging checks passed`);

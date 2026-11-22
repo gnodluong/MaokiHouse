@@ -9,3 +9,10 @@
 **Email gửi đi**: SMTP (cổng 25/465/587/2525, máy chủ phải là địa chỉ công khai) hoặc Resend.
 **Email nhận**: chuyển tiếp thư tới địa chỉ webhook bằng Postmark Inbound / Mailgun Routes (JSON hoặc form).
 Thông tin xác thực nằm trong bảng riêng `maoki_private`, không có trong dữ liệu trả về cho trình duyệt; chủ/quản lý/nhân viên có quyền trả lời có thể lấy chúng khi gửi tin (giống khóa AI).
+
+## Facebook Messenger và Instagram
+1. Chạy thêm `supabase/migrations/20261124090000_maoki_meta_channels.sql` (sau file kênh nhắn tin ở trên).
+2. developers.facebook.com → tạo ứng dụng Business, thêm Messenger (và Instagram), liên kết Fanpage (đã kết nối Instagram chuyên nghiệp nếu dùng Instagram).
+3. App desktop → Thiết lập → Kênh nhắn tin: nhập App Secret, Page ID, Page access token → Lưu.
+4. Meta → Webhooks: đối tượng **Page** (Facebook) hoặc **Instagram**, dán Callback URL + Verify token hiển thị trong app, đăng ký trường `messages`.
+Chữ ký `X-Hub-Signature-256` (HMAC-SHA256 bằng App Secret) được kiểm tra trong SQL. Chỉ trả lời được trong 24 giờ kể từ tin cuối của khách; để nhận tin từ khách thật cần Meta App Review (quyền `pages_messaging`, `instagram_manage_messages`).

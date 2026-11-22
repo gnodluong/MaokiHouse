@@ -8,7 +8,7 @@ import { isPublicAddress } from './calendars';
 const json = (status: number, body: object) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const sendSchema = z.object({ conversationId: z.string().uuid(), text: z.string().trim().min(1).max(3000) }).strict();
 
-interface SendContext { thread: boolean; configured?: boolean; platform?: 'zalo' | 'email'; externalId?: string; meta?: { subject?: string; lastMessageId?: string }; config?: Record<string, string> }
+interface SendContext { thread: boolean; configured?: boolean; platform?: 'zalo' | 'email' | 'facebook' | 'instagram'; externalId?: string; meta?: { subject?: string; lastMessageId?: string }; config?: Record<string, string> }
 export type Mailer = (config: Record<string, string>, message: { to: string; subject: string; text: string; inReplyTo?: string }) => Promise<string>;
 
 function supabase(env: NodeJS.ProcessEnv, transport: typeof fetch, token?: string) {
@@ -48,6 +48,19 @@ async function sendZalo(context: SendContext, text: string, transport: typeof fe
   if (result.error !== 0) throw new Error(result.error === -233 || /48|interaction/i.test(result.message || '') ? 'Zalo chỉ cho phép trả lời trong 48 giờ kể từ tin nhắn cuối của khách.' : `Zalo từ chối gửi tin: ${result.message || result.error}`);
 }
 
+/** Messenger / Instagram: Send API with the Page access token. Replies are allowed within 24 hours of the guest's last message. */
+async function sendMeta(context: SendContext, text: string, transport: typeof fetch) {
+  const config = context.config || {};
+  if (!config.pageAccessToken) throw new Error('Chưa có Page access token.');
+  const response = await transport(`https://graph.facebook.com/v21.0/${encodeURIComponent(config.pageId || 'me')}/messages`, { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.pageAccessToken}` }, body: JSON.stringify({ recipient: { id: context.externalId }, messaging_type: 'RESPONSE', message: { text } }) });
+  const result = await response.json().catch(() => ({})) as { error?: { message?: string; code?: number; error_subcode?: number } };
+  if (response.ok && !result.error) return;
+  const code = result.error?.code; const message = result.error?.message || `HTTP ${response.status}`;
+  if (code === 190) throw new Error('Page access token đã hết hạn hoặc bị thu hồi. Hãy tạo token mới trong Meta for Developers.');
+  if (code === 10 || code === 551 || /outside of allowed window|24/i.test(message)) throw new Error('Meta chỉ cho phép trả lời trong 24 giờ kể từ tin nhắn cuối của khách.');
+  throw new Error(`${context.platform === 'instagram' ? 'Instagram' : 'Facebook'} từ chối gửi tin: ${message}`);
+}
+
 /** POST /api/messaging {conversationId,text}: deliver a host reply to the guest's Zalo OA or email thread. */
 export async function handleMessaging(request: Request, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch, mailer: Mailer = defaultMailer): Promise<Response> {
   if (request.method !== 'POST') return json(405, { error: 'Phương thức không được hỗ trợ.' });
@@ -66,6 +79,7 @@ export async function handleMessaging(request: Request, env: NodeJS.ProcessEnv =
   if (!context.configured) return json(200, { sent: false, error: 'Kênh này chưa được bật trong Kết nối kênh.' });
   try {
     if (context.platform === 'zalo') await sendZalo(context, body.text, transport, async tokens => { await client.rpc('maoki_channel_accounts', { op: 'tokens', payload: tokens }); });
+    else if (context.platform === 'facebook' || context.platform === 'instagram') await sendMeta(context, body.text, transport);
     else {
       const config = context.config || {};
       if (!config.fromAddress || (config.provider === 'resend' ? !config.resendKey : !config.smtpHost)) throw new Error('Cấu hình email chưa đầy đủ.');
@@ -99,17 +113,25 @@ export function normaliseEmail(contentType: string, raw: string): { from: string
   return { from: address.from, name: fields.FromName || fields.name || address.name, subject: fields.Subject || fields.subject || '', text: stripQuotedReply(text), messageId: fields.MessageID || fields.messageId || fields['Message-Id'] || fields['Message-ID'] || '' };
 }
 
-/** POST /api/inbound?token=… Zalo OA webhook (signed) or an email-forwarding webhook. */
+/** /api/inbound?token=… Zalo OA, Facebook/Instagram (signed webhooks, GET handshake) or an email-forwarding webhook. */
 export async function handleInbound(request: Request, rawBody: string, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch): Promise<Response> {
-  if (request.method !== 'POST') return json(405, { error: 'Phương thức không được hỗ trợ.' });
-  const token = new URL(request.url).searchParams.get('token') || '';
+  const url = new URL(request.url); const token = url.searchParams.get('token') || '';
+  if (!['GET', 'POST'].includes(request.method)) return json(405, { error: 'Phương thức không được hỗ trợ.' });
   if (!/^[a-f0-9]{64}$/.test(token)) return json(404, { error: 'Liên kết không hợp lệ.' });
-  if (rawBody.length > 60000) return json(413, { error: 'Yêu cầu quá lớn.' });
+  // Meta subscription handshake: echo hub.challenge when hub.verify_token matches this account's token.
+  if (request.method === 'GET') {
+    const challenge = url.searchParams.get('hub.challenge') || '';
+    if (url.searchParams.get('hub.mode') !== 'subscribe' || !challenge || challenge.length > 200) return json(400, { error: 'Yêu cầu không hợp lệ.' });
+    const { data, error } = await supabase(env, transport).rpc('maoki_channel_verify', { token, verify: url.searchParams.get('hub.verify_token') || '' });
+    return error || data !== true ? json(403, { error: 'Mã xác minh không đúng.' }) : new Response(challenge, { status: 200, headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' } });
+  }
+  if (rawBody.length > 250000) return json(413, { error: 'Yêu cầu quá lớn.' });
   const client = supabase(env, transport);
-  const signature = request.headers.get('x-zevent-signature') || '';
-  const zalo = Boolean(signature) || /"event_name"\s*:/.test(rawBody);
+  const metaSignature = request.headers.get('x-hub-signature-256') || '';
+  const signature = metaSignature || request.headers.get('x-zevent-signature') || '';
+  const signed = Boolean(signature) || /"event_name"\s*:|"object"\s*:\s*"(page|instagram)"/.test(rawBody);
   let result;
-  if (zalo) result = await client.rpc('maoki_channel_inbound', { token, raw: rawBody, signature });
+  if (signed) result = await client.rpc('maoki_channel_inbound', { token, raw: rawBody, signature });
   else {
     const email = normaliseEmail(request.headers.get('content-type') || '', rawBody);
     if (!email) return json(200, { ok: true, ignored: true });

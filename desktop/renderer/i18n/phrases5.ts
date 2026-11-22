@@ -18,4 +18,17 @@ export const phrases5: Record<string, string> = {
   'Mỗi người gửi trở thành một hội thoại; trả lời trong Hộp thư sẽ gửi email kèm tiêu đề “Re: …”.': 'Each sender becomes a conversation; replying in the Inbox sends an email with a “Re: …” subject.',
   'Đã gửi qua Zalo OA': 'Sent via Zalo OA', 'Đã gửi email': 'Email sent',
 };
-export const patterns5: [RegExp, string][] = [[/^Đã lưu trong hộp thư nhưng chưa gửi tới khách: (.+)$/, 'Saved in the inbox but not delivered to the guest: $1']];
+Object.assign(phrases5, {
+  'Tại developers.facebook.com tạo ứng dụng loại Business, thêm sản phẩm Messenger và liên kết Fanpage.': 'At developers.facebook.com create a Business app, add the Messenger product and link your Page.',
+  'Tại developers.facebook.com tạo ứng dụng loại Business, thêm sản phẩm Messenger và Instagram, liên kết Fanpage đã kết nối tài khoản Instagram chuyên nghiệp.': 'At developers.facebook.com create a Business app, add the Messenger and Instagram products and link the Page connected to your professional Instagram account.',
+  'Kênh nhắn tin': 'Messaging channels', 'Nhận và trả lời tin nhắn Zalo OA, Facebook Messenger, Instagram và email ngay trong Hộp thư.': 'Receive and reply to Zalo OA, Facebook Messenger, Instagram and email right in the Inbox.',
+  'Facebook Messenger': 'Facebook Messenger', 'Instagram Direct': 'Instagram Direct', 'App Secret': 'App Secret', 'Page ID / Instagram account ID': 'Page ID / Instagram account ID', 'Page access token': 'Page access token',
+  'Meta for Developers → ứng dụng → Cài đặt → Cơ bản. Dùng để xác thực webhook': 'Meta for Developers → your app → Settings → Basic. Used to verify the webhook', 'Facebook: ID của Fanpage. Instagram: ID tài khoản Instagram chuyên nghiệp': 'Facebook: the Page ID. Instagram: the professional Instagram account ID',
+  'Token dài hạn của Fanpage đã liên kết, có quyền pages_messaging (và instagram_manage_messages)': 'Long-lived token of the linked Page with pages_messaging (and instagram_manage_messages) permission', 'Callback URL (dán vào Meta → Webhooks)': 'Callback URL (paste into Meta → Webhooks)', 'Verify token': 'Verify token',
+  'Dán App Secret, ID và Page access token ở trên rồi bấm Lưu.': 'Paste the App Secret, ID and Page access token above, then click Save.',
+  'Meta chỉ cho phép trả lời trong 24 giờ kể từ tin nhắn cuối của khách. Ứng dụng cần được duyệt quyền (App Review) để nhận tin từ khách bên ngoài nhóm kiểm thử.': 'Meta only allows replies within 24 hours of the guest’s last message. The app needs approved permissions (App Review) to receive messages from guests outside the test group.',
+  'Trong Webhooks, chọn đối tượng Page, dán Callback URL và Verify token phía trên, bấm Xác minh và lưu, rồi đăng ký trường “messages”.': 'In Webhooks, choose the Page object, paste the Callback URL and Verify token above, click Verify and save, then subscribe to the “messages” field.',
+  'Trong Webhooks, chọn đối tượng Instagram, dán Callback URL và Verify token phía trên, bấm Xác minh và lưu, rồi đăng ký trường “messages”.': 'In Webhooks, choose the Instagram object, paste the Callback URL and Verify token above, click Verify and save, then subscribe to the “messages” field.',
+});
+export const patterns5: [RegExp, string][] = [
+  [/^Đã gửi qua (Facebook|Instagram)$/, 'Sent via $1'],[/^Đã lưu trong hộp thư nhưng chưa gửi tới khách: (.+)$/, 'Saved in the inbox but not delivered to the guest: $1']];
