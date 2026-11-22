@@ -4,6 +4,7 @@ import { handleAssistant } from './assistant';
 import { handleChannels } from './channelApi';
 import { handleInbound, handleMessaging } from './messaging';
 import { handleReviews } from './reviews';
+import { handleYouTube } from './youtube';
 
 const app = express();
 app.use((req, res, next) => (req.path === '/api/inbound' ? next() : express.json({ limit: '64kb' })(req, res, next)));
@@ -19,6 +20,10 @@ app.post('/api/messaging', async (req, res) => {
 });
 app.post('/api/reviews', async (req, res) => {
   const response = await handleReviews(new Request('http://maoki.internal/api/reviews', { method: 'POST', headers: { authorization: req.headers.authorization || '' }, body: JSON.stringify(req.body) }));
+  res.status(response.status).send(await response.text());
+});
+app.post('/api/youtube', async (req, res) => {
+  const response = await handleYouTube(new Request('http://maoki.internal/api/youtube', { method: 'POST', headers: { authorization: req.headers.authorization || '' }, body: JSON.stringify(req.body) }));
   res.status(response.status).send(await response.text());
 });
 app.all('/api/inbound', express.text({ type: '*/*', limit: '256kb' }), async (req, res) => {

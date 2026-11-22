@@ -17,6 +17,7 @@ import Insights from './Insights';
 import Handover from './Handover';
 import Messaging from './Messaging';
 import Reviews from './Reviews';
+import YouTube from './YouTube';
 import '../../src/workspace/workspace.css';
 import '../../src/workspace/zones.css';
 import './theme.css';
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="handover" element={<Handover />} />
         <Route path="messaging" element={<Messaging />} />
         <Route path="reviews" element={<Reviews />} />
+        <Route path="youtube" element={<YouTube />} />
         <Route path="ai" element={<Assistant />} />
         <Route path="settings" element={<Settings />} />
         <Route path="preferences" element={<Preferences />} />
