@@ -137,6 +137,35 @@ export function normaliseEmail(contentType: string, raw: string): { from: string
   return { from: address.from, name: fields.FromName || fields.name || address.name, subject: fields.Subject || fields.subject || '', text: stripQuotedReply(text), fullText: text.trim().slice(0, 3000), messageId: fields.MessageID || fields.messageId || fields['Message-Id'] || fields['Message-ID'] || '', timestamp: /^\d{10,13}$/.test(fields.timestamp || '') ? (fields.timestamp.length === 10 ? fields.timestamp + '000' : fields.timestamp) : '' };
 }
 
+export interface CallEvent { callId: string; direction: 'inbound' | 'outbound'; from: string; to: string; status: string; durationSec: number; startedAt: string; recordingUrl: string }
+/** Maps provider call statuses (Twilio-style and generic) onto answered / missed / busy / failed / voicemail. */
+export function callStatus(raw: string, durationSec: number): string {
+  const value = raw.toLowerCase().replace(/[\s_-]+/g, '');
+  if (['answered', 'completed', 'connected', 'success'].includes(value)) return durationSec > 0 || value === 'answered' ? 'answered' : 'missed';
+  if (['missed', 'noanswer', 'canceled', 'cancelled', 'unanswered', 'ringing', 'abandoned'].includes(value)) return 'missed';
+  if (value === 'busy') return 'busy';
+  if (value === 'voicemail') return 'voicemail';
+  if (['failed', 'error', 'rejected'].includes(value)) return 'failed';
+  return durationSec > 0 ? 'answered' : 'missed';
+}
+/** Accepts a plain JSON call event or Twilio-style form fields (CallSid, From, To, CallStatus, CallDuration, Direction, RecordingUrl). */
+export function normaliseCall(contentType: string, raw: string): CallEvent | null {
+  let fields: Record<string, string> = {};
+  try {
+    if (/json/i.test(contentType)) { const body = JSON.parse(raw) as Record<string, unknown>; fields = Object.fromEntries(Object.entries(body).filter(([, value]) => ['string', 'number'].includes(typeof value)).map(([key, value]) => [key, String(value)])); }
+    else for (const [key, value] of new URLSearchParams(raw)) fields[key] = value;
+  } catch { return null; }
+  const callId = fields.callId || fields.CallSid || fields.call_id || '';
+  const from = fields.from || fields.From || fields.caller || ''; const to = fields.to || fields.To || fields.callee || '';
+  if (!callId || !(from || to)) return null;
+  const direction = /^outbound/i.test(fields.direction || fields.Direction || '') ? 'outbound' : 'inbound';
+  const durationSec = Math.max(0, Math.min(86400, Math.round(Number(fields.durationSec || fields.duration || fields.CallDuration || 0)) || 0));
+  const stamp = fields.startedAt || fields.timestamp || '';
+  const startedAt = /^\d{10,13}$/.test(stamp) ? new Date(stamp.length === 10 ? Number(stamp) * 1000 : Number(stamp)).toISOString() : /^\d{4}-\d{2}-\d{2}T/.test(stamp) ? stamp : '';
+  const recording = fields.recordingUrl || fields.RecordingUrl || '';
+  return { callId: callId.slice(0, 120), direction, from, to, status: callStatus(fields.status || fields.CallStatus || '', durationSec), durationSec, startedAt, recordingUrl: /^https:\/\/[^\s/]+/.test(recording) ? recording : '' };
+}
+
 /** /api/inbound?token=… Zalo OA, Facebook/Instagram (signed webhooks, GET handshake) or an email-forwarding webhook. */
 export async function handleInbound(request: Request, rawBody: string, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch): Promise<Response> {
   const url = new URL(request.url); const token = url.searchParams.get('token') || '';
@@ -157,9 +186,11 @@ export async function handleInbound(request: Request, rawBody: string, env: Node
   let result;
   if (signed) result = await client.rpc('maoki_channel_inbound', { token, raw: rawBody, signature });
   else {
-    const email = normaliseEmail(request.headers.get('content-type') || '', rawBody);
-    if (!email) return json(200, { ok: true, ignored: true });
-    result = await client.rpc('maoki_channel_inbound', { token, payload: email });
+    const contentType = request.headers.get('content-type') || '';
+    const email = normaliseEmail(contentType, rawBody); const call = normaliseCall(contentType, rawBody);
+    if (!email && !call) return json(200, { ok: true, ignored: true });
+    // The account's platform decides which part is used (email/TikTok read the message fields, a phone line reads `call`).
+    result = await client.rpc('maoki_channel_inbound', { token, payload: { ...(email || {}), ...(call ? { call } : {}) } });
   }
   if (result.error) {
     const rejected = result.error.code === 'P0001';

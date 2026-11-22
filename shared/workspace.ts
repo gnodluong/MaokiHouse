@@ -33,7 +33,9 @@ export interface Order extends RecordBase { productId: string; guestName: string
 export interface Webhook extends RecordBase { name: string; url: string; events: string[]; active: boolean }
 export interface AgentGroup extends RecordBase { name: string; members: string[]; description: string }
 export interface KnowledgeItem extends RecordBase { title: string; content: string; active: boolean }
-export const extraResources = ['tags', 'rules', 'hours', 'reminders', 'ticketTypes', 'tickets', 'bots', 'journeys', 'customFields', 'fieldValues', 'popups', 'products', 'orders', 'webhooks', 'agentGroups', 'knowledge'] as const;
+export interface CallLog extends RecordBase { callId: string; direction: 'inbound' | 'outbound'; number: string; contactName: string; agent: string; status: 'answered' | 'missed' | 'busy' | 'failed' | 'voicemail'; durationSec: number; startedAt: string; recordingUrl: string; notes: string }
+export interface GoogleReview extends RecordBase { reviewId: string; reviewName: string; reviewer: string; rating: number; comment: string; reviewedAt: string; reply: string; repliedAt: string; status: 'new' | 'replied' | 'ignored' }
+export const extraResources = ['tags', 'rules', 'hours', 'reminders', 'ticketTypes', 'tickets', 'bots', 'journeys', 'customFields', 'fieldValues', 'popups', 'products', 'orders', 'webhooks', 'agentGroups', 'knowledge', 'calls', 'reviews'] as const;
 export type ExtraResourceName = (typeof extraResources)[number];
 export interface Resources {
   properties: Stay; bookings: Reservation; contacts: Contact; conversations: Conversation;
@@ -41,7 +43,7 @@ export interface Resources {
   automations: Automation; campaigns: Campaign; replies: SavedReply; integrations: Integration;
   employees: Employee; revenue: RevenueEntry;
   tags: Tag; rules: RoutingRule; hours: WorkingHours; reminders: Reminder; ticketTypes: TicketType; tickets: Ticket; bots: Bot; journeys: Journey;
-  customFields: CustomField; fieldValues: FieldValue; popups: Popup; products: Product; orders: Order; webhooks: Webhook; agentGroups: AgentGroup; knowledge: KnowledgeItem;
+  customFields: CustomField; fieldValues: FieldValue; popups: Popup; products: Product; orders: Order; webhooks: Webhook; agentGroups: AgentGroup; knowledge: KnowledgeItem; calls: CallLog; reviews: GoogleReview;
 }
 export type ResourceName = keyof Resources;
 export type ResourceRecord = Resources[ResourceName];

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiMessageSquare, FiClock, FiLifeBuoy, FiBell } from 'react-icons/fi';
+import { FiMessageSquare, FiClock, FiLifeBuoy, FiBell, FiPhoneCall, FiStar } from 'react-icons/fi';
 import { platformLabels } from '../../shared/workspace';
 import type { Conversation, Platform } from '../../shared/workspace';
 import { useWorkspace } from '../../src/workspace/context';
@@ -39,6 +39,11 @@ export default function Insights() {
   const byTag = count(conversations.flatMap(item => item.tags.map(tag => ({ tag }))), item => item.tag);
   const byTicketStatus = count(data.tickets, ticket => enumLabels[ticket.status] || ticket.status);
   const byTicketType = count(data.tickets, ticket => ticket.type || 'Chưa phân loại');
+  const periodCalls = data.calls.filter(item => !item.startedAt || Date.parse(item.startedAt) >= since);
+  const answeredCalls = periodCalls.filter(item => item.status === 'answered');
+  const avgCall = answeredCalls.length ? Math.round(answeredCalls.reduce((sum, item) => sum + item.durationSec, 0) / answeredCalls.length) : 0;
+  const byCallResult = count(periodCalls, item => enumLabels[item.status] || item.status);
+  const byCallDirection = count(periodCalls, item => enumLabels[item.direction] || item.direction);
   const performance = byAssignee.map(([name]) => { const own = conversations.filter(item => (item.assignee || 'Chưa phân công') === name); return { name, total: own.length, closed: own.filter(item => item.status === 'closed').length, reply: firstReplyMinutes(own) }; });
   return <>
     <PageHeader title="Thống kê hội thoại" description="Khối lượng hội thoại, hiệu suất người phụ trách, tag, phiếu ghi và nhắc việc trong khoảng thời gian bạn chọn."><div className="mk-segment" role="group" aria-label="Khoảng thời gian">{ranges.map(([label, value]) => <button key={value} type="button" className={days === value ? 'selected' : ''} onClick={() => setDays(value)}>{label}</button>)}</div></PageHeader>
@@ -53,6 +58,16 @@ export default function Insights() {
       <section className="mk-panel"><SectionTitle title="Hội thoại theo tag" />{byTag.length ? <Bars rows={byTag} /> : <Empty title="Chưa gắn tag" text="Gắn tag cho hội thoại để xem bức tranh nhu cầu của khách." />}</section>
     </div>
     <section className="mk-panel"><SectionTitle title="Hiệu suất người phụ trách" />{performance.length ? <div className="mk-table-scroll"><table className="mk-table"><thead><tr><th scope="col">Người phụ trách</th><th scope="col">Hội thoại</th><th scope="col">Đã hoàn tất</th><th scope="col">Phản hồi đầu tiên</th></tr></thead><tbody>{performance.map(row => <tr key={row.name}><td>{row.name}</td><td>{row.total}</td><td>{row.closed}</td><td>{row.reply === null ? '—' : `${row.reply} phút`}</td></tr>)}</tbody></table></div> : <Empty title="Chưa có hội thoại trong kỳ" text="Dữ liệu chăm sóc khách sẽ xuất hiện khi có hội thoại mới." />}</section>
+    <div className="mk-stats-grid">
+      <Stat label="Cuộc gọi" value={periodCalls.length} note={`${periodCalls.filter(item => item.direction === 'inbound').length} cuộc gọi đến`} icon={<FiPhoneCall />} />
+      <Stat label="Cuộc gọi nhỡ" value={periodCalls.filter(item => item.direction === 'inbound' && item.status === 'missed').length} note="Gọi đến chưa nghe máy" icon={<FiPhoneCall />} />
+      <Stat label="Thời lượng trung bình" value={avgCall ? `${Math.floor(avgCall / 60)}:${String(avgCall % 60).padStart(2, '0')}` : '—'} note="Các cuộc đã nghe máy" icon={<FiClock />} />
+      <Stat label="Đánh giá Google" value={data.reviews.length ? (data.reviews.reduce((sum, item) => sum + item.rating, 0) / data.reviews.length).toFixed(1) : '—'} note={`${data.reviews.filter(item => item.status === 'new').length} chưa phản hồi`} icon={<FiStar />} />
+    </div>
+    <div className="dk-two">
+      <section className="mk-panel"><SectionTitle title="Cuộc gọi theo kết quả" />{byCallResult.length ? <Bars rows={byCallResult} /> : <Empty title="Chưa có cuộc gọi" text="Kết nối tổng đài trong Kênh nhắn tin để xem nhật ký cuộc gọi." />}</section>
+      <section className="mk-panel"><SectionTitle title="Cuộc gọi theo hướng" />{byCallDirection.length ? <Bars rows={byCallDirection} /> : <Empty title="Chưa có cuộc gọi" text="Kết nối tổng đài trong Kênh nhắn tin để xem nhật ký cuộc gọi." />}</section>
+    </div>
     <div className="dk-two">
       <section className="mk-panel"><SectionTitle title="Phiếu ghi theo trạng thái" />{byTicketStatus.length ? <Bars rows={byTicketStatus} /> : <Empty title="Chưa có phiếu ghi" text="Tạo phiếu ghi cho các yêu cầu cần xử lý lâu hơn một cuộc chat." />}</section>
       <section className="mk-panel"><SectionTitle title="Phiếu ghi theo loại" />{byTicketType.length ? <Bars rows={byTicketType} /> : <Empty title="Chưa có phiếu ghi" text="Tạo phiếu ghi cho các yêu cầu cần xử lý lâu hơn một cuộc chat." />}</section>
