@@ -160,3 +160,11 @@ html[data-mk-desktop] body { margin: 0; }
 .dk-handover > svg { margin-bottom: 11px; color: var(--mk-muted); }
 .dk-handover .mk-field { display: grid; gap: 6px; }
 .dk-pref .mk-table-scroll { margin: 0; }
+
+/* ── Messaging channels ───────────────────────────────────────── */
+.dk-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; margin-bottom: 14px; }
+.dk-form-grid .mk-field { display: grid; gap: 6px; align-content: start; }
+.dk-check { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.dk-webhook { display: grid; gap: 8px; padding: 12px 14px; border: 1px dashed var(--mk-line-strong); border-radius: 10px; margin-bottom: 14px; }
+.dk-webhook code { overflow-wrap: anywhere; font-size: 12.5px; color: var(--mk-muted); }
+.dk-steps { color: var(--mk-muted); margin: 16px 22px 0; padding-left: 18px; display: grid; gap: 4px; }

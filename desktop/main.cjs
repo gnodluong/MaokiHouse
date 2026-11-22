@@ -1,5 +1,5 @@
 // Electron main process for Maoki Admin. The UI is the bundled renderer (desktop/dist); data comes from Supabase.
-const { app, BrowserWindow, Menu, shell, nativeTheme, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, shell, nativeTheme, ipcMain, session } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 
@@ -13,6 +13,18 @@ function saveState(win) {
   if (win.isDestroyed()) return;
   const bounds = win.isMaximized() ? win.getNormalBounds() : win.getBounds();
   try { fs.writeFileSync(statePath(), JSON.stringify({ ...bounds, maximized: win.isMaximized() })); } catch { /* not critical */ }
+}
+
+// The packaged UI loads from file://, so its calls to the web API (/api/*) are cross-origin and the
+// serverless handlers do not answer CORS preflights. Add the headers here, for this app's session only.
+function allowApiCalls() {
+  session.defaultSession.webRequest.onHeadersReceived({ urls: ['https://*/*'] }, (details, callback) => {
+    const headers = Object.fromEntries(Object.entries(details.responseHeaders || {}).filter(([name]) => !/^access-control-/i.test(name)));
+    headers['Access-Control-Allow-Origin'] = ['*'];
+    headers['Access-Control-Allow-Headers'] = ['authorization, content-type, apikey, x-client-info, prefer, range, accept-profile, content-profile'];
+    headers['Access-Control-Allow-Methods'] = ['GET, POST, PUT, PATCH, DELETE, OPTIONS'];
+    callback(details.method === 'OPTIONS' ? { responseHeaders: headers, statusLine: 'HTTP/1.1 204 No Content' } : { responseHeaders: headers });
+  });
 }
 
 function createWindow() {
@@ -50,6 +62,7 @@ else {
   app.on('second-instance', () => { const [win] = BrowserWindow.getAllWindows(); if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
   app.whenReady().then(() => {
     Menu.setApplicationMenu(process.platform === 'darwin' ? Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' }]) : null);
+    allowApiCalls();
     createWindow();
     app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow(); });
   });

@@ -34,6 +34,7 @@ export interface Webhook extends RecordBase { name: string; url: string; events:
 export interface AgentGroup extends RecordBase { name: string; members: string[]; description: string }
 export interface KnowledgeItem extends RecordBase { title: string; content: string; active: boolean }
 export const extraResources = ['tags', 'rules', 'hours', 'reminders', 'ticketTypes', 'tickets', 'bots', 'journeys', 'customFields', 'fieldValues', 'popups', 'products', 'orders', 'webhooks', 'agentGroups', 'knowledge'] as const;
+export type ExtraResourceName = (typeof extraResources)[number];
 export interface Resources {
   properties: Stay; bookings: Reservation; contacts: Contact; conversations: Conversation;
   tasks: OperationTask; rates: RatePlan; guidebooks: Guidebook; owners: Owner;

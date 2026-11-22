@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import { useEditor, useWorkspace } from './context';
 import { Badge, Button, Empty, PageHeader } from './ui';
 import { initials, errorMessage } from './utils';
+import { sendThroughChannel } from './messagingClient';
+import type { SendOutcome } from './messagingClient';
 import { canEdit } from './permissions';
 import { platformLabels } from '../../shared/workspace';
 import type { Platform } from '../../shared/workspace';
@@ -27,7 +29,16 @@ export default function Inbox() {
   const send = async () => {
     if (!selected || !text.trim() || sending || !canEdit(data, 'conversations')) return;
     setSending(true);
-    try { await request(`/conversations/${selected.id}/messages`, { text: text.trim() }); setText(''); await reload(); }
+    try {
+      const message = text.trim();
+      await request(`/conversations/${selected.id}/messages`, { text: message }); setText(''); await reload();
+      // Zalo OA / email conversations are also delivered to the guest through the messaging API.
+      if (selected.platform === 'zalo' || selected.platform === 'email') {
+        const outcome: SendOutcome = await sendThroughChannel(selected.id, message).catch(cause => ({ sent: false, error: errorMessage(cause) }));
+        if (outcome.sent) toast.success(selected.platform === 'zalo' ? 'Đã gửi qua Zalo OA' : 'Đã gửi email');
+        else if (!outcome.skipped) toast.error(`Đã lưu trong hộp thư nhưng chưa gửi tới khách: ${outcome.error || 'kênh chưa sẵn sàng'}`);
+      }
+    }
     catch (cause) { toast.error(errorMessage(cause)); }
     finally { setSending(false); }
   };

@@ -24,7 +24,7 @@ const groups: { title?: UiKey; links: [string, UiKey, typeof FiGrid][] }[] = [
   { title: 'nav.guests', links: [['contacts', 'nav.contacts', FiUsers], ['replies', 'nav.replies', FiFileText], ['automations', 'nav.automations', FiZap], ['custom-fields', 'nav.customFields', FiEdit3], ['field-values', 'nav.fieldValues', FiLayers], ['campaigns', 'nav.campaigns', FiSend], ['popups', 'nav.popups', FiLayers], ['bots', 'nav.bots', FiCpu], ['journeys', 'nav.journeys', FiRepeat]] },
   { title: 'nav.sales', links: [['products', 'nav.products', FiPackage], ['orders', 'nav.orders', FiShoppingBag]] },
   { title: 'nav.business', links: [['revenue', 'nav.revenue', FiDollarSign], ['reports', 'nav.reports', FiPieChart], ['owners', 'nav.owners', FiBriefcase], ['hr', 'nav.hr', FiUserCheck], ['agent-groups', 'nav.agentGroups', FiGroup]] },
-  { title: 'nav.setup', links: [['tags', 'nav.tags', FiTag], ['rules', 'nav.rules', FiShuffle], ['hours', 'nav.hours', FiWatch], ['channels', 'nav.channels', FiLink], ['ai', 'nav.ai', FiCpu], ['knowledge', 'nav.knowledge', FiBookOpen], ['webhooks', 'nav.webhooks', FiCode], ['settings', 'nav.settings', FiSettings], ['preferences', 'nav.preferences', FiSliders]] },
+  { title: 'nav.setup', links: [['tags', 'nav.tags', FiTag], ['rules', 'nav.rules', FiShuffle], ['hours', 'nav.hours', FiWatch], ['channels', 'nav.channels', FiLink], ['messaging', 'nav.messaging', FiMessageSquare], ['ai', 'nav.ai', FiCpu], ['knowledge', 'nav.knowledge', FiBookOpen], ['webhooks', 'nav.webhooks', FiCode], ['settings', 'nav.settings', FiSettings], ['preferences', 'nav.preferences', FiSliders]] },
 ];
 
 export const NOTIFY_KEY = 'maoki:desktop-notify';

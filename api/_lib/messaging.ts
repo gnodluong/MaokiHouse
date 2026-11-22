@@ -1,0 +1,123 @@
+import { createClient } from '@supabase/supabase-js';
+import nodemailer from 'nodemailer';
+import { lookup as dnsLookup } from 'node:dns/promises';
+import { z } from 'zod';
+import publicConfig from '../../shared/supabase-public.json';
+import { isPublicAddress } from './calendars';
+
+const json = (status: number, body: object) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
+const sendSchema = z.object({ conversationId: z.string().uuid(), text: z.string().trim().min(1).max(3000) }).strict();
+
+interface SendContext { thread: boolean; configured?: boolean; platform?: 'zalo' | 'email'; externalId?: string; meta?: { subject?: string; lastMessageId?: string }; config?: Record<string, string> }
+export type Mailer = (config: Record<string, string>, message: { to: string; subject: string; text: string; inReplyTo?: string }) => Promise<string>;
+
+function supabase(env: NodeJS.ProcessEnv, transport: typeof fetch, token?: string) {
+  return createClient(env.SUPABASE_URL || publicConfig.url, env.SUPABASE_PUBLISHABLE_KEY || publicConfig.publishableKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }, global: { ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}), fetch: (url, options) => transport(url, { ...options, signal: AbortSignal.timeout(10000) }) } });
+}
+
+/** SMTP/Resend delivery. SMTP hosts are resolved here and must be public, so a saved host cannot point at internal services. */
+export const defaultMailer: Mailer = async (config, message) => {
+  const from = config.fromName ? `"${config.fromName.replaceAll('"', '')}" <${config.fromAddress}>` : config.fromAddress;
+  if (config.provider === 'resend') {
+    const response = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { Authorization: `Bearer ${config.resendKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to: [message.to], subject: message.subject, text: message.text, ...(message.inReplyTo ? { headers: { 'In-Reply-To': message.inReplyTo, References: message.inReplyTo } } : {}) }) });
+    const result = await response.json().catch(() => ({})) as { id?: string; message?: string };
+    if (!response.ok) throw new Error(result.message || `Resend trả về lỗi ${response.status}`);
+    return result.id || '';
+  }
+  const port = Number(config.smtpPort || 587);
+  if (!config.smtpHost || ![25, 465, 587, 2525].includes(port)) throw new Error('Cấu hình SMTP chưa hợp lệ (cổng 25, 465, 587 hoặc 2525).');
+  const addresses = await dnsLookup(config.smtpHost, { all: true });
+  if (!addresses.length || addresses.some(item => !isPublicAddress(item.address))) throw new Error('Máy chủ SMTP phải là địa chỉ công khai.');
+  const transporter = nodemailer.createTransport({ host: addresses[0].address, port, secure: port === 465, requireTLS: port !== 465, auth: { user: config.smtpUser, pass: config.smtpPass }, tls: { servername: config.smtpHost }, connectionTimeout: 10000, socketTimeout: 15000 });
+  const info = await transporter.sendMail({ from, to: message.to, subject: message.subject, text: message.text, ...(message.inReplyTo ? { inReplyTo: message.inReplyTo, references: message.inReplyTo } : {}) });
+  return info.messageId || '';
+};
+
+async function sendZalo(context: SendContext, text: string, transport: typeof fetch, save: (tokens: { accessToken: string; refreshToken: string; tokenExpiresAt: string }) => Promise<void>) {
+  const config = context.config || {};
+  const post = (accessToken: string) => transport('https://openapi.zalo.me/v3.0/oa/message/cs', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', access_token: accessToken }, body: JSON.stringify({ recipient: { user_id: context.externalId }, message: { text } }) });
+  let result = await (await post(config.accessToken || '')).json().catch(() => ({})) as { error?: number; message?: string };
+  // -216 / -124: access token invalid or expired. Refresh once (refresh tokens are single-use, so store the new pair).
+  if ([-216, -124].includes(Number(result.error)) && config.refreshToken && config.appSecret) {
+    const refreshed = await (await transport('https://oauth.zaloapp.com/v4/oa/access_token', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/x-www-form-urlencoded', secret_key: config.appSecret }, body: new URLSearchParams({ app_id: config.appId || '', grant_type: 'refresh_token', refresh_token: config.refreshToken }).toString() })).json().catch(() => ({})) as { access_token?: string; refresh_token?: string; expires_in?: string | number; error?: number; error_description?: string };
+    if (!refreshed.access_token || !refreshed.refresh_token) throw new Error('Token Zalo đã hết hạn và chưa làm mới được. Hãy dán lại Access/Refresh token trong Kết nối kênh.');
+    await save({ accessToken: refreshed.access_token, refreshToken: refreshed.refresh_token, tokenExpiresAt: new Date(Date.now() + Number(refreshed.expires_in || 3600) * 1000).toISOString() });
+    result = await (await post(refreshed.access_token)).json().catch(() => ({})) as { error?: number; message?: string };
+  }
+  if (result.error !== 0) throw new Error(result.error === -233 || /48|interaction/i.test(result.message || '') ? 'Zalo chỉ cho phép trả lời trong 48 giờ kể từ tin nhắn cuối của khách.' : `Zalo từ chối gửi tin: ${result.message || result.error}`);
+}
+
+/** POST /api/messaging {conversationId,text}: deliver a host reply to the guest's Zalo OA or email thread. */
+export async function handleMessaging(request: Request, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch, mailer: Mailer = defaultMailer): Promise<Response> {
+  if (request.method !== 'POST') return json(405, { error: 'Phương thức không được hỗ trợ.' });
+  const token = request.headers.get('authorization')?.match(/^Bearer (\S+)$/)?.[1];
+  if (!token) return json(401, { error: 'Vui lòng đăng nhập.' });
+  const raw = await request.text(); if (raw.length > 8000) return json(413, { error: 'Yêu cầu quá dài.' });
+  let body: z.infer<typeof sendSchema>;
+  try { body = sendSchema.parse(JSON.parse(raw)); } catch { return json(400, { error: 'Yêu cầu không hợp lệ.' }); }
+  const client = supabase(env, transport, token);
+  const { data: { user }, error: authError } = await client.auth.getUser(token);
+  if (authError || !user || user.is_anonymous) return json(401, { error: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' });
+  const { data, error } = await client.rpc('maoki_channel_accounts', { op: 'send_context', payload: { conversationId: body.conversationId } });
+  if (error) return json(error.code === 'PGRST202' ? 503 : 400, { error: error.code === 'PGRST202' ? 'Cần chạy SQL kênh nhắn tin một lần trong Supabase.' : error.message });
+  const context = data as SendContext;
+  if (!context.thread) return json(200, { sent: false, skipped: true });
+  if (!context.configured) return json(200, { sent: false, error: 'Kênh này chưa được bật trong Kết nối kênh.' });
+  try {
+    if (context.platform === 'zalo') await sendZalo(context, body.text, transport, async tokens => { await client.rpc('maoki_channel_accounts', { op: 'tokens', payload: tokens }); });
+    else {
+      const config = context.config || {};
+      if (!config.fromAddress || (config.provider === 'resend' ? !config.resendKey : !config.smtpHost)) throw new Error('Cấu hình email chưa đầy đủ.');
+      const subject = context.meta?.subject ? (/^re:/i.test(context.meta.subject) ? context.meta.subject : `Re: ${context.meta.subject}`) : `Phản hồi từ ${config.fromName || 'MaokiHouse'}`;
+      await mailer(config, { to: context.externalId || '', subject, text: body.text, inReplyTo: context.meta?.lastMessageId || undefined });
+    }
+    return json(200, { sent: true });
+  } catch (cause) { return json(200, { sent: false, error: cause instanceof Error ? cause.message.slice(0, 300) : 'Không gửi được tin nhắn.' }); }
+}
+
+// ── Inbound ────────────────────────────────────────────────────────────────
+const QUOTE_START = /^(on .{5,200} wrote:|vào .{5,200} đã viết:|-{2,}\s*(original message|tin nhắn gốc)|_{5,}|from:\s.+<.+>|>)/i;
+export function stripQuotedReply(text: string): string {
+  const lines = text.replaceAll('\r', '').split('\n'); const keep: string[] = [];
+  for (const line of lines) { if (QUOTE_START.test(line.trim())) break; keep.push(line); }
+  return (keep.join('\n').trim() || text.trim()).slice(0, 3000);
+}
+const parseAddress = (value: string) => { const match = value.match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/); return match ? { name: match[1].trim(), from: match[2].trim() } : { name: '', from: value.trim() }; };
+
+/** Accepts Postmark inbound JSON, Mailgun/SendGrid-style form posts, or a plain {from,name,subject,text,messageId} JSON body. */
+export function normaliseEmail(contentType: string, raw: string): { from: string; name: string; subject: string; text: string; messageId: string } | null {
+  let fields: Record<string, string> = {};
+  try {
+    if (/json/i.test(contentType)) { const body = JSON.parse(raw) as Record<string, unknown>; fields = Object.fromEntries(Object.entries(body).filter(([, value]) => typeof value === 'string')) as Record<string, string>; }
+    else for (const [key, value] of new URLSearchParams(raw)) fields[key] = value;
+  } catch { return null; }
+  const rawFrom = fields.From || fields.from || fields.sender || '';
+  const address = parseAddress(rawFrom);
+  const text = fields.TextBody || fields.text || fields['body-plain'] || fields['stripped-text'] || fields.StrippedTextReply || '';
+  if (!address.from || !text.trim()) return null;
+  return { from: address.from, name: fields.FromName || fields.name || address.name, subject: fields.Subject || fields.subject || '', text: stripQuotedReply(text), messageId: fields.MessageID || fields.messageId || fields['Message-Id'] || fields['Message-ID'] || '' };
+}
+
+/** POST /api/inbound?token=… Zalo OA webhook (signed) or an email-forwarding webhook. */
+export async function handleInbound(request: Request, rawBody: string, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch): Promise<Response> {
+  if (request.method !== 'POST') return json(405, { error: 'Phương thức không được hỗ trợ.' });
+  const token = new URL(request.url).searchParams.get('token') || '';
+  if (!/^[a-f0-9]{64}$/.test(token)) return json(404, { error: 'Liên kết không hợp lệ.' });
+  if (rawBody.length > 60000) return json(413, { error: 'Yêu cầu quá lớn.' });
+  const client = supabase(env, transport);
+  const signature = request.headers.get('x-zevent-signature') || '';
+  const zalo = Boolean(signature) || /"event_name"\s*:/.test(rawBody);
+  let result;
+  if (zalo) result = await client.rpc('maoki_channel_inbound', { token, raw: rawBody, signature });
+  else {
+    const email = normaliseEmail(request.headers.get('content-type') || '', rawBody);
+    if (!email) return json(200, { ok: true, ignored: true });
+    result = await client.rpc('maoki_channel_inbound', { token, payload: email });
+  }
+  if (result.error) {
+    const rejected = result.error.code === 'P0001';
+    return json(rejected ? 403 : 503, { error: rejected ? 'Yêu cầu bị từ chối.' : 'Dịch vụ dữ liệu chưa sẵn sàng.' });
+  }
+  return json(200, { ok: true });
+}

@@ -15,6 +15,7 @@ import Login from './Login';
 import Preferences from './Preferences';
 import Insights from './Insights';
 import Handover from './Handover';
+import Messaging from './Messaging';
 import '../../src/workspace/workspace.css';
 import '../../src/workspace/zones.css';
 import './theme.css';
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="reports" element={<Reports />} />
         <Route path="insights" element={<Insights />} />
         <Route path="handover" element={<Handover />} />
+        <Route path="messaging" element={<Messaging />} />
         <Route path="ai" element={<Assistant />} />
         <Route path="settings" element={<Settings />} />
         <Route path="preferences" element={<Preferences />} />
