@@ -97,6 +97,15 @@ try {
  await denied(()=>ex('delete','tags',tag.id),'agent cannot delete tags');
  await login(b,'other@example.test'); await rpc('switch','',null,{id:first.workspaceId}); await denied(()=>ex('save','tickets',null,{title:'No write'}),'viewer cannot create tickets');
  await rpc('switch','',null,{id:ownId}); await denied(()=>ex('delete','tickets',ticket.id),'cross tenant ticket deletion rejected');
+ await login(a); const contactRec=await rpc('save','contacts',null,{name:'Field guest'}); const fieldRec=await ex('save','customFields',null,{name:'Passport',type:'text'});
+ await ex('save','fieldValues',null,{contactId:contactRec.id,fieldId:fieldRec.id,value:'B1234'}); checks++; console.log('PASS custom field value saved for a guest');
+ await denied(()=>ex('save','fieldValues',null,{contactId:'00000000-0000-4000-8000-000000000000',fieldId:fieldRec.id,value:'x'}),'field value needs an existing guest');
+ const product=await ex('save','products',null,{name:'Breakfast',price:80000}); await ex('save','orders',null,{productId:product.id,guestName:'Field guest',quantity:2,total:160000}); checks++; console.log('PASS order saved for a product');
+ await denied(()=>ex('save','orders',null,{productId:product.id,guestName:'X',quantity:1.5}),'fractional order quantity rejected');
+ await denied(()=>ex('save','webhooks',null,{name:'Hook',url:'http://insecure.test'}),'webhook must use https');
+ await ex('save','webhooks',null,{name:'CRM',url:'https://crm.example.test/hook',events:['booking_confirmed']}); await ex('save','agentGroups',null,{name:'Front desk',members:['An']}); await ex('save','knowledge',null,{title:'Check-in',content:'14:00'}); await ex('save','popups',null,{name:'Promo',title:'10% off'});
+ ok((await ex('snapshot')).products.length===1,'extended extras snapshot includes products');
+ await login(agent,'agent@example.test'); await denied(()=>ex('save','products',null,{name:'Nope'}),'agent cannot manage products');
  await login(a); await rpc('revoke_member','',null,{id:agent}); await login(agent,'agent@example.test'); ok((await db.query('select * from public.maoki_records')).rows.length===0,'revoked membership immediately loses RLS access');
  console.log(`${checks} database checks passed`);
 } finally { await db.close(); }

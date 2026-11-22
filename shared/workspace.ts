@@ -25,13 +25,22 @@ export interface TicketType extends RecordBase { name: string; slaHours: number;
 export interface Ticket extends RecordBase { title: string; type: string; priority: 'low' | 'normal' | 'high' | 'urgent'; status: 'open' | 'doing' | 'waiting' | 'done'; assignee: string; contactName: string; deadline: string; description: string }
 export interface Bot extends RecordBase { name: string; channel: string; trigger: 'visit' | 'outside_hours' | 'keyword' | 'new_conversation' | 'facebook_ad'; keyword: string; message: string; replies: string; active: boolean }
 export interface Journey extends RecordBase { name: string; trigger: 'new_contact' | 'booking_confirmed' | 'before_checkin' | 'after_checkout' | 'no_reply'; steps: string; status: 'active' | 'paused' }
-export const extraResources = ['tags', 'rules', 'hours', 'reminders', 'ticketTypes', 'tickets', 'bots', 'journeys'] as const;
+export interface CustomField extends RecordBase { name: string; type: 'text' | 'number' | 'date' | 'select'; options: string; required: boolean }
+export interface FieldValue extends RecordBase { contactId: string; fieldId: string; value: string }
+export interface Popup extends RecordBase { name: string; kind: 'popup' | 'prechat'; title: string; message: string; fields: string; trigger: 'delay' | 'exit' | 'off_hours' | 'page'; delaySeconds: number; pageUrl: string; active: boolean }
+export interface Product extends RecordBase { name: string; category: string; price: number; unit: string; description: string; active: boolean }
+export interface Order extends RecordBase { productId: string; guestName: string; quantity: number; total: number; status: 'new' | 'processing' | 'delivered' | 'cancelled'; bookingNote: string; notes: string }
+export interface Webhook extends RecordBase { name: string; url: string; events: string[]; active: boolean }
+export interface AgentGroup extends RecordBase { name: string; members: string[]; description: string }
+export interface KnowledgeItem extends RecordBase { title: string; content: string; active: boolean }
+export const extraResources = ['tags', 'rules', 'hours', 'reminders', 'ticketTypes', 'tickets', 'bots', 'journeys', 'customFields', 'fieldValues', 'popups', 'products', 'orders', 'webhooks', 'agentGroups', 'knowledge'] as const;
 export interface Resources {
   properties: Stay; bookings: Reservation; contacts: Contact; conversations: Conversation;
   tasks: OperationTask; rates: RatePlan; guidebooks: Guidebook; owners: Owner;
   automations: Automation; campaigns: Campaign; replies: SavedReply; integrations: Integration;
   employees: Employee; revenue: RevenueEntry;
   tags: Tag; rules: RoutingRule; hours: WorkingHours; reminders: Reminder; ticketTypes: TicketType; tickets: Ticket; bots: Bot; journeys: Journey;
+  customFields: CustomField; fieldValues: FieldValue; popups: Popup; products: Product; orders: Order; webhooks: Webhook; agentGroups: AgentGroup; knowledge: KnowledgeItem;
 }
 export type ResourceName = keyof Resources;
 export type ResourceRecord = Resources[ResourceName];

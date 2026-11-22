@@ -6,6 +6,7 @@ import { useAdminTheme } from '../../src/workspace/theme';
 import type { ThemePreference } from '../../src/workspace/theme';
 import { API_ORIGIN_KEY, apiOrigin } from '../../src/workspace/apiBase';
 import { ACCENTS, usePrefs } from './prefs';
+import { NOTIFY_KEY, notificationsEnabled } from './Shell';
 import type { UiKey } from './i18n/ui';
 
 declare global { interface Window { maokiDesktop?: { info: () => Promise<{ version: string; platform: string }>; setThemeSource: (value: ThemePreference) => Promise<void>; openExternal: (url: string) => Promise<void> } } }
@@ -14,6 +15,8 @@ export default function Preferences() {
   const { t, lang, setLang, accent, setAccent } = usePrefs();
   const { preference, setPreference } = useAdminTheme();
   const [server, setServer] = useState(apiOrigin());
+  const [notify, setNotify] = useState(notificationsEnabled());
+  const toggleNotify = () => { const next = !notify; setNotify(next); try { window.localStorage.setItem(NOTIFY_KEY, next ? 'on' : 'off'); } catch { /* not persisted */ } if (next && 'Notification' in window && Notification.permission === 'default') void Notification.requestPermission(); };
   const [info, setInfo] = useState<{ version: string; platform: string } | null>(null);
   useEffect(() => { void window.maokiDesktop?.info().then(setInfo).catch(() => undefined); }, []);
   // Keep native window chrome (title bar, scrollbars, dialogs) in step with the chosen mode.
@@ -37,6 +40,7 @@ export default function Preferences() {
     <section className="mk-panel dk-pref"><SectionTitle title={t('pref.language')} /><p className="dk-hint">{t('pref.languageD')}</p>
       <div className="dk-choice-grid two" role="radiogroup" aria-label={t('pref.language')}>{([['vi', 'Tiếng Việt', 'Vietnamese'], ['en', 'English', 'Tiếng Anh']] as const).map(([code, name, other]) => <button key={code} type="button" role="radio" aria-checked={lang === code} className={`dk-choice ${lang === code ? 'on' : ''}`} onClick={() => setLang(code)}><strong>{name}{lang === code && <FiCheck aria-hidden="true" />}</strong><small>{other}</small></button>)}</div>
     </section>
+    <section className="mk-panel dk-pref"><SectionTitle title={t('pref.notify')} /><p className="dk-hint">{t('pref.notifyD')}</p><Button kind={notify ? 'secondary' : 'primary'} onClick={toggleNotify}>{t(notify ? 'pref.notifyOff' : 'pref.notifyOn')}</Button></section>
     <section className="mk-panel dk-pref"><SectionTitle title={t('pref.server')} /><p className="dk-hint">{t('pref.serverD')}</p>
       <div className="dk-inline"><input aria-label={t('pref.server')} placeholder="https://…" value={server} onChange={event => setServer(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') saveServer(); }} /><Button kind="primary" onClick={saveServer}>{t('pref.serverSave')}</Button></div>
     </section>

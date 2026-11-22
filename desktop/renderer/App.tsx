@@ -14,6 +14,7 @@ import Shell from './Shell';
 import Login from './Login';
 import Preferences from './Preferences';
 import Insights from './Insights';
+import Handover from './Handover';
 import '../../src/workspace/workspace.css';
 import '../../src/workspace/zones.css';
 import './theme.css';
@@ -21,7 +22,7 @@ import './theme.css';
 const Setup = lazy(() => import('../../src/workspace/Setup'));
 const Assistant = lazy(() => import('../../src/workspace/Assistant'));
 const Connections = lazy(() => import('../../src/workspace/Connections'));
-const resourceRoutes = [['properties', 'properties'], ['bookings', 'bookings'], ['contacts', 'contacts'], ['tasks', 'tasks'], ['rates', 'rates'], ['guidebooks', 'guidebooks'], ['owners', 'owners'], ['automations', 'automations'], ['campaigns', 'campaigns'], ['replies', 'replies'], ['hr', 'employees'], ['revenue', 'revenue'], ['tags', 'tags'], ['rules', 'rules'], ['hours', 'hours'], ['reminders', 'reminders'], ['ticket-types', 'ticketTypes'], ['tickets', 'tickets'], ['bots', 'bots'], ['journeys', 'journeys']] as const;
+const resourceRoutes = [['properties', 'properties'], ['bookings', 'bookings'], ['contacts', 'contacts'], ['tasks', 'tasks'], ['rates', 'rates'], ['guidebooks', 'guidebooks'], ['owners', 'owners'], ['automations', 'automations'], ['campaigns', 'campaigns'], ['replies', 'replies'], ['hr', 'employees'], ['revenue', 'revenue'], ['tags', 'tags'], ['rules', 'rules'], ['hours', 'hours'], ['reminders', 'reminders'], ['ticket-types', 'ticketTypes'], ['tickets', 'tickets'], ['bots', 'bots'], ['journeys', 'journeys'], ['custom-fields', 'customFields'], ['field-values', 'fieldValues'], ['popups', 'popups'], ['products', 'products'], ['orders', 'orders'], ['webhooks', 'webhooks'], ['agent-groups', 'agentGroups'], ['knowledge', 'knowledge']] as const;
 
 export default function App() {
   return <HashRouter><PrefsProvider><SessionProvider>
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="messages" element={<Inbox />} />
         <Route path="reports" element={<Reports />} />
         <Route path="insights" element={<Insights />} />
+        <Route path="handover" element={<Handover />} />
         <Route path="ai" element={<Assistant />} />
         <Route path="settings" element={<Settings />} />
         <Route path="preferences" element={<Preferences />} />

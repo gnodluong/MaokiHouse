@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { FiGrid, FiHome, FiCalendar, FiBookmark, FiDollarSign, FiClipboard, FiBookOpen, FiUsers, FiMessageSquare, FiZap, FiSend, FiFileText, FiPieChart, FiSettings, FiLink, FiSearch, FiLogOut, FiArrowUpRight, FiRefreshCw, FiCpu, FiBriefcase, FiUserCheck, FiSun, FiMoon, FiSliders, FiTag, FiShuffle, FiWatch, FiBell, FiLifeBuoy, FiTrendingUp, FiRepeat } from 'react-icons/fi';
+import { FiGrid, FiHome, FiCalendar, FiBookmark, FiDollarSign, FiClipboard, FiBookOpen, FiUsers, FiMessageSquare, FiZap, FiSend, FiFileText, FiPieChart, FiSettings, FiLink, FiSearch, FiLogOut, FiArrowUpRight, FiRefreshCw, FiCpu, FiBriefcase, FiUserCheck, FiSun, FiMoon, FiSliders, FiTag, FiShuffle, FiWatch, FiBell, FiLifeBuoy, FiTrendingUp, FiRepeat, FiShoppingBag, FiPackage, FiCode, FiLayers, FiEdit3, FiCornerUpRight, FiUsers as FiGroup } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useSession } from '../../src/workspace/Session';
 import WorkspaceProvider from '../../src/workspace/Provider';
@@ -19,12 +19,16 @@ import type { UiKey } from './i18n/ui';
 const groups: { title?: UiKey; links: [string, UiKey, typeof FiGrid][] }[] = [
   { links: [['', 'nav.overview', FiGrid]] },
   { title: 'nav.daily', links: [['calendar', 'nav.calendar', FiCalendar], ['bookings', 'nav.bookings', FiBookmark], ['messages', 'nav.messages', FiMessageSquare], ['tasks', 'nav.tasks', FiClipboard]] },
-  { title: 'nav.support', links: [['reminders', 'nav.reminders', FiBell], ['tickets', 'nav.tickets', FiLifeBuoy], ['ticket-types', 'nav.ticketTypes', FiClipboard], ['insights', 'nav.insights', FiTrendingUp]] },
+  { title: 'nav.support', links: [['reminders', 'nav.reminders', FiBell], ['tickets', 'nav.tickets', FiLifeBuoy], ['ticket-types', 'nav.ticketTypes', FiClipboard], ['insights', 'nav.insights', FiTrendingUp], ['handover', 'nav.handover', FiCornerUpRight]] },
   { title: 'nav.stays', links: [['properties', 'nav.properties', FiHome], ['rates', 'nav.rates', FiDollarSign], ['guidebooks', 'nav.guidebooks', FiBookOpen]] },
-  { title: 'nav.guests', links: [['contacts', 'nav.contacts', FiUsers], ['replies', 'nav.replies', FiFileText], ['automations', 'nav.automations', FiZap], ['campaigns', 'nav.campaigns', FiSend], ['bots', 'nav.bots', FiCpu], ['journeys', 'nav.journeys', FiRepeat]] },
-  { title: 'nav.business', links: [['revenue', 'nav.revenue', FiDollarSign], ['reports', 'nav.reports', FiPieChart], ['owners', 'nav.owners', FiBriefcase], ['hr', 'nav.hr', FiUserCheck]] },
-  { title: 'nav.setup', links: [['tags', 'nav.tags', FiTag], ['rules', 'nav.rules', FiShuffle], ['hours', 'nav.hours', FiWatch], ['channels', 'nav.channels', FiLink], ['ai', 'nav.ai', FiCpu], ['settings', 'nav.settings', FiSettings], ['preferences', 'nav.preferences', FiSliders]] },
+  { title: 'nav.guests', links: [['contacts', 'nav.contacts', FiUsers], ['replies', 'nav.replies', FiFileText], ['automations', 'nav.automations', FiZap], ['custom-fields', 'nav.customFields', FiEdit3], ['field-values', 'nav.fieldValues', FiLayers], ['campaigns', 'nav.campaigns', FiSend], ['popups', 'nav.popups', FiLayers], ['bots', 'nav.bots', FiCpu], ['journeys', 'nav.journeys', FiRepeat]] },
+  { title: 'nav.sales', links: [['products', 'nav.products', FiPackage], ['orders', 'nav.orders', FiShoppingBag]] },
+  { title: 'nav.business', links: [['revenue', 'nav.revenue', FiDollarSign], ['reports', 'nav.reports', FiPieChart], ['owners', 'nav.owners', FiBriefcase], ['hr', 'nav.hr', FiUserCheck], ['agent-groups', 'nav.agentGroups', FiGroup]] },
+  { title: 'nav.setup', links: [['tags', 'nav.tags', FiTag], ['rules', 'nav.rules', FiShuffle], ['hours', 'nav.hours', FiWatch], ['channels', 'nav.channels', FiLink], ['ai', 'nav.ai', FiCpu], ['knowledge', 'nav.knowledge', FiBookOpen], ['webhooks', 'nav.webhooks', FiCode], ['settings', 'nav.settings', FiSettings], ['preferences', 'nav.preferences', FiSliders]] },
 ];
+
+export const NOTIFY_KEY = 'maoki:desktop-notify';
+export const notificationsEnabled = () => { try { return window.localStorage.getItem(NOTIFY_KEY) !== 'off'; } catch { return true; } };
 
 export default function Shell() { return <WorkspaceProvider><EditorProvider><Frame /></EditorProvider></WorkspaceProvider>; }
 
@@ -50,6 +54,16 @@ function Frame() {
       if (ok) { await reload(); toast.success(t('calendarsSynced', { n: ok })); }
     }).catch(() => { /* Channel connections shows sync errors in detail */ });
   }, [mode, role, reload, t]);
+  // Native desktop notification when a new unread conversation arrives (not for the conversations present at launch).
+  const seen = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (!data) return;
+    const unreadIds = data.conversations.filter(item => item.unread && item.status !== 'closed');
+    if (seen.current && notificationsEnabled() && 'Notification' in window && Notification.permission !== 'denied') {
+      for (const item of unreadIds.filter(entry => !seen.current!.has(entry.id))) { try { const last = item.messages.at(-1); new Notification(item.guestName, { body: last?.text || '', silent: false }); } catch { /* notifications unavailable */ } }
+    }
+    seen.current = new Set(unreadIds.map(item => item.id));
+  }, [data]);
   useEffect(() => setQuery(''), [location.pathname]);
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
