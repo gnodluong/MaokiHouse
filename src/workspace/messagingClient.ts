@@ -1,7 +1,7 @@
 import { requireSupabase } from '../lib/supabase/client';
 import { apiUrl } from './apiBase';
 
-export type ChannelPlatform = 'zalo' | 'email' | 'facebook' | 'instagram';
+export type ChannelPlatform = 'zalo' | 'email' | 'facebook' | 'instagram' | 'whatsapp' | 'tiktok';
 export interface ChannelAccount { platform: ChannelPlatform; label: string; enabled: boolean; inboundToken: string; verifyToken: string; updatedAt: string; updatedBy: string; config: Record<string, string | boolean> }
 
 export interface SendOutcome { sent: boolean; skipped?: boolean; error?: string }

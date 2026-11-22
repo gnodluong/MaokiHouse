@@ -33,7 +33,7 @@ export default function Inbox() {
       const message = text.trim();
       await request(`/conversations/${selected.id}/messages`, { text: message }); setText(''); await reload();
       // Zalo OA / email conversations are also delivered to the guest through the messaging API.
-      if (['zalo', 'email', 'facebook', 'instagram'].includes(selected.platform)) {
+      if (['zalo', 'email', 'facebook', 'instagram', 'whatsapp', 'tiktok'].includes(selected.platform)) {
         const outcome: SendOutcome = await sendThroughChannel(selected.id, message).catch(cause => ({ sent: false, error: errorMessage(cause) }));
         if (outcome.sent) toast.success(selected.platform === 'zalo' ? 'Đã gửi qua Zalo OA' : selected.platform === 'email' ? 'Đã gửi email' : `Đã gửi qua ${platformLabels[selected.platform]}`);
         else if (!outcome.skipped) toast.error(`Đã lưu trong hộp thư nhưng chưa gửi tới khách: ${outcome.error || 'kênh chưa sẵn sàng'}`);

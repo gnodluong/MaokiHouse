@@ -3,12 +3,12 @@ import nodemailer from 'nodemailer';
 import { lookup as dnsLookup } from 'node:dns/promises';
 import { z } from 'zod';
 import publicConfig from '../../shared/supabase-public.json';
-import { isPublicAddress } from './calendars';
+import { isPublicAddress, publicPost } from './calendars';
 
 const json = (status: number, body: object) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const sendSchema = z.object({ conversationId: z.string().uuid(), text: z.string().trim().min(1).max(3000) }).strict();
 
-interface SendContext { thread: boolean; configured?: boolean; platform?: 'zalo' | 'email' | 'facebook' | 'instagram'; externalId?: string; meta?: { subject?: string; lastMessageId?: string }; config?: Record<string, string> }
+interface SendContext { thread: boolean; configured?: boolean; platform?: 'zalo' | 'email' | 'facebook' | 'instagram' | 'whatsapp' | 'tiktok'; externalId?: string; meta?: { subject?: string; lastMessageId?: string }; config?: Record<string, string> }
 export type Mailer = (config: Record<string, string>, message: { to: string; subject: string; text: string; inReplyTo?: string }) => Promise<string>;
 
 function supabase(env: NodeJS.ProcessEnv, transport: typeof fetch, token?: string) {
@@ -61,8 +61,30 @@ async function sendMeta(context: SendContext, text: string, transport: typeof fe
   throw new Error(`${context.platform === 'instagram' ? 'Instagram' : 'Facebook'} từ chối gửi tin: ${message}`);
 }
 
+/** WhatsApp Business Cloud API. Free-form replies are only allowed within 24 hours of the customer's last message. */
+async function sendWhatsApp(context: SendContext, text: string, transport: typeof fetch) {
+  const config = context.config || {};
+  if (!config.accessToken || !config.phoneNumberId) throw new Error('Chưa có Phone number ID hoặc Access token của WhatsApp.');
+  const response = await transport(`https://graph.facebook.com/v21.0/${encodeURIComponent(config.phoneNumberId)}/messages`, { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.accessToken}` }, body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: context.externalId, type: 'text', text: { body: text, preview_url: false } }) });
+  const result = await response.json().catch(() => ({})) as { error?: { message?: string; code?: number } };
+  if (response.ok && !result.error) return;
+  const code = result.error?.code; const message = result.error?.message || `HTTP ${response.status}`;
+  if (code === 190) throw new Error('Access token WhatsApp đã hết hạn. Hãy tạo token hệ thống (System User) vĩnh viễn trong Meta Business.');
+  if (code === 131047 || code === 131051 || /re-engagement|24 hours/i.test(message)) throw new Error('WhatsApp chỉ cho phép nhắn tự do trong 24 giờ kể từ tin cuối của khách; ngoài khung đó cần gửi mẫu tin (template) đã duyệt.');
+  if (code === 131030) throw new Error('Số này chưa nằm trong danh sách người nhận thử của ứng dụng WhatsApp.');
+  throw new Error(`WhatsApp từ chối gửi tin: ${message}`);
+}
+
+/** TikTok has no public self-serve messaging API, so replies are posted to the bridge URL configured for the channel. */
+async function sendTikTok(context: SendContext, conversationId: string, text: string, bridge: typeof fetch) {
+  const config = context.config || {};
+  if (!config.outboundUrl) throw new Error('Chưa cấu hình địa chỉ cầu nối gửi tin TikTok.');
+  const response = await bridge(config.outboundUrl, { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', ...(config.outboundToken ? { Authorization: `Bearer ${config.outboundToken}` } : {}) }, body: JSON.stringify({ to: context.externalId, text, conversationId }) });
+  if (!response.ok) throw new Error(`Cầu nối TikTok trả về lỗi ${response.status}.`);
+}
+
 /** POST /api/messaging {conversationId,text}: deliver a host reply to the guest's Zalo OA or email thread. */
-export async function handleMessaging(request: Request, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch, mailer: Mailer = defaultMailer): Promise<Response> {
+export async function handleMessaging(request: Request, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch, mailer: Mailer = defaultMailer, bridge: typeof fetch = publicPost): Promise<Response> {
   if (request.method !== 'POST') return json(405, { error: 'Phương thức không được hỗ trợ.' });
   const token = request.headers.get('authorization')?.match(/^Bearer (\S+)$/)?.[1];
   if (!token) return json(401, { error: 'Vui lòng đăng nhập.' });
@@ -80,6 +102,8 @@ export async function handleMessaging(request: Request, env: NodeJS.ProcessEnv =
   try {
     if (context.platform === 'zalo') await sendZalo(context, body.text, transport, async tokens => { await client.rpc('maoki_channel_accounts', { op: 'tokens', payload: tokens }); });
     else if (context.platform === 'facebook' || context.platform === 'instagram') await sendMeta(context, body.text, transport);
+    else if (context.platform === 'whatsapp') await sendWhatsApp(context, body.text, transport);
+    else if (context.platform === 'tiktok') await sendTikTok(context, body.conversationId, body.text, bridge);
     else {
       const config = context.config || {};
       if (!config.fromAddress || (config.provider === 'resend' ? !config.resendKey : !config.smtpHost)) throw new Error('Cấu hình email chưa đầy đủ.');
@@ -100,7 +124,7 @@ export function stripQuotedReply(text: string): string {
 const parseAddress = (value: string) => { const match = value.match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/); return match ? { name: match[1].trim(), from: match[2].trim() } : { name: '', from: value.trim() }; };
 
 /** Accepts Postmark inbound JSON, Mailgun/SendGrid-style form posts, or a plain {from,name,subject,text,messageId} JSON body. */
-export function normaliseEmail(contentType: string, raw: string): { from: string; name: string; subject: string; text: string; messageId: string } | null {
+export function normaliseEmail(contentType: string, raw: string): { from: string; name: string; subject: string; text: string; fullText: string; messageId: string; timestamp: string } | null {
   let fields: Record<string, string> = {};
   try {
     if (/json/i.test(contentType)) { const body = JSON.parse(raw) as Record<string, unknown>; fields = Object.fromEntries(Object.entries(body).filter(([, value]) => typeof value === 'string')) as Record<string, string>; }
@@ -110,7 +134,7 @@ export function normaliseEmail(contentType: string, raw: string): { from: string
   const address = parseAddress(rawFrom);
   const text = fields.TextBody || fields.text || fields['body-plain'] || fields['stripped-text'] || fields.StrippedTextReply || '';
   if (!address.from || !text.trim()) return null;
-  return { from: address.from, name: fields.FromName || fields.name || address.name, subject: fields.Subject || fields.subject || '', text: stripQuotedReply(text), messageId: fields.MessageID || fields.messageId || fields['Message-Id'] || fields['Message-ID'] || '' };
+  return { from: address.from, name: fields.FromName || fields.name || address.name, subject: fields.Subject || fields.subject || '', text: stripQuotedReply(text), fullText: text.trim().slice(0, 3000), messageId: fields.MessageID || fields.messageId || fields['Message-Id'] || fields['Message-ID'] || '', timestamp: /^\d{10,13}$/.test(fields.timestamp || '') ? (fields.timestamp.length === 10 ? fields.timestamp + '000' : fields.timestamp) : '' };
 }
 
 /** /api/inbound?token=… Zalo OA, Facebook/Instagram (signed webhooks, GET handshake) or an email-forwarding webhook. */

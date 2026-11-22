@@ -1,6 +1,6 @@
 import type { Booking, Employee, Property, RevenueEntry } from '../src/types';
 
-export type Platform = 'direct' | 'airbnb' | 'booking' | 'agoda' | 'facebook' | 'instagram' | 'zalo' | 'email' | 'webchat';
+export type Platform = 'direct' | 'airbnb' | 'booking' | 'agoda' | 'facebook' | 'instagram' | 'zalo' | 'email' | 'webchat' | 'whatsapp' | 'tiktok';
 export interface RecordBase { id: string; hostId: string; createdAt?: number; updatedAt?: number }
 export interface Stay extends Property { description?: string; bedrooms?: number; capacity?: number; published?: boolean }
 export interface Reservation extends Booking { contactId?: string; guestEmail?: string; guestPhone?: string; notes?: string }
@@ -49,5 +49,5 @@ export type WorkspaceData = { [K in ResourceName]: Resources[K][] };
 export type WorkspaceRole = 'owner' | 'manager' | 'agent' | 'viewer';
 export interface CalendarBlock { id: string; propertyId: string; checkIn: string; checkOut: string; platform: 'airbnb' | 'booking' | 'agoda' | 'vrbo' | 'expedia' | 'traveloka' | 'tripcom' | 'google' | 'ical'; label?: string; connectionId?: string }
 export interface WorkspaceSnapshot extends WorkspaceData { workspaceId?: string; channelBlocks?: CalendarBlock[]; settings: BusinessSettings; activity: AuditEvent[]; capabilities: { localDemo: boolean; aiConfigured: boolean; role?: WorkspaceRole } }
-export const platformLabels: Record<Platform, string> = { direct: 'Trực tiếp', airbnb: 'Airbnb', booking: 'Booking.com', agoda: 'Agoda', facebook: 'Facebook', instagram: 'Instagram', zalo: 'Zalo', email: 'Email', webchat: 'Website' };
+export const platformLabels: Record<Platform, string> = { direct: 'Trực tiếp', airbnb: 'Airbnb', booking: 'Booking.com', agoda: 'Agoda', facebook: 'Facebook', instagram: 'Instagram', zalo: 'Zalo', email: 'Email', webchat: 'Website', whatsapp: 'WhatsApp', tiktok: 'TikTok' };
 export const defaultSettings: BusinessSettings = { businessName: 'MaokiHouse', email: '', phone: '', address: 'Thành phố Hồ Chí Minh', currency: 'VND', timezone: 'Asia/Ho_Chi_Minh', checkinTime: '14:00', checkoutTime: '12:00', widgetEnabled: false, widgetGreeting: 'Chào bạn! MaokiHouse có thể giúp gì cho chuyến đi của bạn?', widgetToken: '' };

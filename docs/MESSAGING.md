@@ -16,3 +16,8 @@ Thông tin xác thực nằm trong bảng riêng `maoki_private`, không có tro
 3. App desktop → Thiết lập → Kênh nhắn tin: nhập App Secret, Page ID, Page access token → Lưu.
 4. Meta → Webhooks: đối tượng **Page** (Facebook) hoặc **Instagram**, dán Callback URL + Verify token hiển thị trong app, đăng ký trường `messages`.
 Chữ ký `X-Hub-Signature-256` (HMAC-SHA256 bằng App Secret) được kiểm tra trong SQL. Chỉ trả lời được trong 24 giờ kể từ tin cuối của khách; để nhận tin từ khách thật cần Meta App Review (quyền `pages_messaging`, `instagram_manage_messages`).
+
+## WhatsApp và TikTok
+1. Chạy thêm `supabase/migrations/20261125090000_maoki_whatsapp_tiktok.sql`.
+2. **WhatsApp (Cloud API)**: Meta for Developers → sản phẩm WhatsApp → lấy Phone number ID, App Secret, token hệ thống vĩnh viễn → nhập ở Kênh nhắn tin → dán Callback URL + Verify token vào WhatsApp → Configuration → Webhook, đăng ký `messages`. Chỉ nhắn tự do trong 24 giờ; ngoài khung cần template đã duyệt (app chưa gửi template).
+3. **TikTok**: không có API nhắn tin công khai tự đăng ký. Cần đối tác hoặc automation (Make, n8n…) có quyền truy cập: dịch vụ đó POST tin của khách tới Webhook URL (`{from,name,text,messageId,timestamp}`) và nhận trả lời qua “địa chỉ cầu nối” (POST `{to,text,conversationId}`, kèm `Authorization: Bearer`).

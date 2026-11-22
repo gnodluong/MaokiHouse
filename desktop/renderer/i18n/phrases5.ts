@@ -30,5 +30,19 @@ Object.assign(phrases5, {
   'Trong Webhooks, chọn đối tượng Page, dán Callback URL và Verify token phía trên, bấm Xác minh và lưu, rồi đăng ký trường “messages”.': 'In Webhooks, choose the Page object, paste the Callback URL and Verify token above, click Verify and save, then subscribe to the “messages” field.',
   'Trong Webhooks, chọn đối tượng Instagram, dán Callback URL và Verify token phía trên, bấm Xác minh và lưu, rồi đăng ký trường “messages”.': 'In Webhooks, choose the Instagram object, paste the Callback URL and Verify token above, click Verify and save, then subscribe to the “messages” field.',
 });
+Object.assign(phrases5, {
+  'Nhận và trả lời tin nhắn Zalo OA, Facebook Messenger, Instagram, WhatsApp, TikTok và email ngay trong Hộp thư.': 'Receive and reply to Zalo OA, Facebook Messenger, Instagram, WhatsApp, TikTok and email right in the Inbox.',
+  'WhatsApp Business': 'WhatsApp Business', 'TikTok (qua cầu nối)': 'TikTok (via bridge)', 'Phone number ID': 'Phone number ID', 'WhatsApp → API Setup → Phone number ID (chỉ gồm chữ số)': 'WhatsApp → API Setup → Phone number ID (digits only)',
+  'Nên dùng token vĩnh viễn của System User có quyền whatsapp_business_messaging': 'Use a permanent System User token with the whatsapp_business_messaging permission', 'Địa chỉ cầu nối gửi tin (https)': 'Outbound bridge address (https)', 'Dịch vụ của đối tác hoặc automation nhận tin trả lời và gửi sang TikTok': 'A partner or automation service that receives replies and sends them to TikTok',
+  'Token cầu nối': 'Bridge token', 'Được gửi kèm dưới dạng Authorization: Bearer': 'Sent as an Authorization: Bearer header', 'Webhook URL (dịch vụ cầu nối gửi tin của khách tới đây)': 'Webhook URL (the bridge service posts guest messages here)',
+  'TikTok chưa có API nhắn tin công khai để doanh nghiệp tự đăng ký; cần một đối tác chính thức hoặc dịch vụ automation (Make, n8n…) đang có quyền truy cập tin nhắn TikTok Business của bạn.': 'TikTok has no public self-serve messaging API; you need an official partner or an automation service (Make, n8n…) that already has access to your TikTok Business messages.',
+  'Cấu hình dịch vụ đó gửi mỗi tin nhắn mới của khách tới Webhook URL phía trên (POST JSON: from, name, text, messageId, timestamp).': 'Configure that service to send every new guest message to the Webhook URL above (POST JSON: from, name, text, messageId, timestamp).',
+  'Nhập địa chỉ cầu nối bên trên: khi bạn trả lời trong Hộp thư, MaokiHouse gửi POST JSON {to, text, conversationId} tới địa chỉ đó để chuyển sang TikTok.': 'Enter the bridge address above: when you reply in the Inbox, MaokiHouse POSTs JSON {to, text, conversationId} to it so it can be forwarded to TikTok.',
+  'Tại developers.facebook.com tạo ứng dụng Business, thêm sản phẩm WhatsApp và lấy Phone number ID.': 'At developers.facebook.com create a Business app, add the WhatsApp product and get the Phone number ID.',
+  'Dán App Secret, Phone number ID và Access token ở trên rồi bấm Lưu.': 'Paste the App Secret, Phone number ID and Access token above, then click Save.',
+  'Trong WhatsApp → Configuration → Webhook, dán Callback URL và Verify token phía trên rồi đăng ký trường “messages”.': 'In WhatsApp → Configuration → Webhook, paste the Callback URL and Verify token above, then subscribe to the “messages” field.',
+  'Chỉ nhắn tự do được trong 24 giờ kể từ tin cuối của khách; ngoài khung đó cần mẫu tin (template) đã duyệt, hiện app chưa gửi template.': 'Free-form messages are only allowed within 24 hours of the guest’s last message; outside that window an approved template is required, and the app does not send templates yet.',
+  'Đã gửi qua WhatsApp': 'Sent via WhatsApp', 'Đã gửi qua TikTok': 'Sent via TikTok',
+});
 export const patterns5: [RegExp, string][] = [
   [/^Đã gửi qua (Facebook|Instagram)$/, 'Sent via $1'],[/^Đã lưu trong hộp thư nhưng chưa gửi tới khách: (.+)$/, 'Saved in the inbox but not delivered to the guest: $1']];

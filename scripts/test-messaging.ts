@@ -25,7 +25,9 @@ function fakeFetch(world: World): typeof fetch {
   }) as typeof fetch;
 }
 const fresh = (): World => ({ context: {}, zalo: [], calls: [], tokens: [], meta: [], metaStatus: 200, user: true });
-const send = (world: World, text = 'Xin chào', mailer?: Mailer, auth = 'Bearer tok') => handleMessaging(new Request('http://x/api/messaging', { method: 'POST', headers: { authorization: auth }, body: JSON.stringify({ conversationId: CONV, text }) }), { SUPABASE_URL: 'https://p.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' } as NodeJS.ProcessEnv, fakeFetch(world), mailer);
+const bridgeCalls: { url: string; body: string; auth: string }[] = []; let bridgeStatus = 200;
+const bridge = (async (url: string, init?: RequestInit) => { bridgeCalls.push({ url: String(url), body: String(init?.body), auth: String((init?.headers as Record<string, string>).Authorization) }); return new Response(null, { status: bridgeStatus }); }) as typeof fetch;
+const send = (world: World, text = 'Xin chào', mailer?: Mailer, auth = 'Bearer tok') => handleMessaging(new Request('http://x/api/messaging', { method: 'POST', headers: { authorization: auth }, body: JSON.stringify({ conversationId: CONV, text }) }), { SUPABASE_URL: 'https://p.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' } as NodeJS.ProcessEnv, fakeFetch(world), mailer, bridge);
 
 // Zalo
 let world = fresh(); world.context = { thread: true, configured: true, platform: 'zalo', externalId: 'zu1', config: { accessToken: 'at', refreshToken: 'rt', appId: '1', appSecret: 's' } };
@@ -51,6 +53,19 @@ body = await (await send(world)).json(); ok(body.sent === false && /hết hạn/
 world = fresh(); world.context = { thread: true, configured: true, platform: 'facebook', externalId: 'p', config: { pageAccessToken: 'EAA' } }; world.metaStatus = 400; world.meta = [{ error: { message: 'This message is sent outside of allowed window.', code: 10, error_subcode: 2534022 } }];
 body = await (await send(world)).json(); ok(body.sent === false && /24 giờ/.test(body.error), 'meta 24-hour window error is explained');
 world = fresh(); world.context = { thread: true, configured: true, platform: 'facebook', externalId: 'p', config: {} }; body = await (await send(world)).json(); ok(body.sent === false && /Page access token/.test(body.error), 'missing page token is reported');
+// WhatsApp / TikTok
+world = fresh(); world.context = { thread: true, configured: true, platform: 'whatsapp', externalId: '84901234567', config: { phoneNumberId: '1055555', accessToken: 'WAT' } };
+body = await (await send(world, 'Còn phòng nhé')).json(); ok(body.sent === true && world.calls.some(call => call.includes('graph:Bearer WAT:') && call.includes('"messaging_product":"whatsapp"') && call.includes('"to":"84901234567"')), 'whatsapp reply goes through the Cloud API with the access token');
+ok(world.calls.some(call => call.includes('/v21.0/1055555/messages')), 'whatsapp sends from the configured phone number id');
+world = fresh(); world.context = { thread: true, configured: true, platform: 'whatsapp', externalId: '8490', config: { phoneNumberId: '1', accessToken: 'WAT' } }; world.metaStatus = 400; world.meta = [{ error: { message: 'Re-engagement message', code: 131047 } }];
+body = await (await send(world)).json(); ok(body.sent === false && /template/.test(body.error), 'whatsapp 24-hour window explains the template requirement');
+world = fresh(); world.context = { thread: true, configured: true, platform: 'whatsapp', externalId: '8490', config: { phoneNumberId: '1', accessToken: 'WAT' } }; world.metaStatus = 400; world.meta = [{ error: { message: 'expired', code: 190 } }];
+body = await (await send(world)).json(); ok(body.sent === false && /hết hạn/.test(body.error), 'expired whatsapp token is explained');
+world = fresh(); world.context = { thread: true, configured: true, platform: 'whatsapp', externalId: '8490', config: {} }; body = await (await send(world)).json(); ok(body.sent === false && /Phone number ID/.test(body.error), 'incomplete whatsapp setup is reported');
+world = fresh(); world.context = { thread: true, configured: true, platform: 'tiktok', externalId: 'tt-1', config: { outboundUrl: 'https://bridge.example.test/send', outboundToken: 'BT' } };
+body = await (await send(world, 'Hi TikTok')).json(); ok(body.sent === true && bridgeCalls.at(-1)?.url === 'https://bridge.example.test/send' && bridgeCalls.at(-1)?.auth === 'Bearer BT' && JSON.parse(bridgeCalls.at(-1)!.body).to === 'tt-1', 'tiktok reply is posted to the configured bridge with its token');
+bridgeStatus = 502; body = await (await send(world)).json(); ok(body.sent === false && /502/.test(body.error), 'bridge failures are surfaced'); bridgeStatus = 200;
+world = fresh(); world.context = { thread: true, configured: true, platform: 'tiktok', externalId: 'tt-1', config: {} }; body = await (await send(world)).json(); ok(body.sent === false && /cầu nối/.test(body.error), 'missing bridge address is reported');
 // Non-channel conversations and auth
 world = fresh(); world.context = { thread: false }; body = await (await send(world)).json(); ok(body.skipped === true, 'web chat conversations are skipped without error');
 world = fresh(); world.context = { thread: true, configured: false, platform: 'zalo' }; body = await (await send(world)).json(); ok(body.sent === false && /chưa được bật/.test(body.error), 'disabled channel is reported');
@@ -75,5 +90,7 @@ const handshake = (verify: string, extra = '') => handleInbound(new Request(`htt
 res = await handshake('good-verify'); ok(res.status === 200 && await res.text() === '12345', 'meta handshake echoes the challenge for the right verify token');
 res = await handshake('wrong'); ok(res.status === 403, 'meta handshake rejects a wrong verify token');
 res = await handleInbound(new Request(`http://x/api/inbound?token=${TOKEN}`, { method: 'GET' }), ''); ok(res.status === 400, 'a bare GET without hub parameters is rejected');
+world = fresh(); res = await inboundCall(TOKEN, JSON.stringify({ object: 'whatsapp_business_account', entry: [] }), { 'x-hub-signature-256': 'sha256=zz' }, world); ok(res.status === 200 && world.calls.some(call => call.includes('"signature":"sha256=zz"')), 'whatsapp webhook is routed to the signature verifier');
+world = fresh(); res = await inboundCall(TOKEN, JSON.stringify({ from: 'tt-9', name: 'Fan', text: '> quoted-looking text stays', messageId: 'a1', timestamp: '1700000000' }), { 'content-type': 'application/json' }, world); ok(world.calls.some(call => call.startsWith('inbound:') && call.includes('"fullText":"> quoted-looking text stays"') && call.includes('"timestamp":"1700000000000"')), 'bridge messages keep the full text and a millisecond timestamp');
 res = await handleInbound(new Request(`http://x/api/inbound?token=${TOKEN}`, { method: 'DELETE' }), ''); ok(res.status === 405, 'inbound endpoint only allows GET and POST');
 console.log(`${checks} messaging checks passed`);

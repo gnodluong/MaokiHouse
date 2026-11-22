@@ -83,6 +83,21 @@ export const publicFetch = ((input: string | URL, init?: RequestInit) => new Pro
   request.end();
 })) as typeof fetch;
 
+/** POST of a small JSON body to a public HTTPS host (DNS-guarded like publicFetch); used for user-configured bridge endpoints. */
+export const publicPost = ((input: string | URL, init?: RequestInit) => new Promise<Response>((resolve, reject) => {
+  const url = new URL(String(input));
+  if (url.protocol !== 'https:') return reject(new Error('Chỉ hỗ trợ HTTPS.'));
+  const body = String(init?.body ?? '');
+  const headers: Record<string, string> = { 'User-Agent': 'MaokiHouse-Bridge/1.0', 'Content-Type': 'application/json', 'Content-Length': String(Buffer.byteLength(body)), ...(init?.headers as Record<string, string> | undefined) };
+  const request = httpsRequest(url, { method: 'POST', headers, lookup: guardedLookup, agent: false, timeout: 15000, signal: init?.signal ?? undefined }, response => {
+    const status = response.statusCode || 502; response.resume();
+    resolve(new Response(null, { status: status < 200 || status > 599 ? 502 : status }));
+  });
+  request.on('timeout', () => request.destroy(new Error('timeout')));
+  request.on('error', reject);
+  request.end(body);
+})) as typeof fetch;
+
 function date(value: unknown): string {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || !Number.isFinite(Date.parse(value + 'T00:00:00Z')) || new Date(value + 'T00:00:00Z').toISOString().slice(0, 10) !== value) throw new CalendarInputError('Lịch chứa ngày không hợp lệ.');
   return value;
