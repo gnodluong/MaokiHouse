@@ -1,4 +1,5 @@
 import { phrases2, patterns2 } from './phrases2';
+import { phrases3, patterns3 } from './phrases3';
 
 /**
  * Vietnamese → English for text rendered by the shared admin pages (src/workspace).
@@ -98,5 +99,5 @@ const basePatterns: [RegExp, string][] = [
   [/^(\d+) chưa đọc$/, '$1 unread'], [/^(\d+) đêm$/, '$1 nights'], [/^(\d+) khách$/, '$1 guests'], [/^(\d+) phòng ngủ$/, '$1 bedrooms'], [/^(\d+) phòng$/, '$1 rooms'],
 ];
 
-export const phrases: Record<string, string> = { ...base, ...phrases2 };
-export const patterns: [RegExp, string][] = [...basePatterns, ...patterns2];
+export const phrases: Record<string, string> = { ...base, ...phrases2, ...phrases3 };
+export const patterns: [RegExp, string][] = [...basePatterns, ...patterns2, ...patterns3];

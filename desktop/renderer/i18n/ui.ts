@@ -4,7 +4,7 @@ export type Lang = 'vi' | 'en';
 export const ui = {
   vi: {
     appName: 'Maoki Admin', admin: 'Quản trị', skip: 'Đến nội dung chính', mainNav: 'Điều hướng chính',
-    'nav.overview': 'Tổng quan', 'nav.daily': 'Hằng ngày', 'nav.calendar': 'Lịch phòng', 'nav.bookings': 'Đặt phòng', 'nav.messages': 'Hộp thư', 'nav.tasks': 'Công việc',
+    'nav.support': 'Hỗ trợ khách', 'nav.reminders': 'Nhắc việc', 'nav.tickets': 'Phiếu ghi', 'nav.ticketTypes': 'Loại phiếu ghi', 'nav.insights': 'Thống kê hội thoại', 'nav.bots': 'Chatbot kịch bản', 'nav.journeys': 'Chu trình chăm sóc', 'nav.tags': 'Tag & nhãn', 'nav.rules': 'Quy tắc chia chat', 'nav.hours': 'Giờ làm việc', 'nav.overview': 'Tổng quan', 'nav.daily': 'Hằng ngày', 'nav.calendar': 'Lịch phòng', 'nav.bookings': 'Đặt phòng', 'nav.messages': 'Hộp thư', 'nav.tasks': 'Công việc',
     'nav.stays': 'Phòng & giá', 'nav.properties': 'Phòng & căn hộ', 'nav.rates': 'Giá & tình trạng', 'nav.guidebooks': 'Sổ tay lưu trú',
     'nav.guests': 'Khách hàng', 'nav.contacts': 'Khách hàng', 'nav.replies': 'Mẫu trả lời', 'nav.automations': 'Tự động hóa', 'nav.campaigns': 'Chiến dịch',
     'nav.business': 'Kinh doanh', 'nav.revenue': 'Thu & chi', 'nav.reports': 'Báo cáo', 'nav.owners': 'Chủ sở hữu', 'nav.hr': 'Đội ngũ',
@@ -31,7 +31,7 @@ export const ui = {
   },
   en: {
     appName: 'Maoki Admin', admin: 'Admin', skip: 'Skip to main content', mainNav: 'Main navigation',
-    'nav.overview': 'Overview', 'nav.daily': 'Daily', 'nav.calendar': 'Room calendar', 'nav.bookings': 'Bookings', 'nav.messages': 'Inbox', 'nav.tasks': 'Tasks',
+    'nav.support': 'Guest support', 'nav.reminders': 'Reminders', 'nav.tickets': 'Tickets', 'nav.ticketTypes': 'Ticket types', 'nav.insights': 'Conversation insights', 'nav.bots': 'Chatbot scripts', 'nav.journeys': 'Care journeys', 'nav.tags': 'Tags & labels', 'nav.rules': 'Routing rules', 'nav.hours': 'Working hours', 'nav.overview': 'Overview', 'nav.daily': 'Daily', 'nav.calendar': 'Room calendar', 'nav.bookings': 'Bookings', 'nav.messages': 'Inbox', 'nav.tasks': 'Tasks',
     'nav.stays': 'Rooms & pricing', 'nav.properties': 'Rooms & apartments', 'nav.rates': 'Rates & availability', 'nav.guidebooks': 'Guest guidebooks',
     'nav.guests': 'Guests', 'nav.contacts': 'Guests', 'nav.replies': 'Reply templates', 'nav.automations': 'Automations', 'nav.campaigns': 'Campaigns',
     'nav.business': 'Business', 'nav.revenue': 'Income & expenses', 'nav.reports': 'Reports', 'nav.owners': 'Owners', 'nav.hr': 'Team',

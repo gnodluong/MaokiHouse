@@ -60,7 +60,7 @@ function RecordForm({ resource, record, defaults, close }: EditState & { close: 
       const key = `field-${field.key}`;
       let options = field.options;
       if (resource === 'automations' && field.key === 'action') options = options?.filter(([value]) => values.trigger === 'new_conversation' ? value !== 'create_task' : value === 'create_task');
-      if (field.relation) options = data[field.relation].map(item => [field.relation === 'employees' ? String(valueOf(item, 'name')) : item.id, String(valueOf(item, field.relation === 'properties' ? 'title' : 'name'))]);
+      if (field.relation) options = data[field.relation].map(item => [field.relation === 'employees' || field.relation === 'ticketTypes' ? String(valueOf(item, 'name')) : item.id, String(valueOf(item, field.relation === 'properties' ? 'title' : 'name'))]);
       return <div key={key} className={`mk-field ${['textarea', 'images', 'tags', 'checkbox', 'properties'].includes(field.type || '') ? 'full' : ''}`}>
         {field.type === 'checkbox' ? <label className="mk-checkbox" htmlFor={key}><input id={key} type="checkbox" checked={Boolean(values[field.key])} onChange={event => set(field.key, event.target.checked)} /><span>{field.label}</span></label> : <><label htmlFor={key}>{field.label}{field.required && <span aria-label="bắt buộc"> *</span>}</label>
           {field.type === 'textarea' || field.type === 'images' ? <textarea id={key} rows={field.type === 'images' ? 3 : 4} value={String(values[field.key] ?? '')} onChange={event => set(field.key, event.target.value)} required={field.required} maxLength={field.type === 'images' ? 10000 : 10000} />

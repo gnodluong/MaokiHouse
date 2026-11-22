@@ -83,6 +83,20 @@ try {
  await denied(()=>db.query('select * from maoki_private.ai_settings'),'AI settings table cannot be read directly');
  await login(null); await denied(()=>ai('status'),'anonymous cannot call AI settings');
  await login(a); await ai('clear'); ok((await ai('status')).configured===false,'owner can remove the key');
- await rpc('revoke_member','',null,{id:agent}); await login(agent,'agent@example.test'); ok((await db.query('select * from public.maoki_records')).rows.length===0,'revoked membership immediately loses RLS access');
+ const ex=async(op,kind='',id=null,payload={})=>(await db.query('select public.maoki_extras($1,$2,$3,$4) as result',[op,kind,id,JSON.stringify(payload)])).rows[0].result;
+ await login(a); const tag=await ex('save','tags',null,{name:'VIP',color:'amber'}); ok(tag.name==='VIP' && tag.hostId===first.workspaceId,'owner saves a conversation tag');
+ await denied(()=>ex('save','tags',null,{name:'Bad',color:'neon'}),'invalid tag colour rejected');
+ await denied(()=>ex('save','tickets',null,{title:'X',priority:'asap'}),'invalid ticket priority rejected');
+ await denied(()=>ex('save','tickets',null,{title:'X',hostId:b}),'extras cannot set ownership');
+ await denied(()=>ex('save','hours',null,{name:'Bad hours',start:'18:00',end:'09:00'}),'working hours must end after they start');
+ await ex('save','ticketTypes',null,{name:'Complaint',slaHours:4}); await ex('save','bots',null,{name:'Welcome bot',trigger:'visit',message:'Hello!'}); await ex('save','journeys',null,{name:'Thanks after stay',trigger:'after_checkout',steps:'After 1 day: thank the guest'});
+ const extras=await ex('snapshot'); ok(extras.tags.length===1 && extras.ticketTypes.length===1 && extras.bots.length===1 && extras.journeys.length===1 && extras.rules.length===0,'extras snapshot returns every new resource list');
+ await login(agent,'agent@example.test'); const ticket=await ex('save','tickets',null,{title:'Broken AC',priority:'high',dueDate:undefined}); ok(ticket.status==='open','agent can create tickets');
+ await ex('save','reminders',null,{title:'Call guest',dueDate:'2099-01-05'}); checks++; console.log('PASS agent can create reminders');
+ await denied(()=>ex('save','rules',null,{name:'Routing'}),'agent cannot change routing rules');
+ await denied(()=>ex('delete','tags',tag.id),'agent cannot delete tags');
+ await login(b,'other@example.test'); await rpc('switch','',null,{id:first.workspaceId}); await denied(()=>ex('save','tickets',null,{title:'No write'}),'viewer cannot create tickets');
+ await rpc('switch','',null,{id:ownId}); await denied(()=>ex('delete','tickets',ticket.id),'cross tenant ticket deletion rejected');
+ await login(a); await rpc('revoke_member','',null,{id:agent}); await login(agent,'agent@example.test'); ok((await db.query('select * from public.maoki_records')).rows.length===0,'revoked membership immediately loses RLS access');
  console.log(`${checks} database checks passed`);
 } finally { await db.close(); }

@@ -17,11 +17,21 @@ export interface SavedReply extends RecordBase { title: string; content: string 
 export interface Integration extends RecordBase { platform: Platform; status: 'demo' | 'disconnected'; label: string }
 export interface AuditEvent extends RecordBase { action: string; resource: string; label: string; actor: string; timestamp: number }
 export interface BusinessSettings { businessName: string; email: string; phone: string; address: string; currency: 'VND' | 'USD'; timezone: string; checkinTime: string; checkoutTime: string; widgetEnabled: boolean; widgetGreeting: string; widgetToken: string }
+export interface Tag extends RecordBase { name: string; color: 'blue' | 'green' | 'amber' | 'red' | 'purple' | 'gray'; scope: 'conversation' | 'customer'; description: string }
+export interface RoutingRule extends RecordBase { name: string; channel: Platform | 'all'; mode: 'all' | 'work_hours' | 'off_hours'; assignee: string; active: boolean }
+export interface WorkingHours extends RecordBase { name: string; kind: 'work' | 'holiday'; days: string[]; start: string; end: string; holidayDate: string }
+export interface Reminder extends RecordBase { title: string; dueDate: string; status: 'todo' | 'done'; assignee: string; contactName: string; notes: string }
+export interface TicketType extends RecordBase { name: string; slaHours: number; description: string }
+export interface Ticket extends RecordBase { title: string; type: string; priority: 'low' | 'normal' | 'high' | 'urgent'; status: 'open' | 'doing' | 'waiting' | 'done'; assignee: string; contactName: string; deadline: string; description: string }
+export interface Bot extends RecordBase { name: string; channel: string; trigger: 'visit' | 'outside_hours' | 'keyword' | 'new_conversation' | 'facebook_ad'; keyword: string; message: string; replies: string; active: boolean }
+export interface Journey extends RecordBase { name: string; trigger: 'new_contact' | 'booking_confirmed' | 'before_checkin' | 'after_checkout' | 'no_reply'; steps: string; status: 'active' | 'paused' }
+export const extraResources = ['tags', 'rules', 'hours', 'reminders', 'ticketTypes', 'tickets', 'bots', 'journeys'] as const;
 export interface Resources {
   properties: Stay; bookings: Reservation; contacts: Contact; conversations: Conversation;
   tasks: OperationTask; rates: RatePlan; guidebooks: Guidebook; owners: Owner;
   automations: Automation; campaigns: Campaign; replies: SavedReply; integrations: Integration;
   employees: Employee; revenue: RevenueEntry;
+  tags: Tag; rules: RoutingRule; hours: WorkingHours; reminders: Reminder; ticketTypes: TicketType; tickets: Ticket; bots: Bot; journeys: Journey;
 }
 export type ResourceName = keyof Resources;
 export type ResourceRecord = Resources[ResourceName];
