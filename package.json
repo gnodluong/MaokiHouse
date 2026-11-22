@@ -105,7 +105,8 @@
       "desktop/main.cjs",
       "desktop/preload.cjs",
       "desktop/dist/**/*",
-      "package.json"
+      "package.json",
+      "!**/node_modules/**"
     ],
     "asar": true,
     "mac": {
