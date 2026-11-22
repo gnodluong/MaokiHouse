@@ -11,7 +11,8 @@ function lookup(source: string): string | null {
   if (!trimmed) return null;
   const exact = phrases[trimmed];
   if (exact) return source.replace(trimmed, exact);
-  for (const [pattern, replacement] of patterns) if (pattern.test(trimmed)) return source.replace(trimmed, trimmed.replace(pattern, replacement));
+  // Captured parts (room names, counts) are kept, but captured Vietnamese nouns are translated too.
+  for (const [pattern, template] of patterns) if (pattern.test(trimmed)) return source.replace(trimmed, trimmed.replace(pattern, (...args) => template.replace(/\$(\d)/g, (_, index) => { const group = String(args[Number(index)]); return phrases[group] ?? group; })));
   return null;
 }
 

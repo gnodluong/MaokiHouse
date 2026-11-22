@@ -1,9 +1,11 @@
+import { phrases2, patterns2 } from './phrases2';
+
 /**
  * Vietnamese → English for text rendered by the shared admin pages (src/workspace).
  * The desktop shell translates the DOM at runtime from this table, so the shared pages stay single-language.
  * Text that is not listed is left as written (Vietnamese).
  */
-export const phrases: Record<string, string> = {
+const base: Record<string, string> = {
   // statuses & enums
   'Đang hoạt động': 'Active', 'Ngừng hoạt động': 'Inactive', 'Đã xác nhận': 'Confirmed', 'Chờ xử lý': 'Pending', 'Đã hủy': 'Cancelled', 'Tiềm năng': 'Lead', 'Đang lưu trú': 'Staying', 'Quay lại': 'Returning',
   'Cần làm': 'To do', 'Đang làm': 'In progress', 'Hoàn tất': 'Done', 'Thông thường': 'Normal', 'Ưu tiên cao': 'High priority', 'Buồng phòng': 'Housekeeping', 'Bảo trì': 'Maintenance', 'Đón khách': 'Guest welcome',
@@ -92,6 +94,9 @@ export const phrases: Record<string, string> = {
 };
 
 /** Dynamic text: [pattern, replacement]. Applied after exact matches fail. */
-export const patterns: [RegExp, string][] = [
+const basePatterns: [RegExp, string][] = [
   [/^(\d+) chưa đọc$/, '$1 unread'], [/^(\d+) đêm$/, '$1 nights'], [/^(\d+) khách$/, '$1 guests'], [/^(\d+) phòng ngủ$/, '$1 bedrooms'], [/^(\d+) phòng$/, '$1 rooms'],
 ];
+
+export const phrases: Record<string, string> = { ...base, ...phrases2 };
+export const patterns: [RegExp, string][] = [...basePatterns, ...patterns2];
