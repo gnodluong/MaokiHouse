@@ -28,7 +28,7 @@ await assert.rejects(()=>fetchCalendar(validURL,'airbnb',async()=>new Response('
 let trustedHops=0;const redirected=await fetchCalendar('https://admin.booking.com/hotel/hoteladmin/ical.html?t=test-only','booking',async()=>{trustedHops++;return trustedHops===1?new Response('',{status:302,headers:{location:'https://ical.booking.com/v1/export?t=test-only'}}):new Response(calendar(event('booking-redirect')));});assert.equal(trustedHops,2);assert.equal(redirected[0].uid,'booking-redirect');pass('redirects within the same approved provider are supported without widening host access');
 
 const db=new PGlite();const owner='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222',agent='33333333-3333-4333-8333-333333333333';
-await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);grant usage on schema auth to anon,authenticated;
+await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);grant usage on schema auth to anon,authenticated;
 create function auth.uid() returns uuid language sql stable as $$select (nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'sub')::uuid$$;
 create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;
 insert into auth.users values('${owner}','owner@example.test',now()),('${other}','other@example.test',now()),('${agent}','agent@example.test',now());`);

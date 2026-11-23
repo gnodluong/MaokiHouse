@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import { migrationPlan, channelMigrationPlan, aiMigrationPlan, roomsMigrationPlan } from './supabase-project.mjs';
 const db=new PGlite(); const uid='44444444-4444-4444-8444-444444444444'; const email='primary@example.test';
 const output=process.env.TEST_ARTIFACT_DIR || '/tmp/maoki-primary-browser'; await mkdir(output,{recursive:true});
-await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz); grant usage on schema auth to anon,authenticated;
+await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz); grant usage on schema auth to anon,authenticated;
 create function auth.uid() returns uuid language sql stable as $$ select (nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'sub')::uuid $$;
 create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
 insert into auth.users values('${uid}','${email}',now());`);

@@ -7,7 +7,10 @@ import { requireAuth } from '../middleware/auth';
 import { adminOnly } from '../middleware/adminOnly';
 import { collections, schemas, settingsSchema } from './schemas';
 import { defaultSettings } from '../../../shared/workspace';
-import type { ResourceName, Resources, AuditEvent } from '../../../shared/workspace';
+import type { ResourceName as AnyResourceName, ExtraResourceName, Resources, AuditEvent } from '../../../shared/workspace';
+
+/** The legacy Firestore demo only knows the original resources; newer ones live in Supabase. */
+type ResourceName = Exclude<AnyResourceName, ExtraResourceName>;
 import { seedWorkspace } from './seed';
 
 export class WorkspaceError extends Error {

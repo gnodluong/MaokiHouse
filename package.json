@@ -12,7 +12,7 @@
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "typecheck": "tsc -b && tsc -p tsconfig.api.json",
-    "test": "npm run test:db && npm run test:deployment && npm run test:ai && npm run test:ai:deployment && npm run test:calendars",
+    "test": "npm run test:db && npm run test:deployment && npm run test:ai && npm run test:ai:deployment && npm run test:calendars && npm run test:messaging && npm run test:reviews && npm run test:youtube && npm run test:worker",
     "test:db": "node scripts/test-workspace-db.mjs",
     "test:browser": "node scripts/test-workspace-browser.mjs",
     "test:supabase-browser": "node scripts/test-supabase-browser.mjs",
@@ -24,7 +24,17 @@
     "test:ai": "tsx scripts/test-assistant.ts",
     "test:ai:deployment": "node scripts/test-assistant-deployment.mjs",
     "test:calendars": "tsx scripts/test-calendars.ts",
-    "screenshots:admin": "node scripts/admin-screenshots.mjs"
+    "screenshots:admin": "node scripts/admin-screenshots.mjs",
+    "desktop:renderer": "vite build --config desktop/vite.config.ts",
+    "desktop:dev": "node scripts/desktop-dev.mjs",
+    "desktop:start": "npm run desktop:renderer && electron .",
+    "desktop:pack": "npm run desktop:renderer && electron-builder --dir",
+    "desktop:dist": "npm run desktop:renderer && electron-builder",
+    "test:messaging": "tsx scripts/test-messaging.ts",
+    "test:reviews": "tsx scripts/test-reviews.ts",
+    "test:youtube": "tsx scripts/test-youtube.ts",
+    "test:worker": "tsx scripts/test-worker.ts",
+    "sql:bundle": "node scripts/bundle-migrations.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
@@ -46,7 +56,10 @@
     "framer-motion": "^10.18.0",
     "gh-pages": "^6.3.0",
     "ical.js": "2.2.1",
+    "imapflow": "^2.12.2",
+    "mailparser": "^3.15.0",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.1",
     "react": "^18.2.0",
     "react-big-calendar": "^1.20.0",
     "react-bootstrap": "^2.10.10",
@@ -65,13 +78,17 @@
     "@electric-sql/pglite": "^0.5.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/mailparser": "^3.9.0",
     "@types/multer": "^1.4.12",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "@vercel/node": "^3.2.24",
     "@vitejs/plugin-react": "^4.2.0",
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0",
     "eslint": "^8.53.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.4",
@@ -82,5 +99,50 @@
   },
   "engines": {
     "node": "24.x"
+  },
+  "main": "desktop/main.cjs",
+  "description": "Maoki House admin console",
+  "author": "Maoki House",
+  "build": {
+    "appId": "com.maokihouse.admin",
+    "productName": "Maoki Admin",
+    "executableName": "maoki-admin",
+    "directories": {
+      "output": "release",
+      "buildResources": "desktop/build"
+    },
+    "files": [
+      "desktop/main.cjs",
+      "desktop/preload.cjs",
+      "desktop/dist/**/*",
+      "package.json",
+      "!**/node_modules/**"
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.business",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office",
+      "maintainer": "Maoki House"
+    }
   }
 }

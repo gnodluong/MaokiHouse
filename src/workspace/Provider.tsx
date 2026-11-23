@@ -7,7 +7,11 @@ import { requireSupabase, databaseError } from '../lib/supabase/client';
 import { useSession } from './Session';
 import { WorkspaceContext } from './context';
 import type { Values } from './context';
+import { extraResources } from '../../shared/workspace';
 import type { WorkspaceSnapshot, ResourceName } from '../../shared/workspace';
+
+const isExtra = (kind: string) => (extraResources as readonly string[]).includes(kind);
+const emptyExtras = () => Object.fromEntries(extraResources.map(kind => [kind, []]));
 
 export default function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { mode, user } = useSession();
@@ -26,6 +30,7 @@ export default function WorkspaceProvider({ children }: { children: ReactNode })
     if (parts[0] === 'conversations' && parts[2] === 'messages') return rpc<T>('message', 'conversations', parts[1], body);
     if (parts[0] === 'workspaces') return rpc<T>(parts[1] || 'workspaces', '', undefined, body);
     if (parts[0] === 'team') return rpc<T>(parts[1] || 'team', '', undefined, body);
+    if (isExtra(parts[0])) { const { data: saved, error } = await requireSupabase().rpc('maoki_extras', { op: 'save', kind: parts[0], record_id: parts[1] || null, payload: body ?? {} }); if (error) throw databaseError(error); return saved as T; }
     return rpc<T>('save', parts[0], parts[1], body);
   }, [mode, rpc]);
   const reload = useCallback(async () => {
@@ -33,6 +38,9 @@ export default function WorkspaceProvider({ children }: { children: ReactNode })
       if (!user) throw new Error('Phiên đăng nhập đã hết hạn');
       const result = mode === 'supabase' ? await rpc<WorkspaceSnapshot>('snapshot') : await apiFetch<WorkspaceSnapshot>('/workspace', { idToken: await demoToken() });
       if (mode === 'supabase') {
+        // New resource lists live behind a second RPC; an older database without it still loads.
+        const extras = await requireSupabase().rpc('maoki_extras', { op: 'snapshot' });
+        Object.assign(result, emptyExtras(), extras.error ? {} : extras.data);
         const blocks = await requireSupabase().rpc('maoki_channels', { op: 'busy' });
         if (blocks.error && blocks.error.code !== 'PGRST202') throw databaseError(blocks.error);
         result.channelBlocks = blocks.data || [];
@@ -47,7 +55,8 @@ export default function WorkspaceProvider({ children }: { children: ReactNode })
     await reload();
   }, [request, reload]);
   const remove = useCallback(async (resource: ResourceName, id: string) => {
-    if (mode === 'supabase') await rpc('delete', resource, id);
+    if (mode === 'supabase' && isExtra(resource)) { const { error } = await requireSupabase().rpc('maoki_extras', { op: 'delete', kind: resource, record_id: id, payload: {} }); if (error) throw databaseError(error); }
+    else if (mode === 'supabase') await rpc('delete', resource, id);
     else await apiFetch('/workspace/' + resource + '/' + id, { method: 'DELETE', idToken: await demoToken() });
     await reload();
   }, [mode, rpc, reload]);

@@ -1,6 +1,6 @@
 import type { Booking, Employee, Property, RevenueEntry } from '../src/types';
 
-export type Platform = 'direct' | 'airbnb' | 'booking' | 'agoda' | 'facebook' | 'instagram' | 'zalo' | 'email' | 'webchat';
+export type Platform = 'direct' | 'airbnb' | 'booking' | 'agoda' | 'facebook' | 'instagram' | 'zalo' | 'email' | 'webchat' | 'whatsapp' | 'tiktok';
 export interface RecordBase { id: string; hostId: string; createdAt?: number; updatedAt?: number }
 export interface Stay extends Property { description?: string; bedrooms?: number; capacity?: number; published?: boolean }
 export interface Reservation extends Booking { contactId?: string; guestEmail?: string; guestPhone?: string; notes?: string }
@@ -17,11 +17,34 @@ export interface SavedReply extends RecordBase { title: string; content: string 
 export interface Integration extends RecordBase { platform: Platform; status: 'demo' | 'disconnected'; label: string }
 export interface AuditEvent extends RecordBase { action: string; resource: string; label: string; actor: string; timestamp: number }
 export interface BusinessSettings { businessName: string; email: string; phone: string; address: string; currency: 'VND' | 'USD'; timezone: string; checkinTime: string; checkoutTime: string; widgetEnabled: boolean; widgetGreeting: string; widgetToken: string }
+export interface Tag extends RecordBase { name: string; color: 'blue' | 'green' | 'amber' | 'red' | 'purple' | 'gray'; scope: 'conversation' | 'customer'; description: string }
+export interface RoutingRule extends RecordBase { name: string; channel: Platform | 'all'; mode: 'all' | 'work_hours' | 'off_hours'; assignee: string; active: boolean }
+export interface WorkingHours extends RecordBase { name: string; kind: 'work' | 'holiday'; days: string[]; start: string; end: string; holidayDate: string }
+export interface Reminder extends RecordBase { title: string; dueDate: string; status: 'todo' | 'done'; assignee: string; contactName: string; notes: string }
+export interface TicketType extends RecordBase { name: string; slaHours: number; description: string }
+export interface Ticket extends RecordBase { title: string; type: string; priority: 'low' | 'normal' | 'high' | 'urgent'; status: 'open' | 'doing' | 'waiting' | 'done'; assignee: string; contactName: string; deadline: string; description: string }
+export interface Bot extends RecordBase { name: string; channel: string; trigger: 'visit' | 'outside_hours' | 'keyword' | 'new_conversation' | 'facebook_ad'; keyword: string; message: string; replies: string; active: boolean }
+export interface Journey extends RecordBase { name: string; trigger: 'new_contact' | 'booking_confirmed' | 'before_checkin' | 'after_checkout' | 'no_reply'; steps: string; status: 'active' | 'paused' }
+export interface CustomField extends RecordBase { name: string; type: 'text' | 'number' | 'date' | 'select'; options: string; required: boolean }
+export interface FieldValue extends RecordBase { contactId: string; fieldId: string; value: string }
+export interface Popup extends RecordBase { name: string; kind: 'popup' | 'prechat'; title: string; message: string; fields: string; trigger: 'delay' | 'exit' | 'off_hours' | 'page'; delaySeconds: number; pageUrl: string; active: boolean }
+export interface Product extends RecordBase { name: string; category: string; price: number; unit: string; description: string; active: boolean }
+export interface Order extends RecordBase { productId: string; guestName: string; quantity: number; total: number; status: 'new' | 'processing' | 'delivered' | 'cancelled'; bookingNote: string; notes: string }
+export interface Webhook extends RecordBase { name: string; url: string; events: string[]; active: boolean }
+export interface AgentGroup extends RecordBase { name: string; members: string[]; description: string }
+export interface KnowledgeItem extends RecordBase { title: string; content: string; active: boolean }
+export interface CallLog extends RecordBase { callId: string; direction: 'inbound' | 'outbound'; number: string; contactName: string; agent: string; status: 'answered' | 'missed' | 'busy' | 'failed' | 'voicemail'; durationSec: number; startedAt: string; recordingUrl: string; notes: string }
+export interface GoogleReview extends RecordBase { reviewId: string; reviewName: string; reviewer: string; rating: number; comment: string; reviewedAt: string; reply: string; repliedAt: string; status: 'new' | 'replied' | 'ignored' }
+export interface YouTubeComment extends RecordBase { commentId: string; videoId: string; author: string; authorChannelId: string; text: string; publishedAt: string; likes: number; replyCount: number; reply: string; repliedAt: string; status: 'new' | 'replied' | 'ignored' }
+export const extraResources = ['tags', 'rules', 'hours', 'reminders', 'ticketTypes', 'tickets', 'bots', 'journeys', 'customFields', 'fieldValues', 'popups', 'products', 'orders', 'webhooks', 'agentGroups', 'knowledge', 'calls', 'reviews', 'ytComments'] as const;
+export type ExtraResourceName = (typeof extraResources)[number];
 export interface Resources {
   properties: Stay; bookings: Reservation; contacts: Contact; conversations: Conversation;
   tasks: OperationTask; rates: RatePlan; guidebooks: Guidebook; owners: Owner;
   automations: Automation; campaigns: Campaign; replies: SavedReply; integrations: Integration;
   employees: Employee; revenue: RevenueEntry;
+  tags: Tag; rules: RoutingRule; hours: WorkingHours; reminders: Reminder; ticketTypes: TicketType; tickets: Ticket; bots: Bot; journeys: Journey;
+  customFields: CustomField; fieldValues: FieldValue; popups: Popup; products: Product; orders: Order; webhooks: Webhook; agentGroups: AgentGroup; knowledge: KnowledgeItem; calls: CallLog; reviews: GoogleReview; ytComments: YouTubeComment;
 }
 export type ResourceName = keyof Resources;
 export type ResourceRecord = Resources[ResourceName];
@@ -29,5 +52,5 @@ export type WorkspaceData = { [K in ResourceName]: Resources[K][] };
 export type WorkspaceRole = 'owner' | 'manager' | 'agent' | 'viewer';
 export interface CalendarBlock { id: string; propertyId: string; checkIn: string; checkOut: string; platform: 'airbnb' | 'booking' | 'agoda' | 'vrbo' | 'expedia' | 'traveloka' | 'tripcom' | 'google' | 'ical'; label?: string; connectionId?: string }
 export interface WorkspaceSnapshot extends WorkspaceData { workspaceId?: string; channelBlocks?: CalendarBlock[]; settings: BusinessSettings; activity: AuditEvent[]; capabilities: { localDemo: boolean; aiConfigured: boolean; role?: WorkspaceRole } }
-export const platformLabels: Record<Platform, string> = { direct: 'Trực tiếp', airbnb: 'Airbnb', booking: 'Booking.com', agoda: 'Agoda', facebook: 'Facebook', instagram: 'Instagram', zalo: 'Zalo', email: 'Email', webchat: 'Website' };
+export const platformLabels: Record<Platform, string> = { direct: 'Trực tiếp', airbnb: 'Airbnb', booking: 'Booking.com', agoda: 'Agoda', facebook: 'Facebook', instagram: 'Instagram', zalo: 'Zalo', email: 'Email', webchat: 'Website', whatsapp: 'WhatsApp', tiktok: 'TikTok' };
 export const defaultSettings: BusinessSettings = { businessName: 'MaokiHouse', email: '', phone: '', address: 'Thành phố Hồ Chí Minh', currency: 'VND', timezone: 'Asia/Ho_Chi_Minh', checkinTime: '14:00', checkoutTime: '12:00', widgetEnabled: false, widgetGreeting: 'Chào bạn! MaokiHouse có thể giúp gì cho chuyến đi của bạn?', widgetToken: '' };

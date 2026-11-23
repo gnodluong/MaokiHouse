@@ -2,7 +2,7 @@ import { PGlite } from '@electric-sql/pglite';
 import assert from 'node:assert/strict';
 import { migrationPlan,channelMigrationPlan,statusSQL,permissionsSQL,verifySchema } from './supabase-project.mjs';
 const plan=await migrationPlan();const calendarPlan=await channelMigrationPlan();
-const bootstrap=`create role anon; create role authenticated; create schema auth;
+const bootstrap=`create role anon; create role authenticated; create role service_role; create schema auth;
 create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
 create function auth.uid() returns uuid language sql stable as $$ select (nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'sub')::uuid $$;
 create function auth.jwt() returns jsonb language sql stable as $$ select '{}'::jsonb $$;`;
