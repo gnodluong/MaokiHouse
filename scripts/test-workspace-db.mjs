@@ -3,7 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const db = new PGlite(); let checks = 0;
 const a='11111111-1111-4111-8111-111111111111', b='22222222-2222-4222-8222-222222222222', agent='33333333-3333-4333-8333-333333333333';
-await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz); grant usage on schema auth to anon,authenticated;
+await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz); grant usage on schema auth to anon,authenticated;
 create function auth.uid() returns uuid language sql stable as $$ select (nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'sub')::uuid $$;`);
 await db.exec(`create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
 insert into auth.users values('${a}','owner@example.test',now()),('${b}','other@example.test',now()),('${agent}','agent@example.test',now());`);
@@ -203,6 +203,68 @@ try {
  await ex('save','ytComments',yc1.id,{reply:'Cảm ơn bạn!',repliedAt:'2099-03-04T00:00:00Z',status:'replied'}); await yt('upsert',{items:[{commentId:'Ugx1',videoId:'vid1',author:'Lan',text:'Video hay quá!',likes:6}]});
  { const kept=(await ex('snapshot')).ytComments.find(x=>x.id===yc1.id); ok(kept.status==='replied' && kept.reply==='Cảm ơn bạn!','re-syncing keeps our reply and replied status'); }
  await login(agent,'agent@example.test'); await denied(()=>yt('context'),'agent cannot load youtube credentials'); await denied(()=>ex('save','ytComments',null,{author:'x'}),'agent cannot edit youtube comments');
+ // ── background automation ──
+ const asService=async fn=>{ await db.exec('reset role'); await db.exec('set role service_role'); try { return await fn(); } finally { await db.exec('reset role'); } };
+ const wk=async(name,...args)=>asService(async()=>(await db.query(`select public.${name}(${args.map((_,i)=>'$'+(i+1)).join(',')}) as r`,args)).rows[0].r);
+ const raw=async(sql,params=[])=>{ await db.exec('reset role'); try { return (await db.query(sql,params)).rows; } finally { await login(a); } };
+ const asOwner=async fn=>{ await db.exec('reset role'); try { return await fn(); } finally { await login(a); } };
+ await login(a); const wsId=(await rpc('snapshot')).workspaceId;
+ const nowLocal=(await asOwner(()=>db.query("select (now() at time zone 'Asia/Ho_Chi_Minh')::date::text as d, ((now() at time zone 'Asia/Ho_Chi_Minh')::date+1)::text as d1, ((now() at time zone 'Asia/Ho_Chi_Minh')::date+2)::text as d2"))).rows[0];
+ // working hours
+ const hoursFn=async(ts)=>(await asOwner(()=>db.query('select maoki_private.in_work_hours($1,$2::timestamptz) as r',[wsId,ts]))).rows[0].r;
+ ok(await hoursFn('2099-01-05T10:00:00+07')===true,'no schedule means always open');
+ await ex('save','hours',null,{name:'Office',kind:'work',days:['T2','T3','T4','T5','T6'],start:'08:00',end:'17:00'});
+ ok(await hoursFn('2099-01-05T10:00:00+07')===true && await hoursFn('2099-01-05T18:00:00+07')===false && await hoursFn('2099-01-10T10:00:00+07')===false,'working hours respect weekdays and the workspace timezone');
+ await ex('save','hours',null,{name:'Holiday',kind:'holiday',holidayDate:'2099-01-06'}); ok(await hoursFn('2099-01-06T10:00:00+07')===false,'a holiday closes the whole day');
+ // routing + automation delivery
+ await ex('save','rules',null,{name:'Zalo to Lan',channel:'zalo',mode:'all',assignee:'Lan',active:true}); await ex('save','rules',null,{name:'Off hours to Night',channel:'all',mode:'off_hours',assignee:'Night',active:true});
+ await login(null); const zraw3=JSON.stringify({app_id:'111',event_name:'user_send_text',timestamp:'1700000020000',sender:{id:'zuser-route-1'},message:{text:'Hello team',msg_id:'r1'}}); const zr3=await inbound(zalo.inboundToken,{},zraw3,await macOf(zraw3));
+ await login(a); const routed=(await rpc('snapshot')).conversations.find(x=>x.id===zr3.conversationId); ok(routed.assignee==='Lan','routing rule assigns a new conversation by channel');
+ let queued=await raw("select platform,external_id,kind,status from maoki_private.outbound_queue where conversation_id=$1",[zr3.conversationId]); ok(queued.some(x=>x.kind==='automation' && x.platform==='zalo' && x.external_id==='zuser-route-1'),'the automation reply to a new conversation is queued for delivery');
+ // bots
+ await rpc('save','automations',rule.id,{enabled:false});
+ await ex('save','bots',null,{name:'Greeter',channel:'zalo',trigger:'new_conversation',message:'Xin chào! Bạn cần hỗ trợ gì?',replies:'Đặt phòng\nGiá phòng',active:true});
+ await ex('save','bots',null,{name:'Wifi bot',channel:'all',trigger:'keyword',keyword:'wifi',message:'Wi-Fi: Maoki / 12345678',active:true});
+ await login(null); const zraw4=JSON.stringify({app_id:'111',event_name:'user_send_text',timestamp:'1700000030000',sender:{id:'zuser-bot-1'},message:{text:'Chào shop',msg_id:'b1'}}); const zr4=await inbound(zalo.inboundToken,{},zraw4,await macOf(zraw4));
+ await login(a); let botConv=(await rpc('snapshot')).conversations.find(x=>x.id===zr4.conversationId);
+ ok(botConv.messages.at(-1).sender==='host' && botConv.messages.at(-1).delivery==='bot' && botConv.messages.at(-1).text.includes('• Giá phòng'),'a new-conversation bot answers with its quick replies');
+ await login(null); const zraw5=JSON.stringify({app_id:'111',event_name:'user_send_text',timestamp:'1700000040000',sender:{id:'zuser-bot-1'},message:{text:'Cho mình hỏi WiFi ạ',msg_id:'b2'}}); await inbound(zalo.inboundToken,{},zraw5,await macOf(zraw5));
+ await login(a); botConv=(await rpc('snapshot')).conversations.find(x=>x.id===zr4.conversationId); ok(botConv.messages.at(-1).text.startsWith('Wi-Fi:') && botConv.messages.filter(m=>m.delivery==='bot').length===2,'a keyword bot answers later messages and the greeter does not repeat');
+ await login(null); const zraw6=JSON.stringify({app_id:'111',event_name:'user_send_text',timestamp:'1700000050000',sender:{id:'zuser-bot-1'},message:{text:'ok cảm ơn',msg_id:'b3'}}); await inbound(zalo.inboundToken,{},zraw6,await macOf(zraw6));
+ await login(a); botConv=(await rpc('snapshot')).conversations.find(x=>x.id===zr4.conversationId); ok(botConv.messages.at(-1).sender==='guest','no bot matches an ordinary follow-up message');
+ await ex('save','hours',null,{name:'Closed today',kind:'holiday',holidayDate:nowLocal.d}); await ex('save','bots',null,{name:'After hours',channel:'all',trigger:'outside_hours',message:'Chúng tôi đã đóng cửa, sẽ trả lời vào giờ làm việc.',active:true});
+ await login(null); const zraw7=JSON.stringify({app_id:'111',event_name:'user_send_text',timestamp:'1700000060000',sender:{id:'zuser-bot-1'},message:{text:'có ai không',msg_id:'b4'}}); await inbound(zalo.inboundToken,{},zraw7,await macOf(zraw7));
+ const zraw8=JSON.stringify({app_id:'111',event_name:'user_send_text',timestamp:'1700000070000',sender:{id:'zuser-bot-1'},message:{text:'alo',msg_id:'b5'}}); await inbound(zalo.inboundToken,{},zraw8,await macOf(zraw8));
+ await login(a); botConv=(await rpc('snapshot')).conversations.find(x=>x.id===zr4.conversationId); ok(botConv.messages.filter(m=>m.text.startsWith('Chúng tôi đã đóng cửa')).length===1,'the after-hours bot answers once, then waits out its 6 hour cooldown');
+ await login(null); const zraw9=JSON.stringify({app_id:'111',event_name:'user_send_text',timestamp:'1700000080000',sender:{id:'zuser-offhours-2'},message:{text:'new person',msg_id:'o1'}}); const zr9=await inbound(zalo.inboundToken,{},zraw9,await macOf(zraw9));
+ await login(a); ok((await rpc('snapshot')).conversations.find(x=>x.id===zr9.conversationId).assignee==='Lan','the first matching routing rule wins');
+ // journeys
+ await ex('save','journeys',null,{name:'Before arrival',trigger:'before_checkin',steps:'Trước 2 ngày: Chào {{guest}}, hẹn gặp bạn!\nSau 1 giờ: bỏ qua dòng này vì là before',status:'active'});
+ await rpc('save','bookings',null,{propertyId:property.id,guestName:'Journey Guest',guestEmail:'journey@example.test',checkIn:nowLocal.d1,checkOut:nowLocal.d2,status:'confirmed',payoutAmount:0});
+ const tick1=await wk('maoki_worker_tick'); ok(tick1.queued>=1,'journey tick queues the due step');
+ const tick2=await wk('maoki_worker_tick'); ok(tick2.queued===0,'journey steps are created exactly once');
+ queued=await raw("select platform,external_id,text,kind from maoki_private.outbound_queue where kind='journey'");
+ ok(queued.some(x=>x.platform==='email' && x.external_id==='journey@example.test' && x.text==='Chào Journey Guest, hẹn gặp bạn!'),'journey email goes to the booking guest with the name filled in');
+ // worker queue lifecycle + permissions
+ await denied(()=>db.query('select public.maoki_worker_claim(5)'),'signed-in users cannot call worker functions'); await login(a);
+ const jobs=await wk('maoki_worker_claim',50); ok(jobs.length>=3 && jobs.every(j=>j.attempts===1),'worker claims pending jobs and counts the attempt');
+ const zjob=jobs.find(j=>j.platform==='zalo'); ok(zjob.config.accessToken==='at2' && zjob.config.appSecret==='topsecret','claimed jobs carry the channel credentials for the worker');
+ const mjob=jobs.find(j=>j.platform==='email'); ok(mjob.config.fromAddress==='hello@maoki.test','email jobs carry the sender configuration');
+ ok((await wk('maoki_worker_claim',50)).length===0,'claimed jobs are not handed out twice');
+ await wk('maoki_worker_done',zjob.id,true,''); await wk('maoki_worker_done',mjob.id,false,'SMTP 421 try later');
+ let state=await raw("select id,status,attempts,last_error,run_after>now() as later from maoki_private.outbound_queue where id=any($1)",[[zjob.id,mjob.id]]);
+ ok(state.find(x=>x.id===zjob.id).status==='sent' && state.find(x=>x.id===mjob.id).status==='pending' && state.find(x=>x.id===mjob.id).later===true && state.find(x=>x.id===mjob.id).last_error.includes('421'),'a failed job is retried later and records the error');
+ await raw("update maoki_private.outbound_queue set run_after=now(),attempts=2 where id=$1",[mjob.id]); const again=await wk('maoki_worker_claim',5); await wk('maoki_worker_done',again.find(j=>j.id===mjob.id).id,false,'SMTP 421 again');
+ state=await raw("select status from maoki_private.outbound_queue where id=$1",[mjob.id]); ok(state[0].status==='failed','a job fails permanently after three attempts');
+ const qs=await ch('queue'); ok(qs.counts.sent>=1 && qs.counts.failed>=1 && qs.errors[0].error.includes('421'),'owner sees queue counts and recent errors');
+ // IMAP accounts + google auto-reply candidates
+ await ch('save',{platform:'email',config:{imapHost:'imap.example.test',imapPort:'993',imapUser:'inbox@maoki.test',imapPass:'imap-secret'}});
+ ok(!JSON.stringify(await ch('status')).includes('imap-secret'),'imap password is never returned'); await denied(()=>ch('save',{platform:'email',config:{imapPort:'x'}}),'imap port must be numeric');
+ const mailAccounts=await wk('maoki_worker_email_accounts'); ok(mailAccounts.length===1 && mailAccounts[0].config.imapPass==='imap-secret' && /^[a-f0-9]{64}$/.test(mailAccounts[0].token),'worker lists mailboxes to poll with their credentials');
+ await ch('save',{platform:'google',config:{autoReplyMinRating:'4',autoReplyText:'Cảm ơn {{guest}}!'}}); await denied(()=>ch('save',{platform:'google',config:{autoReplyMinRating:'9'}}),'auto-reply threshold must be 1 to 5 stars');
+ await rv('upsert',{items:[{reviewId:'R5',reviewName:'accounts/123/locations/456/reviews/R5',reviewer:'Hoa',rating:5,comment:'Tuyệt',reviewedAt:'2099-04-01T00:00:00Z'},{reviewId:'R6',reviewName:'accounts/123/locations/456/reviews/R6',reviewer:'Tom',rating:2,comment:'Meh',reviewedAt:'2099-04-02T00:00:00Z'}]});
+ const cands=await wk('maoki_worker_review_candidates'); ok(cands.length===1 && cands[0].text==='Cảm ơn Hoa!' && cands[0].reviewName.endsWith('/R5'),'only new reviews at or above the threshold are auto-reply candidates');
+ await wk('maoki_worker_review_replied',cands[0].recordId,'Cảm ơn Hoa!'); ok((await wk('maoki_worker_review_candidates')).length===0 && (await ex('snapshot')).reviews.find(x=>x.reviewId==='R5').status==='replied','an auto-replied review is marked replied and not repeated');
  await login(agent,'agent@example.test'); await denied(()=>ch('status'),'agent cannot read channel settings'); await denied(()=>ch('save',{platform:'email',config:{}}),'agent cannot change channels');
  await login(a);
  await login(a); await rpc('revoke_member','',null,{id:agent}); await login(agent,'agent@example.test'); ok((await db.query('select * from public.maoki_records')).rows.length===0,'revoked membership immediately loses RLS access');

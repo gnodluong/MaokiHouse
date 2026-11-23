@@ -8,18 +8,18 @@ const inputSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('reply'), recordId: z.string().uuid(), text: z.string().trim().min(1).max(4000) }).strict(),
 ]);
 const STARS: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
-const REVIEW_NAME = /^accounts\/\d+\/locations\/\d+\/reviews\/[A-Za-z0-9_-]+$/;
+export const REVIEW_NAME = /^accounts\/\d+\/locations\/\d+\/reviews\/[A-Za-z0-9_-]+$/;
 
 interface Context { configured: boolean; config?: Record<string, string>; review?: { reviewName: string; reviewId: string } }
 interface GoogleReview { reviewId?: string; name?: string; reviewer?: { displayName?: string }; starRating?: string; comment?: string; createTime?: string; reviewReply?: { comment?: string; updateTime?: string } }
 
-async function accessToken(config: Record<string, string>, transport: typeof fetch): Promise<string> {
+export async function accessToken(config: Record<string, string>, transport: typeof fetch): Promise<string> {
   const response = await transport('https://oauth2.googleapis.com/token', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: config.clientId || '', client_secret: config.clientSecret || '', refresh_token: config.refreshToken || '', grant_type: 'refresh_token' }).toString() });
   const result = await response.json().catch(() => ({})) as { access_token?: string; error?: string };
   if (!response.ok || !result.access_token) throw new Error(result.error === 'invalid_grant' ? 'Refresh token Google đã hết hạn hoặc bị thu hồi. Hãy cấp quyền lại và dán token mới.' : 'Không đăng nhập được Google. Kiểm tra Client ID, Client secret và Refresh token.');
   return result.access_token;
 }
-function googleError(status: number, message: string) {
+export function googleError(status: number, message: string) {
   if (status === 401) return 'Google từ chối thông tin đăng nhập. Hãy kiểm tra lại Refresh token.';
   if (status === 403) return 'Tài khoản chưa được cấp quyền Google Business Profile API (cần Google duyệt quyền truy cập API cho dự án của bạn) hoặc không quản lý địa điểm này.';
   if (status === 404) return 'Không tìm thấy địa điểm. Kiểm tra Account ID và Location ID.';

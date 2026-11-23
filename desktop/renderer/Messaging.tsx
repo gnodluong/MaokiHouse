@@ -26,6 +26,10 @@ const FIELDS: Record<'zalo' | 'email', FieldDef[]> & Partial<Record<ChannelPlatf
     { key: 'smtpUser', label: 'Tài khoản SMTP' },
     { key: 'smtpPass', label: 'Mật khẩu SMTP / mật khẩu ứng dụng', secret: true, hint: 'Gmail: dùng “Mật khẩu ứng dụng”, không dùng mật khẩu đăng nhập' },
     { key: 'resendKey', label: 'Resend API key', secret: true, hint: 'Chỉ cần khi chọn Resend' },
+    { key: 'imapHost', label: 'Máy chủ IMAP (nhận thư)', hint: 'Ví dụ: imap.gmail.com — để trống nếu nhận thư qua webhook' },
+    { key: 'imapPort', label: 'Cổng IMAP', hint: '993 (khuyên dùng)' },
+    { key: 'imapUser', label: 'Tài khoản IMAP' },
+    { key: 'imapPass', label: 'Mật khẩu IMAP / mật khẩu ứng dụng', secret: true },
   ],
 };
 const META_FIELDS: FieldDef[] = [
@@ -38,6 +42,8 @@ FIELDS.whatsapp = [
   { key: 'appSecret', label: 'App Secret', secret: true, hint: 'Meta for Developers → ứng dụng → Cài đặt → Cơ bản. Dùng để xác thực webhook' },
   { key: 'phoneNumberId', label: 'Phone number ID', hint: 'WhatsApp → API Setup → Phone number ID (chỉ gồm chữ số)' },
   { key: 'accessToken', label: 'Access token', secret: true, hint: 'Nên dùng token vĩnh viễn của System User có quyền whatsapp_business_messaging' },
+  { key: 'templateName', label: 'Tên mẫu tin (template) dự phòng', hint: 'Dùng khi quá 24 giờ: mẫu đã được Meta duyệt, có đúng 1 tham số nội dung {{1}}' },
+  { key: 'templateLang', label: 'Ngôn ngữ mẫu tin', hint: 'Ví dụ: vi hoặc en_US' },
 ];
 FIELDS.tiktok = [
   { key: 'outboundUrl', label: 'Địa chỉ cầu nối gửi tin (https)', hint: 'Dịch vụ của đối tác hoặc automation nhận tin trả lời và gửi sang TikTok' },
@@ -53,6 +59,8 @@ FIELDS.google = [
   { key: 'refreshToken', label: 'Refresh token', secret: true, hint: 'Cấp quyền scope business.manage một lần (ví dụ qua OAuth Playground) rồi dán refresh token' },
   { key: 'accountId', label: 'Account ID', hint: 'Chỉ gồm chữ số — phần sau “accounts/” của Business Profile' },
   { key: 'locationId', label: 'Location ID', hint: 'Chỉ gồm chữ số — phần sau “locations/”' },
+  { key: 'autoReplyMinRating', label: 'Tự trả lời đánh giá từ … sao trở lên', hint: '1–5. Để trống để TẮT. Phản hồi được đăng công khai, chỉ cho đánh giá mới' },
+  { key: 'autoReplyText', label: 'Nội dung tự trả lời', hint: 'Dùng {{guest}} để chèn tên người đánh giá' },
 ];
 FIELDS.youtube = [
   { key: 'clientId', label: 'OAuth Client ID', hint: 'Google Cloud Console → Credentials → OAuth client' },
@@ -94,9 +102,21 @@ function Account({ platform, account, reloadAccounts, origin }: { platform: Chan
   </section>;
 }
 
+interface QueueStatus { counts: Record<string, number>; errors: { platform: string; kind: string; error: string; at: string }[] }
+
+function QueuePanel({ queue }: { queue: QueueStatus | null }) {
+  if (!queue) return null;
+  const { pending = 0, sending = 0, sent = 0, failed = 0 } = queue.counts;
+  return <section className="mk-panel dk-pref"><SectionTitle title="Hàng đợi gửi tự động (7 ngày gần nhất)" />
+    <p className="dk-hint">Tin do bot, quy tắc tự động hóa và chu trình tạo ra được worker gửi nền mỗi 5 phút. Cần đặt WORKER_SECRET và SUPABASE_SERVICE_ROLE_KEY trên Vercel (xem docs/MESSAGING.md).</p>
+    <dl className="dk-about"><div><dt>Đang chờ</dt><dd>{pending + sending}</dd></div><div><dt>Đã gửi</dt><dd>{sent}</dd></div><div><dt>Lỗi</dt><dd>{failed}</dd></div></dl>
+    {queue.errors.length > 0 && <ul className="dk-steps">{queue.errors.map((item, index) => <li key={index}>{item.platform}: {item.error}</li>)}</ul>}
+  </section>;
+}
+
 export default function Messaging() {
-  const { data } = useWorkspace(); const [accounts, setAccounts] = useState<ChannelAccount[] | null>(null); const [error, setError] = useState('');
-  const load = useCallback(async () => { try { setAccounts(await channelAccounts('status') as ChannelAccount[]); setError(''); } catch (cause) { setError(errorMessage(cause)); } }, []);
+  const { data } = useWorkspace(); const [accounts, setAccounts] = useState<ChannelAccount[] | null>(null); const [error, setError] = useState(''); const [queue, setQueue] = useState<QueueStatus | null>(null);
+  const load = useCallback(async () => { try { setAccounts(await channelAccounts('status') as ChannelAccount[]); setQueue(await channelAccounts('queue').catch(() => null) as QueueStatus | null); setError(''); } catch (cause) { setError(errorMessage(cause)); } }, []);
   useEffect(() => { void load(); }, [load]);
   const manage = data?.capabilities.role === 'owner' || data?.capabilities.role === 'manager';
   return <>
@@ -104,6 +124,7 @@ export default function Messaging() {
     {!manage ? <div className="mk-alert">Chỉ chủ không gian và quản lý được cấu hình kênh nhắn tin.</div> : <>
       {error && <div className="mk-alert error" role="alert">{error}</div>}
       {!apiOrigin() && <div className="mk-alert"><span className="mk-dot amber" />Hãy nhập Máy chủ API (địa chỉ website Maoki đã triển khai) ở trang Giao diện & ngôn ngữ để gửi tin và lấy địa chỉ webhook.</div>}
+      <QueuePanel queue={queue} />
       {accounts && (['zalo', 'facebook', 'instagram', 'whatsapp', 'tiktok', 'email', 'phone', 'google', 'youtube'] as const).map(platform => <Account key={platform} platform={platform} account={accounts.find(item => item.platform === platform)} reloadAccounts={load} origin={apiOrigin()} />)}</>}
   </>;
 }

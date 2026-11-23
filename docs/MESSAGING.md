@@ -31,3 +31,22 @@ Chạy `supabase/migrations/20261126090000_maoki_calls_reviews.sql`, triển kha
 
 ## YouTube (bình luận)
 Chạy `supabase/migrations/20261127090000_maoki_youtube.sql`, triển khai lại Vercel (thêm `/api/youtube`). Google Cloud: bật YouTube Data API v3, tạo OAuth client, cấp scope `youtube.force-ssl` cho tài khoản sở hữu kênh, lấy refresh token. Nhập Client ID, Client secret, Refresh token, Channel ID (UC…) ở Kênh nhắn tin → “YouTube”, rồi vào **Bình luận YouTube** → “Đồng bộ từ YouTube”. Đồng bộ dùng `commentThreads?allThreadsRelatedToChannelId=…`; phản hồi đăng bằng `comments.insert` (50 đơn vị hạn mức/lần, hạn mức mặc định 10.000/ngày). Bình luận có phản hồi từ chính kênh được đánh dấu “Đã phản hồi”.
+
+## Tự động hóa chạy nền (bot, chia chat, chu trình, IMAP, template WhatsApp, tự trả lời đánh giá)
+Thiết kế: `docs/plans/2026-11-23-background-automation-design.md`.
+1. Chạy `supabase/migrations/20261128090000_maoki_background_automation.sql`.
+2. Vercel → Environment Variables: `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Project Settings → API → service_role; **chỉ đặt trên Vercel, không đưa vào mã nguồn/app**) và `WORKER_SECRET` (chuỗi ngẫu nhiên ≥ 24 ký tự). Triển khai lại.
+3. Lên lịch gọi `POST /api/worker` với header `Authorization: Bearer <WORKER_SECRET>` mỗi 5 phút:
+   - **GitHub Actions** (miễn phí): repo → Settings → Secrets → thêm `WORKER_URL` (https://tên-miền-của-bạn) và `WORKER_SECRET`; workflow `.github/workflows/worker.yml` đã có sẵn (cần nằm ở nhánh mặc định).
+   - hoặc **Supabase pg_cron + pg_net**: `select cron.schedule('maoki-worker','*/5 * * * *', $$select net.http_post('https://tên-miền/api/worker', '{}'::jsonb, headers => jsonb_build_object('Authorization','Bearer <WORKER_SECRET>'))$$);`
+4. Cấu hình:
+   - **Bot**/**Quy tắc chia chat**/**Giờ làm việc** (Thiết lập): chạy ngay khi có tin đến từ Zalo, Facebook, Instagram, WhatsApp, TikTok, email (webchat chưa hỗ trợ). Bot trả lời một lần cho hội thoại mới; bot ngoài giờ chờ 6 giờ mới trả lời lại; bot từ khóa trả lời mỗi khi khớp.
+   - **Chu trình**: mỗi dòng “Sau 2 giờ: nội dung”, “Trước 1 ngày: …” (chỉ với trigger “trước nhận phòng”). Đặt phòng cần có email khách và kênh Email bật; “khách mới”/“không phản hồi” gửi qua kênh của hội thoại. Mỗi bước gửi đúng một lần.
+   - **Nhận email qua IMAP**: nhập IMAP trong kênh Email (cổng 993); worker đọc thư chưa đọc mỗi lần chạy (tối đa 20/lần).
+   - **Template WhatsApp**: nhập tên mẫu + ngôn ngữ; khi quá 24 giờ worker/Hộp thư gửi mẫu thay vì báo lỗi.
+   - **Tự trả lời đánh giá Google**: mặc định TẮT; nhập ngưỡng sao và nội dung ở kênh Google Business (phản hồi đăng công khai).
+5. Theo dõi: Thiết lập → Kênh nhắn tin → “Hàng đợi gửi tự động” (đang chờ/đã gửi/lỗi, 5 lỗi gần nhất). Mỗi tin thử tối đa 3 lần.
+
+## Thứ tự chạy SQL (dự án Supabase mới)
+Chạy `npm run sql:bundle` rồi dán `dist-sql/maoki-all-migrations.sql` vào SQL Editor (một lần). Dự án đã có dữ liệu: chỉ chạy các file mới hơn file đã chạy, theo thứ tự tên:
+`20261122090000_maoki_subiz_features` → `20261122120000_maoki_subiz_features_2` → `20261123090000_maoki_messaging_channels` → `20261124090000_maoki_meta_channels` → `20261125090000_maoki_whatsapp_tiktok` → `20261126090000_maoki_calls_reviews` → `20261127090000_maoki_youtube` → `20261128090000_maoki_background_automation`.

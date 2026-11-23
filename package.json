@@ -12,7 +12,7 @@
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "typecheck": "tsc -b && tsc -p tsconfig.api.json",
-    "test": "npm run test:db && npm run test:deployment && npm run test:ai && npm run test:ai:deployment && npm run test:calendars && npm run test:messaging && npm run test:reviews && npm run test:youtube",
+    "test": "npm run test:db && npm run test:deployment && npm run test:ai && npm run test:ai:deployment && npm run test:calendars && npm run test:messaging && npm run test:reviews && npm run test:youtube && npm run test:worker",
     "test:db": "node scripts/test-workspace-db.mjs",
     "test:browser": "node scripts/test-workspace-browser.mjs",
     "test:supabase-browser": "node scripts/test-supabase-browser.mjs",
@@ -32,7 +32,9 @@
     "desktop:dist": "npm run desktop:renderer && electron-builder",
     "test:messaging": "tsx scripts/test-messaging.ts",
     "test:reviews": "tsx scripts/test-reviews.ts",
-    "test:youtube": "tsx scripts/test-youtube.ts"
+    "test:youtube": "tsx scripts/test-youtube.ts",
+    "test:worker": "tsx scripts/test-worker.ts",
+    "sql:bundle": "node scripts/bundle-migrations.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
@@ -54,6 +56,8 @@
     "framer-motion": "^10.18.0",
     "gh-pages": "^6.3.0",
     "ical.js": "2.2.1",
+    "imapflow": "^2.12.2",
+    "mailparser": "^3.15.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.1",
     "react": "^18.2.0",
@@ -74,6 +78,7 @@
     "@electric-sql/pglite": "^0.5.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/mailparser": "^3.9.0",
     "@types/multer": "^1.4.12",
     "@types/nodemailer": "^8.0.2",
     "@types/react": "^18.2.37",
