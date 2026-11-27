@@ -5,6 +5,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import Landing from './Landing';
 import GuestLayout from './guest/GuestLayout';
 import AppDownload from './AppDownload';
+import { DataDeletion, Privacy, Terms } from './LegalPages';
 import { DirectBooking, GuestGuidebook, VisitorChat } from './PublicPages';
 
 /** 404 for the guest site. */
@@ -25,6 +26,9 @@ export default function Application() {
       <Route path="/book/:id" element={<DirectBooking />} />
       <Route path="/detail/:id" element={<DirectBooking />} />
       <Route path="/guide/:token" element={<GuestGuidebook />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/data-deletion" element={<DataDeletion />} />
     </Route>
     {/* Legacy marketing URLs land on the guest home page. */}
     {['/about', '/features', '/pricing', '/services'].map(path => <Route key={path} path={path} element={<Navigate to="/#stays" replace />} />)}
