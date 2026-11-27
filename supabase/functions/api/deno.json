@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.118.0",
+    "zod": "npm:zod@4.4.3",
+    "nodemailer": "npm:nodemailer@6.10.1",
+    "ical.js": "npm:ical.js@2.2.1",
+    "imapflow": "npm:imapflow@2.12.2",
+    "mailparser": "npm:mailparser@3.15.0"
+  }
+}

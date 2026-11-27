@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { bootstrapSQL, upgradeSQL } from '../shared/supabase-bootstrap.mjs';
 
 export const projectRef = 'msucrkkxuplgijxanzxu';
-export const productionURL = 'https://maokihousemvc.vercel.app';
+export const productionURL = (process.env.MAOKI_SITE_URL || 'https://maokihousemvc.vercel.app').replace(/\/+$/, '');
 export const migrationDirectory = new URL('../supabase/migrations/', import.meta.url);
 const literal = value => "'" + value.replaceAll("'", "''") + "'";
 export async function migrationPlan() {

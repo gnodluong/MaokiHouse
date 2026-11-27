@@ -3,11 +3,12 @@ import { timingSafeEqual } from 'node:crypto';
 import { lookup as dnsLookup } from 'node:dns/promises';
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
-import publicConfig from '../../shared/supabase-public.json';
-import { isPublicAddress, publicPost } from './calendars';
-import { defaultMailer, deliverMessage, stripQuotedReply } from './messaging';
-import type { Mailer, SendContext } from './messaging';
-import { REVIEW_NAME, accessToken, googleError } from './reviews';
+import publicConfig from './supabase-public.json' with { type: 'json' };
+import { isPublicAddress, publicPost } from './calendars.ts';
+import { defaultMailer, deliverMessage, stripQuotedReply } from './messaging.ts';
+import type { Mailer, SendContext } from './messaging.ts';
+import { REVIEW_NAME, accessToken, googleError } from './reviews.ts';
+import type { Env } from './env.ts';
 
 const json = (status: number, body: object) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 export interface MailItem { from: string; name: string; subject: string; text: string; messageId: string }
@@ -44,7 +45,7 @@ export const defaultMailFetcher: MailFetcher = async config => {
 export interface WorkerDeps { transport?: typeof fetch; mailer?: Mailer; bridge?: typeof fetch; mailFetcher?: MailFetcher }
 
 /** POST/GET /api/worker — called every few minutes (GitHub Actions or pg_cron) with `Authorization: Bearer WORKER_SECRET`. */
-export async function handleWorker(request: Request, env: NodeJS.ProcessEnv = process.env, deps: WorkerDeps = {}): Promise<Response> {
+export async function handleWorker(request: Request, env: Env = process.env, deps: WorkerDeps = {}): Promise<Response> {
   if (!['GET', 'POST'].includes(request.method)) return json(405, { error: 'Phương thức không được hỗ trợ.' });
   const secret = env.WORKER_SECRET || ''; const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY || '';
   if (secret.length < 24 || !serviceKey) return json(503, { error: 'Worker chưa được cấu hình: cần WORKER_SECRET (≥24 ký tự) và SUPABASE_SERVICE_ROLE_KEY.' });

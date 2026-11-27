@@ -2,8 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
 import { lookup as dnsLookup } from 'node:dns/promises';
 import { z } from 'zod';
-import publicConfig from '../../shared/supabase-public.json';
-import { isPublicAddress, publicPost } from './calendars';
+import publicConfig from './supabase-public.json' with { type: 'json' };
+import { isPublicAddress, publicPost } from './calendars.ts';
+import type { Env } from './env.ts';
 
 const json = (status: number, body: object) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const sendSchema = z.object({ conversationId: z.string().uuid(), text: z.string().trim().min(1).max(3000) }).strict();
@@ -11,7 +12,7 @@ const sendSchema = z.object({ conversationId: z.string().uuid(), text: z.string(
 export interface SendContext { thread: boolean; configured?: boolean; platform?: 'zalo' | 'email' | 'facebook' | 'instagram' | 'whatsapp' | 'tiktok'; externalId?: string; meta?: { subject?: string; lastMessageId?: string }; config?: Record<string, string> }
 export type Mailer = (config: Record<string, string>, message: { to: string; subject: string; text: string; inReplyTo?: string }) => Promise<string>;
 
-function supabase(env: NodeJS.ProcessEnv, transport: typeof fetch, token?: string) {
+function supabase(env: Env, transport: typeof fetch, token?: string) {
   return createClient(env.SUPABASE_URL || publicConfig.url, env.SUPABASE_PUBLISHABLE_KEY || publicConfig.publishableKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }, global: { ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}), fetch: (url, options) => transport(url, { ...options, signal: AbortSignal.timeout(10000) }) } });
 }
 
@@ -104,7 +105,7 @@ export async function deliverMessage(context: SendContext, text: string, convers
 }
 
 /** POST /api/messaging {conversationId,text}: deliver a host reply to the guest's Zalo OA or email thread. */
-export async function handleMessaging(request: Request, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch, mailer: Mailer = defaultMailer, bridge: typeof fetch = publicPost): Promise<Response> {
+export async function handleMessaging(request: Request, env: Env = process.env, transport: typeof fetch = fetch, mailer: Mailer = defaultMailer, bridge: typeof fetch = publicPost): Promise<Response> {
   if (request.method !== 'POST') return json(405, { error: 'Phương thức không được hỗ trợ.' });
   const token = request.headers.get('authorization')?.match(/^Bearer (\S+)$/)?.[1];
   if (!token) return json(401, { error: 'Vui lòng đăng nhập.' });
@@ -178,7 +179,7 @@ export function normaliseCall(contentType: string, raw: string): CallEvent | nul
 }
 
 /** /api/inbound?token=… Zalo OA, Facebook/Instagram (signed webhooks, GET handshake) or an email-forwarding webhook. */
-export async function handleInbound(request: Request, rawBody: string, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch): Promise<Response> {
+export async function handleInbound(request: Request, rawBody: string, env: Env = process.env, transport: typeof fetch = fetch): Promise<Response> {
   const url = new URL(request.url); const token = url.searchParams.get('token') || '';
   if (!['GET', 'POST'].includes(request.method)) return json(405, { error: 'Phương thức không được hỗ trợ.' });
   if (!/^[a-f0-9]{64}$/.test(token)) return json(404, { error: 'Liên kết không hợp lệ.' });

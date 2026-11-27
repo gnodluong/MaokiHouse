@@ -2,7 +2,7 @@
 
 **Phạm vi và cách làm**
 - Công cụ: skill [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill), quy trình đầy đủ, profile **quick**: 1 đợt hunter, 1 critic, mỗi phát hiện có 1 verifier độc lập.
-- Phạm vi: `api/`, `shared/`, `supabase/migrations/`, `src/workspace/`, `vercel.json`.
+- Phạm vi: `api/`, `shared/`, `supabase/functions/`, `supabase/migrations/`, `src/workspace/`.
 - Chỉ đọc mã nguồn. Máy kiểm tra không có sandbox cô lập nên không chạy code của dự án, và không gửi yêu cầu nào tới bản đang chạy.
 - Đây là lượt kiểm tra một phần, không phải bao phủ toàn bộ.
 
@@ -15,7 +15,7 @@
 | `/api/channels` tải lịch bằng `fetch` toàn cục, nên lớp chặn địa chỉ nội bộ (DNS guard) không được dùng | Tải lịch luôn qua `publicFetch` có chặn IP nội bộ/metadata ở tầng socket; test kiểm tra đường mặc định |
 | API Firebase cũ: kết nối kênh dùng chung một tài liệu cho mỗi nền tảng giữa các host | Mỗi host có tài liệu riêng; `upsert` kiểm tra chủ sở hữu |
 
-**Đã thêm:** header bảo mật trên Vercel (`nosniff`, `Referrer-Policy`, `Permissions-Policy`). Chặn nhúng iframe (`frame-ancestors 'self'`) ở mọi trang trừ widget `/chat/*`.
+**Lưu ý sau khi bỏ Vercel:** website khách chạy trên GitHub Pages không đặt được header HTTP tùy ý, nên các header `nosniff`, `Referrer-Policy`, `Permissions-Policy` và `frame-ancestors` trước đây trong `vercel.json` không còn. Cần đặt chúng ở lớp phía trước (ví dụ Cloudflare với tên miền riêng) nếu muốn giữ chống nhúng iframe. API trên Edge Function trả `Cache-Control: no-store` và kiểm tra thông tin xác thực trong từng handler.
 
 **Khuyến nghị còn mở**
 - Gỡ hoặc khóa API Express/Firebase cũ, hiện vẫn được định tuyến dưới `/api/*`.

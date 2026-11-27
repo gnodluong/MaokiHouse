@@ -26,7 +26,7 @@ export const ui = {
     'pref.accent': 'Tông màu', 'pref.accentD': 'Màu nhấn dùng cho nút chính, mục đang chọn và biểu đồ.',
     'accent.blue': 'Xanh dương', 'accent.indigo': 'Chàm', 'accent.teal': 'Xanh ngọc', 'accent.green': 'Xanh lá', 'accent.amber': 'Hổ phách', 'accent.rose': 'Hồng đỏ', 'accent.graphite': 'Than chì',
     'pref.language': 'Ngôn ngữ', 'pref.languageD': 'Áp dụng cho toàn bộ ứng dụng ngay lập tức.',
-    'pref.server': 'Máy chủ API', 'pref.serverD': 'Địa chỉ website Maoki đã triển khai (ví dụ https://maokihouse.vercel.app). Cần cho tin nhắn, đánh giá và Kết nối kênh. Để trống nếu chưa dùng.', 'pref.serverSave': 'Lưu', 'pref.serverSaved': 'Đã lưu địa chỉ máy chủ', 'pref.serverBad': 'Địa chỉ phải bắt đầu bằng https:// (hoặc http://localhost).',
+    'pref.server': 'Máy chủ API', 'pref.serverD': 'Nâng cao. Mặc định app dùng hàm Edge của chính dự án Supabase. Chỉ nhập địa chỉ nếu bạn tự chạy máy chủ API riêng. Để trống là đúng.', 'pref.serverSave': 'Lưu', 'pref.serverSaved': 'Đã lưu địa chỉ máy chủ', 'pref.serverBad': 'Địa chỉ phải bắt đầu bằng https:// (hoặc http://localhost).',
     'pref.about': 'Về ứng dụng', 'pref.version': 'Phiên bản', 'pref.platform': 'Nền tảng', 'pref.preview': 'Xem trước', 'pref.previewText': 'Nút chính, nhãn trạng thái và mục đang chọn sẽ dùng tông màu này.', 'pref.sample': 'Nút chính', 'pref.sampleBadge': 'Đã xác nhận',
   },
   en: {
@@ -51,7 +51,7 @@ export const ui = {
     'pref.accent': 'Color tone', 'pref.accentD': 'Accent color for primary buttons, the selected item and charts.',
     'accent.blue': 'Blue', 'accent.indigo': 'Indigo', 'accent.teal': 'Teal', 'accent.green': 'Green', 'accent.amber': 'Amber', 'accent.rose': 'Rose', 'accent.graphite': 'Graphite',
     'pref.language': 'Language', 'pref.languageD': 'Applies to the whole app immediately.',
-    'pref.server': 'API server', 'pref.serverD': 'Address of your deployed Maoki website (e.g. https://maokihouse.vercel.app). Needed for messaging, reviews and channel connections. Leave empty if unused.', 'pref.serverSave': 'Save', 'pref.serverSaved': 'Server address saved', 'pref.serverBad': 'The address must start with https:// (or http://localhost).',
+    'pref.server': 'API server', 'pref.serverD': 'Advanced. By default the app uses your own Supabase project’s Edge Function. Only enter an address if you run your own API server. Leave empty for the default.', 'pref.serverSave': 'Save', 'pref.serverSaved': 'Server address saved', 'pref.serverBad': 'The address must start with https:// (or http://localhost).',
     'pref.about': 'About', 'pref.version': 'Version', 'pref.platform': 'Platform', 'pref.preview': 'Preview', 'pref.previewText': 'Primary buttons, status badges and the selected item use this tone.', 'pref.sample': 'Primary button', 'pref.sampleBadge': 'Confirmed',
   },
 } as const;

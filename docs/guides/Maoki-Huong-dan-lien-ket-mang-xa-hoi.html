@@ -115,7 +115,7 @@ tr { page-break-inside: avoid; }
 <tr><td><span class="box"></span><b>Trang giới thiệu sản phẩm</b></td><td>Mô tả rõ Maoki làm gì, dành cho ai, vì sao cần quyền xin. Người duyệt đọc trang này để hiểu bối cảnh.</td><td>Trang chủ</td></tr>
 <tr><td><span class="box"></span><b>Trang hỗ trợ</b></td><td>Email và số điện thoại hỗ trợ có người trả lời.</td><td><code>https://tên-miền/support</code></td></tr>
 </table>
-<div class="callout warn"><b>Hiện trạng Maoki</b>Website khách của Maoki (trang chủ, đặt phòng, sổ tay) đã có, nhưng <b>chưa có ba trang: quyền riêng tư, điều khoản, xóa dữ liệu</b>. Phải làm trước khi nộp bất kỳ hồ sơ nào ở mục 3–7. Đây là việc đầu tiên trong danh sách kiểm (mục 12). Tên miền cần là tên miền riêng, không phải <code>*.vercel.app</code>.</div>
+<div class="callout warn"><b>Hiện trạng Maoki</b>Website khách của Maoki (trang chủ, đặt phòng, sổ tay) đã có, nhưng <b>chưa có ba trang: quyền riêng tư, điều khoản, xóa dữ liệu</b>. Phải làm trước khi nộp bất kỳ hồ sơ nào ở mục 3–7. Đây là việc đầu tiên trong danh sách kiểm (mục 12). Tên miền cần là tên miền riêng, không phải <code>*.github.io</code>.</div>
 
 <h3>2.3 Mẫu khung chính sách quyền riêng tư (điền và nhờ luật sư rà soát)</h3>
 <div class="callout">Cẩm nang không thay thế tư vấn pháp lý. Khung dưới đây liệt kê các mục thường được người duyệt tìm. <span class="tag t-todo">BẠN ĐIỀN</span> ở các chỗ cần thông tin thật.</div>
@@ -127,7 +127,7 @@ tr { page-break-inside: avoid; }
 <li><b>Nơi lưu và bảo mật:</b> cơ sở dữ liệu Supabase (<span class="tag t-todo">BẠN ĐIỀN</span> khu vực máy chủ), mã hóa khi truyền (HTTPS), phân quyền theo từng không gian làm việc (RLS), token và khóa API lưu trong bảng riêng không trả về trình duyệt; dữ liệu được nhà cung cấp hạ tầng mã hóa ở mức đĩa (chưa có mã hóa riêng từng token) <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> với mã nguồn Maoki.</li>
 <li><b>Thời gian lưu:</b> <span class="tag t-todo">BẠN ĐIỀN</span> (ví dụ: đến khi chủ nhà xóa hoặc đóng tài khoản; sau đó xóa trong 30 ngày).</li>
 <li><b>Quyền của chủ thể dữ liệu:</b> truy cập, chỉnh sửa, xóa, rút lại đồng ý, phản đối xử lý; cách thực hiện; thời hạn phản hồi.</li>
-<li><b>Chia sẻ với bên khác:</b> nhà cung cấp hạ tầng (Supabase, Vercel), nhà cung cấp tổng đài, nhà cung cấp email; không chia sẻ cho mục đích khác.</li>
+<li><b>Chia sẻ với bên khác:</b> nhà cung cấp hạ tầng (Supabase, GitHub Pages), nhà cung cấp tổng đài, nhà cung cấp email; không chia sẻ cho mục đích khác.</li>
 <li><b>Chuyển dữ liệu ra nước ngoài</b> nếu máy chủ ở ngoài Việt Nam; căn cứ pháp lý. Tham khảo Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân và luật bảo vệ dữ liệu cá nhân mới ban hành. <span class="tag t-chk">CẦN KIỂM TRA</span> với luật sư về văn bản có hiệu lực hiện hành.</li>
 <li><b>Ghi âm cuộc gọi:</b> thông báo rõ khi ghi âm và mục đích.</li>
 <li><b>Cập nhật chính sách</b> và ngày hiệu lực.</li>
@@ -203,7 +203,7 @@ tr { page-break-inside: avoid; }
 <h4>Các bước</h4>
 <ol>
 <li>Trong ứng dụng, mục <b>Messenger → Messenger API Settings</b>: thêm Trang, tạo Page access token (dài hạn).</li>
-<li>Đăng ký webhook: URL callback là <code>https://tên-miền-vercel/api/inbound?token=…</code> (lấy trong Maoki: Thiết lập → Kênh nhắn tin → Facebook Messenger); Verify token cũng hiển thị ở đó. Đăng ký trường <code>messages</code> (và <code>messaging_postbacks</code> nếu dùng nút).</li>
+<li>Đăng ký webhook: URL callback là <code>https://&lt;mã-dự-án&gt;.supabase.co/functions/v1/api/inbound?token=…</code> (lấy trong Maoki: Thiết lập → Kênh nhắn tin → Facebook Messenger); Verify token cũng hiển thị ở đó. Đăng ký trường <code>messages</code> (và <code>messaging_postbacks</code> nếu dùng nút).</li>
 <li>Đăng ký ứng dụng nhận sự kiện của Trang (subscribe app to page).</li>
 <li>Trong Maoki, nhập App Secret, Page ID, Page access token → Lưu.</li>
 <li>Nhắn thử từ tài khoản có vai trò trong ứng dụng; kiểm tra tin xuất hiện trong Hộp thư và trả lời được.</li>

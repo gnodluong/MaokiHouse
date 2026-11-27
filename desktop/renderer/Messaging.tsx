@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FiCopy, FiRefreshCw, FiTrash2 } from 'react-icons/fi';
 import { Button, PageHeader, SectionTitle } from '../../src/workspace/ui';
-import { apiOrigin } from '../../src/workspace/apiBase';
+import { apiUrl } from '../../src/workspace/apiBase';
 import { channelAccounts } from '../../src/workspace/messagingClient';
 import type { ChannelAccount, ChannelPlatform } from '../../src/workspace/messagingClient';
 import { errorMessage } from '../../src/workspace/utils';
@@ -78,7 +78,7 @@ function Account({ platform, account, reloadAccounts, origin }: { platform: Chan
   const fields = (FIELDS[platform] || []).filter(field => platform !== 'email' || (provider === 'resend' ? !field.key.startsWith('smtp') : field.key !== 'resendKey'));
   const meta = platform === 'facebook' || platform === 'instagram' || platform === 'whatsapp';
   const bridge = platform === 'tiktok' || platform === 'phone';
-  const webhook = account ? `${origin || '(nhập Máy chủ API ở Giao diện & ngôn ngữ)'}/api/inbound?token=${account.inboundToken}` : '';
+  const webhook = account ? `${apiUrl('/api/inbound')}?token=${account.inboundToken}` : '';
   const act = async (fn: () => Promise<unknown>, success: string) => { setBusy(true); try { await fn(); await reloadAccounts(); toast.success(success); } catch (cause) { toast.error(errorMessage(cause)); } finally { setBusy(false); } };
   const save = () => act(() => channelAccounts('save', { platform, enabled, config: { ...(platform === 'email' ? { provider } : {}), ...Object.fromEntries(Object.entries(values).filter(([, value]) => value !== undefined)) } }), 'Đã lưu cấu hình');
   return <section className="mk-panel dk-pref"><SectionTitle title={TITLES[platform]}>{account && <span className={`mk-badge ${account.enabled ? 'active' : ''}`}>{account.enabled ? 'Đang bật' : 'Đang tắt'}</span>}</SectionTitle>
@@ -123,8 +123,7 @@ export default function Messaging() {
     <PageHeader title="Kênh nhắn tin" description="Nhận và trả lời tin nhắn Zalo OA, Facebook Messenger, Instagram, WhatsApp, TikTok và email ngay trong Hộp thư." />
     {!manage ? <div className="mk-alert">Chỉ chủ không gian và quản lý được cấu hình kênh nhắn tin.</div> : <>
       {error && <div className="mk-alert error" role="alert">{error}</div>}
-      {!apiOrigin() && <div className="mk-alert"><span className="mk-dot amber" />Hãy nhập Máy chủ API (địa chỉ website Maoki đã triển khai) ở trang Giao diện & ngôn ngữ để gửi tin và lấy địa chỉ webhook.</div>}
       <QueuePanel queue={queue} />
-      {accounts && (['zalo', 'facebook', 'instagram', 'whatsapp', 'tiktok', 'email', 'phone', 'google', 'youtube'] as const).map(platform => <Account key={platform} platform={platform} account={accounts.find(item => item.platform === platform)} reloadAccounts={load} origin={apiOrigin()} />)}</>}
+      {accounts && (['zalo', 'facebook', 'instagram', 'whatsapp', 'tiktok', 'email', 'phone', 'google', 'youtube'] as const).map(platform => <Account key={platform} platform={platform} account={accounts.find(item => item.platform === platform)} reloadAccounts={load} origin={apiUrl('/api/inbound')} />)}</>}
   </>;
 }

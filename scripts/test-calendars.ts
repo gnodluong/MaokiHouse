@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import ICAL from 'ical.js';
-import { calendarURL, parseCalendar, fetchCalendar, isPublicAddress, publicFetch } from '../api/_lib/calendars';
-import { handleChannels } from '../api/_lib/channelApi';
+import { calendarURL, parseCalendar, fetchCalendar, isPublicAddress, publicFetch } from '../supabase/functions/_shared/calendars';
+import { handleChannels } from '../supabase/functions/_shared/channelApi';
 
 let checks=0; const pass=(name:string)=>{checks++;console.log('PASS',name);};
 const day=(offset:number)=>new Date(Date.now()+offset*86400000).toISOString().slice(0,10);

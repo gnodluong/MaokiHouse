@@ -13,11 +13,11 @@ Ba phương án đã cân nhắc:
 - **Lúc tin đến** (`channel_ingest`, SQL): chia người phụ trách theo `rules` + `hours`; trả lời tự động theo `bots` (hội thoại mới / ngoài giờ / từ khóa); tin trả lời của quy tắc tự động hóa cũng được đưa vào hàng đợi gửi.
 - **Hàng đợi gửi** (`outbound_queue`): mọi tin do hệ thống tự tạo đi qua đây; worker gửi bằng đúng kênh, thử lại tối đa 3 lần.
 - **Chu trình** (`journey_tick`, SQL): đọc `journeys`, tính mốc theo đặt phòng/khách/hội thoại, tạo tin đến hạn đúng một lần (`journey_runs`).
-- **Worker** (`/api/worker`, bảo vệ bằng `WORKER_SECRET`, gọi Supabase bằng `SUPABASE_SERVICE_ROLE_KEY` đặt trên Vercel): tick chu trình → gửi hàng đợi → đọc IMAP → tự trả lời đánh giá Google (tùy chọn, mặc định tắt).
+- **Worker** (`/api/worker`, bảo vệ bằng `WORKER_SECRET`, gọi Supabase bằng `SUPABASE_SERVICE_ROLE_KEY` do Supabase cấp cho Edge Function): tick chu trình → gửi hàng đợi → đọc IMAP → tự trả lời đánh giá Google (tùy chọn, mặc định tắt).
 - **WhatsApp**: nếu quá 24 giờ và đã cấu hình `templateName`, gửi mẫu tin thay vì báo lỗi.
 
 ## Rủi ro đã tính
 - Vòng lặp trả lời: bot chỉ trả lời một lần cho hội thoại mới, ngoài giờ có thời gian chờ 6 giờ, thư gửi từ chính địa chỉ của mình bị bỏ qua.
 - Đăng công khai: tự trả lời đánh giá mặc định tắt, chỉ chạy khi người quản lý nhập ngưỡng sao và nội dung.
-- Khóa service role chỉ ở biến môi trường Vercel; RPC của worker chỉ cấp quyền cho `service_role`.
+- Khóa service role chỉ có trong môi trường Edge Function (Supabase tự cấp); RPC của worker chỉ cấp quyền cho `service_role`.
 - Webchat không qua `channel_ingest` nên chưa có bot/chia chat tự động.

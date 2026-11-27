@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import publicConfig from '../../shared/supabase-public.json';
-import { CalendarInputError, calendarPlatforms, calendarURL, exportCalendar, fetchCalendar, publicFetch } from './calendars';
-import type { CalendarEvent } from './calendars';
+import publicConfig from './supabase-public.json' with { type: 'json' };
+import { CalendarInputError, calendarPlatforms, calendarURL, exportCalendar, fetchCalendar, publicFetch } from './calendars.ts';
+import type { CalendarEvent } from './calendars.ts';
+import type { Env } from './env.ts';
 
 const inputSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('connect'), platform: z.enum(calendarPlatforms), propertyId: z.string().uuid(), url: z.string().trim().min(10).max(4096), label: z.string().trim().max(80).optional() }).strict(),
@@ -12,7 +13,7 @@ const inputSchema = z.discriminatedUnion('action', [
 const json = (status: number, body: object) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 // `transport` reaches Supabase only. Remote calendars always go through `calendarTransport`,
 // which defaults to the DNS-guarded publicFetch so user-supplied hosts cannot reach private addresses.
-export async function handleChannels(request: Request, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch, calendarTransport: typeof fetch = publicFetch): Promise<Response> {
+export async function handleChannels(request: Request, env: Env = process.env, transport: typeof fetch = fetch, calendarTransport: typeof fetch = publicFetch): Promise<Response> {
   if (!['GET', 'POST'].includes(request.method)) return json(405, { error: 'Phương thức không được hỗ trợ.' });
   const feed = new URL(request.url).searchParams.get('feed');
   const token = request.headers.get('authorization')?.match(/^Bearer (\S+)$/)?.[1];

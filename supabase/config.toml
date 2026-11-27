@@ -1,0 +1,6 @@
+project_id = "maokihouse"
+
+[functions.api]
+# Webhooks (Meta, Zalo, WhatsApp, phone) and the worker carry no Supabase user token. Every handler checks its own credential.
+verify_jwt = false
+import_map = "./functions/api/deno.json"
