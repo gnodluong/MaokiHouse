@@ -16,7 +16,7 @@ import { definitions } from '../../src/workspace/definitions';
 import { usePrefs } from './prefs';
 import type { UiKey } from './i18n/ui';
 
-const groups: { title?: UiKey; links: [string, UiKey, typeof FiGrid][] }[] = [
+export const navGroups: { title?: UiKey; links: [string, UiKey, typeof FiGrid][] }[] = [
   { links: [['', 'nav.overview', FiGrid]] },
   { title: 'nav.daily', links: [['calendar', 'nav.calendar', FiCalendar], ['bookings', 'nav.bookings', FiBookmark], ['messages', 'nav.messages', FiMessageSquare], ['tasks', 'nav.tasks', FiClipboard]] },
   { title: 'nav.support', links: [['reminders', 'nav.reminders', FiBell], ['calls', 'nav.calls', FiPhoneCall], ['reviews', 'nav.reviews', FiStar], ['youtube', 'nav.youtube', FiYoutube], ['tickets', 'nav.tickets', FiLifeBuoy], ['ticket-types', 'nav.ticketTypes', FiClipboard], ['insights', 'nav.insights', FiTrendingUp], ['handover', 'nav.handover', FiCornerUpRight]] },
@@ -76,7 +76,7 @@ function Frame() {
   const unread = data?.conversations.filter(item => item.unread && item.status !== 'closed').length || 0;
   const segment = location.pathname.split('/').at(-1) || '';
   const routeKey = segment === 'dashboard' ? '' : segment;
-  const current = groups.flatMap(group => group.links).find(link => link[0] === routeKey);
+  const current = navGroups.flatMap(group => group.links).find(link => link[0] === routeKey);
   const guide = pageGuides[routeKey];
   const records = data ? (['properties', 'bookings', 'contacts', 'tasks', 'guidebooks'] as const).flatMap(resource => data[resource].map(record => ({ label: 'title' in record ? record.title : 'guestName' in record ? record.guestName : record.name, type: definitions[resource].title, path: `/admin/dashboard/${resource}?edit=${record.id}` }))) : [];
   const needle = query.trim().toLocaleLowerCase();
@@ -89,7 +89,7 @@ function Frame() {
     <aside className="dk-sidebar" aria-label={t('mainNav')}>
       <Link className="dk-brand" to="/admin/dashboard"><span className="dk-wordmark" role="img" aria-label="Maoki House" /><small>Admin</small></Link>
       {workspaces.length > 1 && <label className="dk-workspace"><span className="mk-sr">{t('switchWorkspace')}</span><select value={data?.workspaceId || ''} onChange={event => { void request('/workspaces/switch', { id: event.target.value }).then(reload).catch(cause => toast.error(errorMessage(cause))); }}>{workspaces.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label>}
-      <nav>{groups.map((group, index) => <div className="dk-nav-group" key={index}>{group.title && <span className="dk-nav-heading">{t(group.title)}</span>}{group.links.map(([to, key, Icon]) => <NavLink key={to || 'home'} to={'/admin/dashboard' + (to ? '/' + to : '')} end={to === ''} className={({ isActive }) => `dk-nav-link ${isActive ? 'active' : ''}`}><Icon aria-hidden="true" /><span>{t(key)}</span>{to === 'messages' && unread > 0 && <span className="dk-count" aria-label={t('unreadN', { n: unread })}>{unread}</span>}</NavLink>)}</div>)}</nav>
+      <nav>{navGroups.map((group, index) => <div className="dk-nav-group" key={index}>{group.title && <span className="dk-nav-heading">{t(group.title)}</span>}{group.links.map(([to, key, Icon]) => <NavLink key={to || 'home'} to={'/admin/dashboard' + (to ? '/' + to : '')} end={to === ''} className={({ isActive }) => `dk-nav-link ${isActive ? 'active' : ''}`}><Icon aria-hidden="true" /><span>{t(key)}</span>{to === 'messages' && unread > 0 && <span className="dk-count" aria-label={t('unreadN', { n: unread })}>{unread}</span>}</NavLink>)}</div>)}</nav>
       <div className="dk-person"><span className="mk-avatar small" aria-hidden="true">{initials(user?.name || user?.email || 'Maoki House')}</span><div><strong>{name}</strong><small title={user?.email || undefined}>{t(roleKey)}</small></div><button className="mk-icon-button" aria-label={t('logout')} title={t('logout')} onClick={() => void logout().then(() => navigate('/admin')).catch(cause => toast.error(errorMessage(cause)))}><FiLogOut /></button></div>
     </aside>
     <div className="dk-main">

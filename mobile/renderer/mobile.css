@@ -1,0 +1,57 @@
+/*
+ * Phone layout for Maoki Admin. The colour tokens come from the shared desktop theme; this file only changes
+ * the frame (app bar, bottom tabs) and enlarges touch targets. No decoration: flat surfaces, hairlines, one accent.
+ */
+html[data-mk-mobile], html[data-mk-mobile] body, html[data-mk-mobile] #root { height: 100%; margin: 0; overscroll-behavior: none; }
+html[data-mk-mobile] body { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+html[data-mk-mobile] .maoki-ui { font-size: 15px; }
+
+.mb-app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; background: var(--mk-bg); }
+.mb-top { display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding: calc(env(safe-area-inset-top) + 6px) 8px 6px 12px; min-height: calc(52px + env(safe-area-inset-top)); background: var(--mk-surface); border-bottom: 1px solid var(--mk-line); }
+.mb-top h1 { flex: 1; margin: 0; font-size: 18px !important; font-weight: 650; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-top-spacer { width: 0; }
+.mb-top .mk-icon-button { width: 44px; height: 44px; }
+.mb-content { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 14px 24px !important; max-width: none !important; width: auto !important; margin: 0 !important; }
+
+.mb-tabs { display: grid; grid-template-columns: repeat(5, 1fr); flex-shrink: 0; background: var(--mk-surface); border-top: 1px solid var(--mk-line); padding-bottom: env(safe-area-inset-bottom); }
+.mb-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 58px; font-size: 11px; font-weight: 550; color: var(--mk-muted) !important; text-decoration: none; }
+.mb-tab-icon { position: relative; display: grid; place-items: center; width: 44px; height: 26px; border-radius: 13px; transition: background-color .15s; }
+.mb-tab-icon svg { font-size: 20px; }
+.mb-tab.active { color: var(--mk-accent) !important; }
+.mb-tab.active .mb-tab-icon { background: var(--mk-tint); }
+.mb-badge { position: absolute; top: -3px; right: 2px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--mk-accent); color: var(--mk-on-accent); font-size: 10.5px; font-weight: 700; font-style: normal; line-height: 17px; text-align: center; }
+
+/* touch targets */
+html[data-mk-mobile] .mk-button { min-height: 44px; padding: 0 16px; }
+html[data-mk-mobile] .maoki-ui input, html[data-mk-mobile] .maoki-ui select, html[data-mk-mobile] .maoki-ui textarea { min-height: 44px; font-size: 16px; }
+html[data-mk-mobile] .mk-icon-button { min-width: 44px; height: 44px; }
+html[data-mk-mobile] .mk-page-header { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 16px; }
+html[data-mk-mobile] .mk-page-header h1 { display: none; } /* the app bar already carries the title */
+html[data-mk-mobile] .mk-page-header p { margin: 0; font-size: 13.5px; }
+html[data-mk-mobile] .mk-page-actions { flex-wrap: wrap; }
+html[data-mk-mobile] .mk-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+html[data-mk-mobile] .mk-stat { padding: 14px; }
+html[data-mk-mobile] .mk-overview-grid, html[data-mk-mobile] .dk-two { grid-template-columns: minmax(0, 1fr); }
+html[data-mk-mobile] .mk-panel { border-radius: 12px; }
+html[data-mk-mobile] .mk-table-scroll { overflow-x: auto; }
+html[data-mk-mobile] .dk-choice-grid, html[data-mk-mobile] .dk-form-grid, html[data-mk-mobile] .dk-handover { grid-template-columns: minmax(0, 1fr); }
+html[data-mk-mobile] .dk-pref { max-width: none; }
+html[data-mk-mobile] .mk-dialog { width: 100%; max-width: none; max-height: 92dvh; border-radius: 16px 16px 0 0; align-self: end; }
+html[data-mk-mobile] .mk-dialog-backdrop { align-items: end; padding: 0; }
+
+/* sign-in: single column, no marketing panel */
+html[data-mk-mobile] .dk-login { grid-template-columns: minmax(0, 1fr); min-height: 100dvh; }
+html[data-mk-mobile] .dk-login-story { display: none; }
+html[data-mk-mobile] .dk-login-form-wrap { padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px); }
+html[data-mk-mobile] .dk-login-form { padding: 20px; }
+
+/* More */
+.mb-more { display: grid; gap: 18px; }
+.mb-more h2 { font-size: 12px !important; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: var(--mk-faint); margin: 0 4px 8px !important; }
+.mb-more ul { list-style: none; margin: 0; padding: 0; background: var(--mk-surface); border: 1px solid var(--mk-line); border-radius: 12px; overflow: hidden; }
+.mb-more li + li { border-top: 1px solid var(--mk-line); }
+.mb-more a, .mb-more button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 0 14px; background: transparent; border: 0; color: var(--mk-ink) !important; font-size: 15px; text-align: left; text-decoration: none; }
+.mb-more a svg:first-child { color: var(--mk-muted); font-size: 18px; }
+.mb-more a span { flex: 1; }
+.mb-chev { transform: rotate(180deg); color: var(--mk-faint); }
+.mb-more button { color: var(--mk-danger) !important; font-weight: 600; }
