@@ -59,7 +59,6 @@ export const pageGuides: Record<string, PageGuide> = {
     steps: [
       'Chọn một hội thoại bên trái để đọc và trả lời.',
       'Giao người phụ trách và đổi trạng thái (Mở / Chờ / Đóng) để cả đội cùng theo dõi.',
-      'Dùng “Nhờ AI soạn phản hồi” để có bản nháp; bạn luôn là người bấm gửi.',
     ],
     tip: 'Hiện chỉ chat website gửi/nhận thật. Facebook, Instagram, Zalo cần kết nối API riêng.',
   },
@@ -82,13 +81,6 @@ export const pageGuides: Record<string, PageGuide> = {
   },
   replies: {
     steps: ['Lưu các câu trả lời hay dùng; dùng {{guest}} để tự chèn tên khách khi đưa vào hộp thư.'],
-  },
-  ai: {
-    steps: [
-      'Lần đầu: chủ không gian hoặc quản lý mở “Cài đặt AI”, dán API key OpenRouter và bấm “Lưu và kiểm tra”.',
-      'Đặt câu hỏi hoặc chọn một gợi ý. Bật “Dùng số liệu vận hành” khi muốn AI tóm tắt tình hình.',
-      'Kiểm tra lại câu trả lời trước khi gửi cho khách: AI chỉ soạn nháp, không tự gửi hay sửa dữ liệu.',
-    ],
   },
   revenue: {
     steps: ['Ghi các khoản thu từ đặt phòng, chi phí vận hành và điều chỉnh.', 'Báo cáo và đối soát chủ sở hữu lấy số liệu từ đây.'],

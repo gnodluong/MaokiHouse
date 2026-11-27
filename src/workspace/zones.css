@@ -210,14 +210,6 @@ html[data-mk-theme] .mk-dialog footer { padding: 12px 20px; background: var(--mk
 .mk-copy-field { display: flex; gap: 8px; }
 .mk-copy-field input { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px !important; }
 
-/* ─────────── AI settings ─────────── */
-.mk-ai-settings { padding: 16px 18px; display: grid; gap: 14px; }
-.mk-ai-settings .mk-form-grid { gap: 14px 16px; }
-.mk-key-state { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13.5px; }
-.mk-key-state code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--mk-sunken); padding: 2px 7px; border-radius: 6px; font-size: 12.5px; }
-.mk-inline-help { font-size: 12.5px; color: var(--mk-muted); line-height: 1.6; }
-.mk-inline-help a { color: var(--mk-accent); text-decoration: underline; text-underline-offset: 2px; }
-
 /* ─────────── Badges in the shell ─────────── */
 .mk-admin-badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; background: var(--mk-tint); color: var(--mk-accent); font-size: 11.5px; font-weight: 600; white-space: nowrap; }
 .mk-admin-badge svg { font-size: 12px; }

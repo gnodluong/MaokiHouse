@@ -12,4 +12,4 @@ npm run desktop:dist    # đóng gói bộ cài vào release/ (build trên đún
 - **Giao diện**: Sáng / Tối / Theo hệ thống (mặc định) và 7 tông màu nhấn, chọn tại *Giao diện & ngôn ngữ*.
 - **Ngôn ngữ**: Tiếng Việt / English, đổi tức thì (nút VI·EN trên thanh trên).
   Vỏ ứng dụng dùng `i18n/ui.ts`; các trang dùng chung được dịch lúc chạy từ `i18n/phrases.ts` — chuỗi chưa có trong bảng giữ nguyên tiếng Việt.
-- **Máy chủ API**: Trợ lý AI và Kết nối kênh gọi `/api/*` của bản website đã triển khai; nhập địa chỉ đó trong *Giao diện & ngôn ngữ*.
+- **Máy chủ API**: Kết nối kênh, tin nhắn và đồng bộ đánh giá gọi `/api/*` của bản website đã triển khai; nhập địa chỉ đó trong *Giao diện & ngôn ngữ*.

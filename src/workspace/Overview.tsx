@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { FiArrowUpRight, FiCalendar, FiDollarSign, FiHome, FiMessageSquare, FiPlus, FiCheck, FiArrowRight, FiClock, FiFeather } from 'react-icons/fi';
 import { useSession } from './Session';
 import { channelRequest } from './channelsClient';
-import { aiRequest } from './aiClient';
 import toast from 'react-hot-toast';
 import { useEditor, useWorkspace } from './context';
 import { Badge, Button, Empty, PageHeader, SectionTitle, Stat } from './ui';
@@ -30,13 +29,9 @@ export default function Overview() {
   const { mode } = useSession();
   const role = data?.capabilities.role;
   const [calendarCount, setCalendarCount] = useState<number | null>(null);
-  const [aiReady, setAIReady] = useState<boolean | null>(null);
   useEffect(() => {
     if (mode !== 'supabase' || !role) return;
-    const controller = new AbortController();
     if (['owner', 'manager'].includes(role)) void channelRequest<{ connections: unknown[] }>().then(result => setCalendarCount(result.connections.length)).catch(() => setCalendarCount(null));
-    void aiRequest<{ configured: boolean }>('GET', controller.signal).then(result => setAIReady(result.configured)).catch(() => setAIReady(null));
-    return () => controller.abort();
   }, [mode, role]);
   if (!data) return null;
   const manager = role === 'owner' || role === 'manager';
@@ -45,7 +40,6 @@ export default function Overview() {
     { key: 'publish', title: 'Mở đặt phòng trực tiếp trên website', text: 'Bật “Mở trang đặt phòng trực tiếp” cho phòng muốn bán.', done: data.properties.some(item => (item as { published?: boolean }).published), to: 'properties', action: 'Mở phòng' },
     ...(calendarCount !== null ? [{ key: 'calendar', title: 'Kết nối lịch Airbnb, Booking.com…', text: 'Nhập ngày bận từ các kênh để không bị trùng phòng.', done: calendarCount > 0, to: 'channels', action: 'Kết nối lịch' }] : []),
     { key: 'chat', title: 'Bật chat trên website', text: 'Khách nhắn từ website, đội ngũ trả lời trong Hộp thư.', done: data.settings.widgetEnabled, to: 'settings', action: 'Bật chat' },
-    ...(aiReady !== null ? [{ key: 'ai', title: 'Kết nối trợ lý AI', text: 'Dán API key OpenRouter để soạn tin và nội dung nhanh hơn.', done: aiReady, to: 'ai', action: 'Cài đặt AI' }] : []),
     { key: 'guide', title: 'Viết sổ tay lưu trú', text: 'Wi-Fi, cách nhận phòng và nội quy gửi khách trước ngày đến.', done: data.guidebooks.length > 0, to: 'guidebooks', action: 'Viết sổ tay' },
   ] : [];
   const today = todayIn(data.settings.timezone); const end = period === 'today' ? today : addDays(today, 6);

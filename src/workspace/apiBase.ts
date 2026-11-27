@@ -1,5 +1,5 @@
 /**
- * Origin of the Maoki web API (/api/assistant, /api/channels).
+ * Origin of the Maoki web API (/api/channels, /api/messaging, …).
  * In the browser it is the page's own origin (empty string). The desktop app has no server of its own,
  * so it takes the origin from Settings (localStorage) or the VITE_API_ORIGIN build variable.
  */

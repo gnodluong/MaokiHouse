@@ -49,7 +49,6 @@ tr { page-break-inside: avoid; }
 <li><span class="tag t-todo">CHỦ SẢN PHẨM ĐIỀN</span> <b>Cam kết thời hạn xóa dữ liệu</b> (đang để 30 ngày, <code>deletionDays</code>): chỉ giữ nếu bạn thực sự làm được.</li>
 <li><b>Luồng đăng nhập OAuth chưa có</b> (Facebook Login, Google, Zalo): hiện chủ nhà dán token. Đủ để <i>bạn tự dùng cho tài khoản của mình</i> (Standard Access / chế độ Testing). Để khách tự cấp quyền (Advanced Access, xác minh OAuth) phải xây thêm — xem mục 9.</li>
 <li><b>Môi trường cho người duyệt:</b> web quản trị đã gỡ; cần bản cài Windows/Android kèm video, hoặc dựng một trang đăng nhập tạm. Cần tạo không gian “Reviewer Demo” (mục 8).</li>
-<li><b>Tính năng AI soạn phản hồi đưa nội dung tin nhắn của khách tới bên thứ ba</b> (OpenRouter/Gemini). Cần quyết định trước khi nộp Meta/Zalo (mục 5.4).</li>
 </ol></div>
 
 <h2>1. Danh tính ứng dụng (dán thẳng vào biểu mẫu)</h2>
@@ -86,7 +85,6 @@ tr { page-break-inside: avoid; }
 <tr><td><code>/api/reviews</code></td><td>POST</td><td>Đồng bộ đánh giá Google và đăng phản hồi. Chỉ chủ/quản lý; JWT.</td></tr>
 <tr><td><code>/api/youtube</code></td><td>POST</td><td>Đồng bộ bình luận YouTube và đăng phản hồi. Chỉ chủ/quản lý; JWT.</td></tr>
 <tr><td><code>/api/channels</code></td><td>GET, POST</td><td>Kết nối/đồng bộ lịch iCal (Airbnb, Booking.com, Agoda, Trip.com…) và xuất lịch Maoki (<code>?feed=&lt;token&gt;</code>). Chỉ chủ/quản lý.</td></tr>
-<tr><td><code>/api/assistant</code></td><td>POST</td><td>Trợ lý AI (xem 5.4).</td></tr>
 <tr><td><code>/api/worker</code></td><td>GET, POST</td><td>Tác vụ nền, xác thực bằng <code>WORKER_SECRET</code> (so sánh thời gian hằng số), dùng khóa service role đặt riêng trên máy chủ; chỉ GitHub Actions/cron gọi.</td></tr>
 </table>
 <div class="callout"><b>Chưa có</b>Điểm cuối OAuth (<code>/oauth/callback/&lt;nền-tảng&gt;</code>) và “Data Deletion Callback” tự động của Meta. Nếu nền tảng yêu cầu, dùng trang <code>/data-deletion</code> (hướng dẫn thủ công) trong lúc chờ xây.</div>
@@ -124,16 +122,14 @@ tr { page-break-inside: avoid; }
 <li>Phiên chat khách trên website hết hạn sau 7 ngày; lời mời thành viên có hạn.</li>
 <li>Xóa theo yêu cầu: hiện xử lý thủ công (tìm theo mã người gửi/email/số điện thoại trong bảng bản ghi và bảng liên kết hội thoại, rồi xóa). <span class="tag t-todo">CHỦ SẢN PHẨM ĐIỀN</span> thời hạn cam kết (đang 30 ngày). Nên xây công cụ “xóa theo người gửi” trước khi mở rộng.</li>
 </ul>
-<h3>5.4 Xử lý bởi bên thứ ba và AI (cần quyết định)</h3>
+<h3>5.4 Xử lý bởi bên thứ ba</h3>
 <table>
 <tr><th style="width:22%">Bên</th><th>Dữ liệu nào đi qua</th></tr>
 <tr><td>Supabase</td><td>Toàn bộ dữ liệu (cơ sở dữ liệu, xác thực). Khu vực máy chủ: <span class="tag t-todo">CHỦ SẢN PHẨM ĐIỀN</span> (xem trong Supabase → Project Settings).</td></tr>
 <tr><td>Vercel</td><td>Nội dung yêu cầu đi qua các điểm cuối API (không lưu lâu dài theo thiết kế của Maoki).</td></tr>
 <tr><td>SMTP/Resend, IMAP, nhà cung cấp tổng đài</td><td>Chỉ khi chủ nhà bật kênh tương ứng.</td></tr>
-<tr><td>OpenRouter hoặc Google Gemini (Trợ lý AI)</td><td>Chỉ khi người dùng chủ động dùng Trợ lý AI. Câu hỏi người dùng gõ; tùy chọn “dùng số liệu vận hành” gửi thống kê phòng/đặt phòng (đã loại danh bạ khách, nội dung tin nhắn, mật khẩu Wi-Fi). <b>Nút “Nhờ AI soạn phản hồi” trong Hộp thư đưa nội dung tin nhắn cuối của khách vào câu hỏi</b> → dữ liệu người dùng nền tảng (kể cả Meta/Zalo) tới nhà cung cấp AI. Giao diện đã cảnh báo mô hình miễn phí của OpenRouter có thể lưu lời nhắc để cải thiện dịch vụ.</td></tr>
 <tr><td>Google Fonts, jsDelivr (website khách)</td><td>Địa chỉ IP người truy cập website khách.</td></tr>
 </table>
-<div class="callout warn"><b>Khuyến nghị trước khi nộp Meta/Zalo/Google</b>Chính sách nền tảng thường giới hạn việc chuyển dữ liệu người dùng cho bên thứ ba. Hai cách xử lý: (a) tắt tính năng “Nhờ AI soạn phản hồi” với hội thoại đến từ các kênh này cho tới khi có thỏa thuận xử lý dữ liệu với nhà cung cấp AI đã được duyệt, hoặc (b) chuyển sang nhà cung cấp AI có cam kết không lưu/không huấn luyện bằng dữ liệu khách hàng và khai báo trong chính sách. Tôi có thể thực hiện (a) bằng một công tắc theo từng không gian: hãy cho biết bạn chọn hướng nào.</div>
 
 <h2>6. Lời gọi API bên thứ ba (chính xác theo mã nguồn)</h2>
 <table>
@@ -185,14 +181,13 @@ tr { page-break-inside: avoid; }
 <tr><td>1</td><td>Đăng nhập OAuth: Facebook Login for Business (chọn Trang), Google Sign-In (Business Profile, YouTube), Zalo OAuth; lưu token, xử lý hết hạn/thu hồi.</td><td>Advanced Access, xác minh OAuth Google</td></tr>
 <tr><td>2</td><td>Data Deletion Callback tự động (Meta) + công cụ “xóa theo người gửi”.</td><td>Meta App Review, cam kết xóa</td></tr>
 <tr><td>3</td><td>Mã hóa cấp ứng dụng cho token (khóa quản lý bên ngoài cơ sở dữ liệu).</td><td>Nâng mức bảo mật, trả lời bảng câu hỏi bảo mật</td></tr>
-<tr><td>4</td><td>Công tắc theo không gian cho AI soạn phản hồi với dữ liệu kênh (mục 5.4).</td><td>Chính sách bên thứ ba</td></tr>
-<tr><td>5</td><td>Embedded Signup cho WhatsApp (nếu phục vụ nhiều chủ nhà).</td><td>Tech Provider</td></tr>
+<tr><td>4</td><td>Embedded Signup cho WhatsApp (nếu phục vụ nhiều chủ nhà).</td><td>Tech Provider</td></tr>
 <tr><td>6</td><td>Bản web đăng nhập tạm cho người duyệt hoặc video + bản cài.</td><td>Môi trường duyệt</td></tr>
 <tr><td>7</td><td>Nhật ký đồng bộ theo từng lệnh gọi OTA, giám sát và cảnh báo.</td><td>Chứng nhận đối tác OTA</td></tr>
 </table>
 
 <h2>10. Khối văn bản sẵn dán (tiếng Anh) theo từng nền tảng</h2>
-<div class="email"><div class="h">Meta — “How is your app using pages_messaging?”</div>Maoki Admin lets a property owner reply to guests who message the owner's own Facebook Page. Inbound messages arrive at our webhook (object "page", field "messages", verified with the X-Hub-Signature-256 HMAC) and are stored in the owner's workspace next to the guest's booking. Replies typed by the owner's staff are sent with POST /v21.0/{page-id}/messages (messaging_type RESPONSE) within 24 hours of the guest's last message. We store only the text, the sender ID issued by Meta and the timestamp. Data is used only to serve that owner; it is not sold, used for advertising or shared with data brokers. The owner can disconnect the Page at any time, which deletes the token; deletion instructions: [URL]/data-deletion. AI note: [state the choice made in section 5.4].</div>
+<div class="email"><div class="h">Meta — “How is your app using pages_messaging?”</div>Maoki Admin lets a property owner reply to guests who message the owner's own Facebook Page. Inbound messages arrive at our webhook (object "page", field "messages", verified with the X-Hub-Signature-256 HMAC) and are stored in the owner's workspace next to the guest's booking. Replies typed by the owner's staff are sent with POST /v21.0/{page-id}/messages (messaging_type RESPONSE) within 24 hours of the guest's last message. We store only the text, the sender ID issued by Meta and the timestamp. Data is used only to serve that owner; it is not sold, used for advertising or shared with data brokers. The owner can disconnect the Page at any time, which deletes the token; deletion instructions: [URL]/data-deletion.</div>
 <div class="email"><div class="h">Meta — instagram_manage_messages</div>Same flow for Instagram direct messages sent to a professional account linked to the owner's Page (webhook object "instagram", field "messages"). Replies are sent through the Send API within 24 hours. Text only; no media is stored.</div>
 <div class="email"><div class="h">Meta — whatsapp_business_messaging / whatsapp_business_management</div>The owner's staff answer guests on the owner's WhatsApp Business number from a shared inbox. Inbound messages arrive through the webhook (whatsapp_business_account → messages) and are stored as text; non-text messages are kept as a placeholder only. Replies use POST /v21.0/{phone-number-id}/messages. Outside the 24-hour customer service window the app sends only the owner's pre-approved utility template (one body parameter). We do not send unsolicited marketing messages.</div>
 <div class="email"><div class="h">Zalo — mô tả quyền</div>Maoki cho phép chủ nhà nhận và trả lời tin nhắn khách gửi tới Official Account của chính họ trong hộp thư chung cùng đơn đặt phòng. Sự kiện user_send_text được gửi tới webhook đã xác minh chữ ký (X-ZEvent-Signature); trả lời gửi bằng POST /v3.0/oa/message/cs trong khung thời gian cho phép. Chỉ lưu văn bản, mã người dùng Zalo và thời điểm; không gửi tin quảng cáo, không chia sẻ dữ liệu.</div>

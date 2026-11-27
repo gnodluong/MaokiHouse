@@ -36,7 +36,6 @@ export function Privacy() {
       <li><b>Vercel</b> — chạy các điểm cuối API (nhận webhook, gửi tin).</li>
       <li><b>Nhà cung cấp gửi email</b> (SMTP của chủ nhà hoặc Resend) — khi chủ nhà bật kênh email.</li>
       <li><b>Nhà cung cấp tổng đài</b> do chủ nhà chọn — khi chủ nhà bật nhật ký cuộc gọi.</li>
-      <li><b>Nhà cung cấp mô hình AI (OpenRouter hoặc Google Gemini)</b> — chỉ khi chủ nhà hoặc nhân viên được phép chủ động dùng Trợ lý AI. Nội dung gửi đi là câu hỏi người dùng nhập; khi dùng “Nhờ AI soạn phản hồi” trong Hộp thư, nội dung tin nhắn cuối của khách được đưa vào câu hỏi. Mô hình miễn phí của OpenRouter có thể lưu lời nhắc để cải thiện dịch vụ của họ; vì vậy không nhập thông tin nhạy cảm.</li>
       <li><b>Các nền tảng chủ nhà kết nối</b> (Meta, Zalo, Google) — nhận tin trả lời mà chủ nhà gửi qua Maoki.</li>
       <li>Website khách tải phông chữ từ Google Fonts và biểu tượng từ jsDelivr; các nhà cung cấp này có thể nhận địa chỉ IP của bạn.</li>
     </ul>
@@ -64,7 +63,7 @@ export function Privacy() {
     {/* English summary */}
     <section lang="en" className="mk-legal-en"><hr /><h2>Privacy policy (summary)</h2>
       <p>MaokiHouse runs a guest booking website and <b>Maoki Admin</b>, an app for property owners and staff of small hotels and homestays. We process guest booking details and the messages, comments and reviews that reach accounts a property owner has explicitly connected (Facebook Page, Instagram professional account, WhatsApp Business, Zalo Official Account, email, YouTube, Google Business Profile), plus call-log entries from the owner’s telephony provider. We use this data only to let that owner reply to and manage their own guests. We do not sell data, use it for advertising or profiling, or share platform data with data brokers. Our use of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.</p>
-      <p>Sub-processors: Supabase (database/auth), Vercel (API hosting), the owner’s email provider, the owner’s telephony provider, and — only when a user chooses to use the AI assistant — OpenRouter or Google Gemini (the typed question and, for “draft a reply”, the guest’s last message). Channel tokens are stored in a private database area never returned to the browser and are deleted when the owner disconnects the channel. Data is kept until the owner deletes it or closes the workspace; verified deletion requests are completed within {LEGAL.deletionDays} days. Contact: {LEGAL.email}.</p>
+      <p>Sub-processors: Supabase (database/auth), Vercel (API hosting), the owner’s email provider, the owner’s telephony provider. Channel tokens are stored in a private database area never returned to the browser and are deleted when the owner disconnects the channel. Data is kept until the owner deletes it or closes the workspace; verified deletion requests are completed within {LEGAL.deletionDays} days. Contact: {LEGAL.email}.</p>
     </section>
   </Page>;
 }
@@ -81,18 +80,16 @@ export function Terms() {
     <p>Không gửi thư rác hay tin nhắn không được yêu cầu; không dùng dịch vụ cho nội dung trái pháp luật; không cố truy cập dữ liệu của không gian khác; không phá hoại hoặc quá tải hệ thống.</p>
     <h2>5. Dữ liệu của bạn</h2>
     <p>Bạn giữ quyền sở hữu dữ liệu của mình. Chúng tôi xử lý dữ liệu theo <Link to="/privacy">Chính sách quyền riêng tư</Link> và chỉ để cung cấp dịch vụ.</p>
-    <h2>6. Tính năng AI</h2>
-    <p>Trợ lý AI chỉ soạn bản nháp, không tự gửi tin hoặc sửa dữ liệu. Bạn chịu trách nhiệm kiểm tra nội dung trước khi gửi và không nhập thông tin nhạy cảm.</p>
-    <h2>7. Tính sẵn sàng và thay đổi</h2>
+    <h2>6. Tính sẵn sàng và thay đổi</h2>
     <p>Chúng tôi nỗ lực duy trì dịch vụ ổn định nhưng không cam kết không gián đoạn; các nền tảng bên thứ ba có thể thay đổi hoặc ngừng API mà chúng tôi không kiểm soát. Chúng tôi có thể cập nhật dịch vụ và các điều khoản này; thay đổi quan trọng được thông báo trước.</p>
-    <h2>8. Giới hạn trách nhiệm</h2>
+    <h2>7. Giới hạn trách nhiệm</h2>
     <p>Trong phạm vi pháp luật cho phép, chúng tôi không chịu trách nhiệm về thiệt hại gián tiếp, mất doanh thu hoặc mất dữ liệu phát sinh từ việc dùng dịch vụ hoặc từ hành động của nền tảng bên thứ ba. Trách nhiệm tối đa không vượt quá phí bạn đã trả trong 12 tháng gần nhất.</p>
-    <h2>9. Chấm dứt</h2>
+    <h2>8. Chấm dứt</h2>
     <p>Bạn có thể ngừng dùng và yêu cầu xóa dữ liệu bất cứ lúc nào. Chúng tôi có thể tạm ngừng hoặc chấm dứt tài khoản vi phạm điều khoản.</p>
-    <h2>10. Luật áp dụng và liên hệ</h2>
+    <h2>9. Luật áp dụng và liên hệ</h2>
     <p>Điều khoản này chịu sự điều chỉnh của pháp luật Việt Nam. Liên hệ: {LEGAL.email}.</p>
     <section lang="en" className="mk-legal-en"><hr /><h2>Terms of service (summary)</h2>
-      <p>Maoki provides a guest booking website and the Maoki Admin app. You are responsible for your account and for content you or your staff send. When you connect Facebook, Instagram, WhatsApp, Zalo, Google or YouTube you confirm you administer that account and agree to comply with each platform’s terms and messaging policies. Do not send spam or unlawful content. You keep ownership of your data; we process it under the Privacy policy. AI features only draft text and never send messages on their own. Third-party APIs may change outside our control. Liability is limited as permitted by law. Governing law: Vietnam. Contact: {LEGAL.email}.</p>
+      <p>Maoki provides a guest booking website and the Maoki Admin app. You are responsible for your account and for content you or your staff send. When you connect Facebook, Instagram, WhatsApp, Zalo, Google or YouTube you confirm you administer that account and agree to comply with each platform’s terms and messaging policies. Do not send spam or unlawful content. You keep ownership of your data; we process it under the Privacy policy. Third-party APIs may change outside our control. Liability is limited as permitted by law. Governing law: Vietnam. Contact: {LEGAL.email}.</p>
     </section>
   </Page>;
 }
