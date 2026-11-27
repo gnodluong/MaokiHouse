@@ -13,7 +13,6 @@
 | Vấn đề | Sửa |
 |---|---|
 | `/api/channels` tải lịch bằng `fetch` toàn cục, nên lớp chặn địa chỉ nội bộ (DNS guard) không được dùng | Tải lịch luôn qua `publicFetch` có chặn IP nội bộ/metadata ở tầng socket; test kiểm tra đường mặc định |
-| Không gian tự tạo chọn được model đắt tiền, tính phí vào `OPENROUTER_API_KEY` của máy chủ, chỉ bị giới hạn trong bộ nhớ của từng instance | Key máy chủ chỉ dùng model của máy chủ; mọi lượt gọi trả phí đều qua `maoki_ai_settings` `use` (kiểm tra vai trò, quyền nhân viên, ngân sách lưu trong database) |
 | API Firebase cũ: kết nối kênh dùng chung một tài liệu cho mỗi nền tảng giữa các host | Mỗi host có tài liệu riêng; `upsert` kiểm tra chủ sở hữu |
 
 **Đã thêm:** header bảo mật trên Vercel (`nosniff`, `Referrer-Policy`, `Permissions-Policy`). Chặn nhúng iframe (`frame-ancestors 'self'`) ở mọi trang trừ widget `/chat/*`.

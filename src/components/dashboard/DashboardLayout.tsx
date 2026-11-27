@@ -14,7 +14,6 @@ import {
   FaEnvelope,
   FaMoneyBillWave,
   FaUsers,
-  FaRobot,
   FaPlug,
 } from 'react-icons/fa';
 import { BiLogOut } from 'react-icons/bi';
@@ -28,7 +27,6 @@ const NAV_ITEMS = [
   { to: '/admin/dashboard/messages', label: 'Tin nhắn', icon: FaEnvelope },
   { to: '/admin/dashboard/revenue', label: 'Doanh thu', icon: FaMoneyBillWave },
   { to: '/admin/dashboard/hr', label: 'Nhân sự', icon: FaUsers },
-  { to: '/admin/dashboard/ai-support', label: 'Hỗ trợ AI', icon: FaRobot },
   { to: '/admin/dashboard/channels', label: 'Kênh kết nối', icon: FaPlug },
 ];
 

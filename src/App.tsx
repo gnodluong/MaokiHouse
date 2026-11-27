@@ -50,7 +50,6 @@ const AppRoutes = () => {
               <Route path="messages" element={<Pages.DashboardMessages />} />
               <Route path="revenue" element={<Pages.DashboardRevenue />} />
               <Route path="hr" element={<Pages.DashboardHR />} />
-              <Route path="ai-support" element={<Pages.DashboardAISupport />} />
               <Route path="channels" element={<Pages.DashboardChannels />} />
             </Route>
           </Routes>

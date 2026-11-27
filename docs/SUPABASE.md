@@ -12,7 +12,6 @@ Sau khi bản cập nhật được Vercel triển khai, mở [trang thiết l�
 2. Quay lại trang và nhấn **Kiểm tra dữ liệu**. Nút này kiểm tra hàm public bằng publishable key, không tạo/sửa dữ liệu. Thành công xác nhận kết nối hàm public, chưa chứng minh toàn bộ Auth/RLS hay migration history trên dự án.
 3. Cấu hình Site URL/Redirect URLs theo bước 2 trên trang.
 4. Tạo tài khoản ở Authentication → Users cho `maokihouse.sg@gmail.com`, bật Auto Confirm User, rồi đăng nhập. Không lưu mật khẩu vào SQL hoặc repository. Tài khoản mới sẽ có không gian riêng với quyền Chủ không gian khi mở dashboard; tài khoản là thành viên không gian có sẵn không tự được nâng quyền.
-5. Bật Gemini theo bước 4 trên trang nếu muốn dùng AI: thêm `GEMINI_API_KEY` ở Vercel rồi Redeploy. Không cần API key quản trị Supabase cho AI.
 
 SQL trên trang và lệnh `supabase:apply` dùng chung hàm `shared/supabase-bootstrap.mjs`: có khóa chống chạy đồng thời, từ chối ghi đè schema đang có và ghi đúng migration history trong cùng giao dịch. Nếu báo đã áp dụng/đã có đối tượng, dừng và kiểm tra trạng thái; không drop dữ liệu để chạy lại.
 

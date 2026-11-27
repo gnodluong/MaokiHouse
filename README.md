@@ -15,7 +15,7 @@ npm run dev
 
 `.env` hiện tại đã được điền theo thông tin người dùng cung cấp và được Git bỏ qua. Không ghi đè nếu file đã tồn tại. Hai biến trình duyệt có thể ghi đè cấu hình dự án mặc định là `VITE_SUPABASE_URL` và `VITE_SUPABASE_PUBLISHABLE_KEY`. Các biến `VITE_*` có mặt trong bundle; chỉ dùng publishable key tại đây. `src/config/supabase.public.ts` giữ URL/publishable key công khai của dự án đã được người dùng chọn, để bản build Vercel không phụ thuộc file `.env` chỉ có trên máy cloud. Không có token quản trị hoặc secret key trong cấu hình này.
 
-Lần đầu sử dụng, mở **`/setup`** trên website: trang này có SQL sẵn để sao chép hoặc tải xuống, liên kết đúng SQL Editor, nút kiểm tra kết nối và hướng dẫn tạo tài khoản/bật AI. Không cần terminal. Xem thêm [kích hoạt Supabase](docs/SUPABASE.md). Đường dẫn `/admin` mở đăng nhập/đăng ký; `/admin/dashboard` mở không gian quản lý. Website công khai hiển thị phòng được chủ nhà chủ động xuất bản. Dữ liệu Firebase cũ chưa được nhập sang Supabase.
+Lần đầu sử dụng, mở **`/setup`** trên website: trang này có SQL sẵn để sao chép hoặc tải xuống, liên kết đúng SQL Editor, nút kiểm tra kết nối và hướng dẫn tạo tài khoản. Không cần terminal. Xem thêm [kích hoạt Supabase](docs/SUPABASE.md). Đường dẫn `/admin` mở đăng nhập/đăng ký; `/admin/dashboard` mở không gian quản lý. Website công khai hiển thị phòng được chủ nhà chủ động xuất bản. Dữ liệu Firebase cũ chưa được nhập sang Supabase.
 
 > **Cập nhật 2026-11:** trang web chỉ còn dành cho **khách** (trang chủ, đặt phòng, sổ tay, chat). Quản trị nằm trong ứng dụng **Maoki Admin** (`desktop/` cho Windows/macOS, `mobile/` cho Android/iOS), dùng chung dự án Supabase. Các script `test:browser`, `test:supabase-browser`, `screenshots:admin` kiểm tra giao diện quản trị cũ trên web nên không còn áp dụng; kiểm tra bằng `npm run test:db` và các test API.
 
@@ -32,7 +32,6 @@ Lần đầu sử dụng, mở **`/setup`** trên website: trang này có SQL s�
 | Kinh doanh | Thu/chi, báo cáo dòng tiền/công suất, đối soát chủ sở hữu, thống kê hội thoại theo kênh |
 | Đội ngũ | Chủ không gian, quản lý, nhân viên, chỉ xem; mời đúng email đã xác minh; thu hồi; chuyển không gian |
 | Công khai | Danh sách phòng đã xuất bản, báo giá từ máy chủ, yêu cầu đặt phòng, sổ tay, widget chat |
-| AI | Trợ lý qua OpenRouter (mặc định `nvidia/nemotron-3.5-super-vl:free`), dán API key ngay trong trang Trợ lý AI → Cài đặt AI; soạn phản hồi từ hộp thư, viết nội dung social, số liệu vận hành tùy chọn |
 | Giao diện | Admin có giao diện Sáng/Tối (nút trên thanh trên cùng và trong Cài đặt), hướng dẫn nhanh trên mỗi trang, danh sách “Bắt đầu” ở Tổng quan; website khách vẽ màu nước hoa anh đào trên giấy cổ |
 
 Airbnb/Booking.com đã có nhập/xuất lịch iCal; cần bấm Đồng bộ để nhập lịch mới và phía OTA lấy lịch theo chu kỳ riêng. Giá, chi tiết đặt phòng, tin nhắn OTA và các kênh Agoda/Facebook/Instagram/Zalo/email vẫn cần API nhà cung cấp. Xem [hướng dẫn kết nối từng kênh](docs/CHANNELS.md). Hội thoại ngoài Website lưu phản hồi nội bộ; màn hình ghi rõ trạng thái. Chiến dịch lưu bản nháp/lịch dự kiến, chưa có bộ gửi. Trợ lý AI cần `GEMINI_API_KEY` trên máy chủ Vercel và Redeploy; không đưa key vào `VITE_*`. Thanh toán và tải ảnh lên storage chưa được kết nối. Ảnh phòng hiện nhập bằng URL HTTPS/đường dẫn tài nguyên; danh bạ nhân viên vận hành tách khỏi quyền đăng nhập.
@@ -56,8 +55,8 @@ npm run supabase:apply
 npm run test:supabase-browser
 # Cần thêm bộ emulator/API demo đang chạy:
 npm run test:browser
-# API AI cục bộ, chạy song song với npm run dev:
-npm run server:ai
+# API cục bộ (kênh, tin nhắn, tác vụ nền), chạy song song với npm run dev:
+npm run server:api
 ```
 
 `test:db` chạy migration thật trên PostgreSQL nhúng PGlite, kiểm tra RLS, phân quyền, cô lập tài khoản, lời mời, chống trùng lịch, giá máy chủ và phiên chat. `test:supabase-browser` chạy SDK thật với PostgreSQL đó qua cầu REST cục bộ và Auth giả lập; không kiểm tra Supabase Auth đang host. Nó cũng chạy axe cho trang đăng nhập, tổng quan, hộp thoại và hộp thư sáng/tối/điện thoại. `test:browser` dùng Auth/Firestore Emulator thật và hai phiên trình duyệt độc lập; dọn dữ liệu/tài khoản do lần kiểm tra tạo ra.
@@ -72,26 +71,16 @@ Bộ cài/khởi động demo đã chuẩn bị tại `/workspace/.maokihouse`. 
 
 Đối chiếu với các nền tảng thương mại và QloApps/Chatwoot: [PRODUCT_COMPARISON.md](docs/PRODUCT_COMPARISON.md). Xem [thông báo nguồn/giấy phép](docs/THIRD_PARTY_NOTICES.md) cho các file upstream được giữ trong repository.
 
-## Trợ lý AI qua OpenRouter
-
-Chủ không gian hoặc quản lý mở **Trợ lý AI → Cài đặt AI**, dán API key OpenRouter (`sk-or-…`) và bấm **Lưu và kiểm tra**. Key lưu trong bảng riêng của Supabase (`maoki_private.ai_settings`), không nằm trong snapshot và chỉ hiển thị 4 ký tự cuối. Nhân viên chỉ dùng được AI khi chủ bật “Cho phép nhân viên”. Mọi lượt gọi bị giới hạn 12 lần/phút/không gian trong database. Nếu đặt `OPENROUTER_API_KEY` trên Vercel, key đó được ưu tiên và chỉ dùng model `OPENROUTER_MODEL` (hoặc model mặc định). Website đã có dữ liệu cần chạy SQL **Cập nhật** tại `/setup?mode=upgrade` một lần (migration `20261108120000_maoki_calendars_ai.sql`). Gemini (`GEMINI_API_KEY`) vẫn được hỗ trợ như phương án cũ.
-
 Kết quả kiểm tra bảo mật: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
 
-## Trợ lý AI và nhận diện Maoki
+## Nhận diện Maoki
 
 Logo gốc `src/assets/images/logo.png` được dùng trực tiếp trên website, đăng nhập, sidebar và trang hướng dẫn. Bảng màu trở về nâu đất `#8a4a34`, nâu espresso `#5c2f20`, kem `#fdf6ee`, với màu nhấn vàng đồng của bộ nhận diện cũ. Logo không phụ thuộc Cloudinary.
 
-`/admin/dashboard/ai` gọi function `/api/assistant` riêng, không khởi tạo Firebase Admin. Function xác minh người dùng với Supabase Auth, kiểm tra vai trò owner/manager/agent trong không gian hiện tại và gọi Gemini bằng key máy chủ. Vai trò chỉ xem không được dùng AI. API không dùng service-role key. Chọn “Dùng số liệu vận hành” để gửi thống kê/phòng; mặc định tắt, không tự gửi danh bạ, hội thoại khách, token widget hay mật khẩu Wi-Fi. Nội dung người dùng nhập vẫn được chuyển đến Gemini. AI tạo bản nháp, không tự gửi tin hoặc sửa dữ liệu. Lịch sử trò chuyện chỉ ở bộ nhớ trang.
 
-Trên Vercel: Settings → Environment Variables → thêm `GEMINI_API_KEY` cho Production → Redeploy. Model mặc định `gemini-flash-latest`, đối chiếu ví dụ trong [SDK chính thức Google](https://github.com/googleapis/js-genai#readme); có thể đổi bằng `GEMINI_MODEL`. Nếu dùng một dự án Supabase khác, cấu hình thêm `SUPABASE_URL` và `SUPABASE_PUBLISHABLE_KEY` ở máy chủ cho khớp hai biến Vite. Chạy local bằng `npm run server:ai` cùng `npm run dev`; Vite chuyển `/api/assistant` đến cổng 5001.
-
-Có giới hạn 8 yêu cầu/phút/không gian trong mỗi instance; giới hạn này không bảo đảm tổng mức dùng khi Vercel chạy nhiều instance. Đặt quota/giới hạn chi tiêu ở Google trước khi mở rộng dùng. `npm run test:ai` kiểm tra xác thực, vai trò, giới hạn đầu vào, cô lập dữ liệu, chọn gửi số liệu, lỗi provider và routing bằng mạng giả lập; không gọi Gemini thật. Kiểm thử trình duyệt cũng dùng câu trả lời AI giả lập. Chưa xác minh Gemini trên deployment thật khi chưa có quyền truy cập/key máy chủ.
-
-API AI đọc cấu hình publishable dùng chung từ `shared/supabase-public.json`; không import module trình duyệt vào function Node CommonJS. `api/tsconfig.json` khai báo rõ target ES2022 và CommonJS cho bộ đóng gói Vercel. `npm run test:ai:deployment` dùng chính builder `@vercel/node` đã pin để đóng gói, nạp và gọi handler JavaScript đầu ra bằng Node, kiểm tra trạng thái key và luồng AI với mạng giả lập. Bộ kiểm tra này nằm trong `npm test`; không cần key Gemini thật hoặc quyền Vercel. Thêm/thay key trên Vercel cần deployment mới; chọn đúng bản từ main mới nhất và scope Production.
 
 ## Cập nhật lịch kênh
 
 Mở `/setup?mode=channels` để lấy SQL nâng cấp iCal cho dự án đã thiết lập. Migration mới là `20261018085535_maoki_channel_calendars.sql`; không chạy lại initial migration trên dữ liệu đang có. Chủ không gian/quản lý mở `/admin/dashboard/channels` để chọn kênh, phòng và dán URL xuất lịch chính thức. Liên kết xuất Maoki cần được nhập lại ở phía OTA cho chiều đồng bộ ngược. Daily use không cần token quản trị hoặc service-role key.
 
-`npm run server:ai` hiện phục vụ cả `/api/assistant` và `/api/channels` trên cổng 5001, Vite chuyển cả hai route tới máy chủ này. Trên Vercel hai function độc lập với Firebase. Logo giữ nguyên; dòng Hospitality Workspace đã bỏ khỏi giao diện/tab. Chuyển động chỉ dùng animation ngắn và bị tắt khi `prefers-reduced-motion: reduce`.
+`npm run server:api` phục vụ `/api/channels`, `/api/messaging`, `/api/inbound`, `/api/reviews`, `/api/youtube` trên cổng 5001; Vite chuyển các route này tới máy chủ đó. Trên Vercel các function độc lập với Firebase. Logo giữ nguyên; dòng Hospitality Workspace đã bỏ khỏi giao diện/tab. Chuyển động chỉ dùng animation ngắn và bị tắt khi `prefers-reduced-motion: reduce`.

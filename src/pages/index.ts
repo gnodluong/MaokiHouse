@@ -22,5 +22,4 @@ export { default as DashboardCalendar } from './dashboard/CalendarView';
 export { default as DashboardMessages } from './dashboard/Messages';
 export { default as DashboardRevenue } from './dashboard/Revenue';
 export { default as DashboardHR } from './dashboard/HR';
-export { default as DashboardAISupport } from './dashboard/AISupport';
 export { default as DashboardChannels } from './dashboard/Channels';

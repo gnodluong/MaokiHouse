@@ -41,7 +41,7 @@ Tham khảo: belldor.com (trang chủ, Kênh bán, Hộp thư, App, Bảng giá 
 | Hộp thư chung Zalo OA, Messenger, Instagram, WhatsApp, email | — | — | ✔ |
 | Tin Airbnb/Booking/Agoda trong hộp thư | — | — | Khi có quyền đối tác |
 | Trip.com | trả lời trong app Trip.com | idem | idem |
-| Bot, chu trình, tự trả lời, AI | — | — | ✔ |
+| Bot, chu trình, tự trả lời | — | — | ✔ |
 Triển khai kỹ thuật: cột `plan` trên không gian làm việc; máy chủ chặn lưu kênh nhắn tin khi chưa ở gói Chuyên nghiệp; giao diện hiện khóa kèm lời mời nâng cấp. **Trong giai đoạn thử, mọi không gian đang ở "Chuyên nghiệp"**; đổi gói bằng SQL cho tới khi có thanh toán.
 
 ## 6. Phạm vi bản Android "cơ bản" (APK đầu tiên)
