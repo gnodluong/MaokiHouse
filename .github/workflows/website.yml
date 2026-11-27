@@ -1,0 +1,45 @@
+name: Deploy guest website (GitHub Pages)
+
+# The guest website (home, booking, guidebook, privacy, terms, data deletion) is a static site.
+# GitHub Pages serves it at the domain set in Settings → Pages → Custom domain (HTTPS). A custom domain is
+# required: the site uses root paths such as /privacy, which do not work under github.io/<repo>/.
+# Needs repository variables or secrets VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (optional: the repo defaults are public).
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'shared/**', 'index.html', 'public/**', 'vite.config.ts', 'package.json']
+  workflow_dispatch:
+
+permissions: { contents: read, pages: write, id-token: write }
+concurrency: { group: pages, cancel-in-progress: true }
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      - name: Static routes and SPA fallback
+        run: |
+          # Pages that platforms review must answer 200, so each gets its own index.html.
+          for route in privacy terms data-deletion; do mkdir -p "dist/$route" && cp dist/index.html "dist/$route/index.html"; done
+          # Every other deep link (/book/<id>, /guide/<token>, /chat/<token>) falls back to the app shell.
+          cp dist/index.html dist/404.html
+      - name: Custom domain
+        env: { DOMAIN: '${{ vars.SITE_DOMAIN }}' }
+        run: if [ -n "$DOMAIN" ]; then echo "$DOMAIN" > dist/CNAME; fi
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: '${{ steps.deploy.outputs.page_url }}' }
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

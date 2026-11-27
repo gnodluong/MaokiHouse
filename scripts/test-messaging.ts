@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { handleInbound, handleMessaging, normaliseEmail, stripQuotedReply } from '../api/_lib/messaging';
-import type { Mailer } from '../api/_lib/messaging';
+import { handleInbound, handleMessaging, normaliseEmail, stripQuotedReply } from '../supabase/functions/_shared/messaging';
+import type { Mailer } from '../supabase/functions/_shared/messaging';
 
 let checks = 0; const ok = (condition: unknown, message: string) => { assert.ok(condition, message); checks++; console.log('PASS', message); };
 const CONV = '11111111-1111-4111-8111-111111111111'; const TOKEN = 'a'.repeat(64);

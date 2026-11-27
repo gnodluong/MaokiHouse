@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { handleReviews } from '../api/_lib/reviews';
-import { callStatus, handleInbound, normaliseCall } from '../api/_lib/messaging';
+import { handleReviews } from '../supabase/functions/_shared/reviews';
+import { callStatus, handleInbound, normaliseCall } from '../supabase/functions/_shared/messaging';
 
 let checks = 0; const ok = (condition: unknown, message: string) => { assert.ok(condition, message); checks++; console.log('PASS', message); };
 const j = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });

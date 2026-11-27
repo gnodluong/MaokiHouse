@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { handleYouTube } from '../api/_lib/youtube';
+import { handleYouTube } from '../supabase/functions/_shared/youtube';
 
 let checks = 0; const ok = (condition: unknown, message: string) => { assert.ok(condition, message); checks++; console.log('PASS', message); };
 const j = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });

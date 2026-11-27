@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { handleWorker } from '../api/_lib/worker';
-import type { MailFetcher } from '../api/_lib/worker';
-import { sendWhatsApp } from '../api/_lib/messaging';
-import type { Mailer, SendContext } from '../api/_lib/messaging';
+import { handleWorker } from '../supabase/functions/_shared/worker';
+import type { MailFetcher } from '../supabase/functions/_shared/worker';
+import { sendWhatsApp } from '../supabase/functions/_shared/messaging';
+import type { Mailer, SendContext } from '../supabase/functions/_shared/messaging';
 
 let checks = 0; const ok = (condition: unknown, message: string) => { assert.ok(condition, message); checks++; console.log('PASS', message); };
 const j = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });

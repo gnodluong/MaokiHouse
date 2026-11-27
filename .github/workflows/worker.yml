@@ -1,7 +1,7 @@
 name: Maoki background worker
 
-# Calls /api/worker every 5 minutes: journeys, queued bot/automation replies, IMAP mail, opt-in review auto-replies.
-# Needs repository secrets WORKER_URL (e.g. https://your-site.vercel.app) and WORKER_SECRET (same value as on Vercel).
+# Calls the Edge Function's /worker endpoint every 5 minutes: journeys, queued bot/automation replies, IMAP mail, opt-in review auto-replies.
+# Needs repository secrets WORKER_URL (https://<project-ref>.supabase.co/functions/v1/api) and WORKER_SECRET (the same value set with `supabase secrets set WORKER_SECRET=...`).
 on:
   schedule: [{ cron: '*/5 * * * *' }]
   workflow_dispatch:
@@ -15,4 +15,4 @@ jobs:
           WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
         run: |
           if [ -z "$WORKER_URL" ]; then echo "WORKER_URL is not set; skipping."; exit 0; fi
-          curl -fsS -X POST --max-time 55 -H "Authorization: Bearer $WORKER_SECRET" "$WORKER_URL/api/worker"
+          curl -fsS -X POST --max-time 55 -H "Authorization: Bearer $WORKER_SECRET" "$WORKER_URL/worker"

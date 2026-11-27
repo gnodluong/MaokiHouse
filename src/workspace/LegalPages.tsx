@@ -33,7 +33,8 @@ export function Privacy() {
     <h2>5. Bên xử lý và chia sẻ dữ liệu</h2>
     <ul>
       <li><b>Supabase</b> — cơ sở dữ liệu và xác thực.</li>
-      <li><b>Vercel</b> — chạy các điểm cuối API (nhận webhook, gửi tin).</li>
+      <li><b>Supabase Edge Functions</b> — chạy các điểm cuối API (nhận webhook, gửi tin); cùng nhà cung cấp với cơ sở dữ liệu.</li>
+      <li><b>GitHub Pages</b> — phục vụ website khách (trang chủ, đặt phòng, sổ tay, trang pháp lý); chỉ thấy địa chỉ IP người truy cập.</li>
       <li><b>Nhà cung cấp gửi email</b> (SMTP của chủ nhà hoặc Resend) — khi chủ nhà bật kênh email.</li>
       <li><b>Nhà cung cấp tổng đài</b> do chủ nhà chọn — khi chủ nhà bật nhật ký cuộc gọi.</li>
       <li><b>Các nền tảng chủ nhà kết nối</b> (Meta, Zalo, Google) — nhận tin trả lời mà chủ nhà gửi qua Maoki.</li>
@@ -41,7 +42,7 @@ export function Privacy() {
     </ul>
     <p>Ngoài các bên trên, chúng tôi không chia sẻ dữ liệu cá nhân, trừ khi pháp luật yêu cầu.</p>
     <h2>6. Nơi lưu trữ và chuyển dữ liệu</h2>
-    <p>Dữ liệu được lưu trên hạ tầng của Supabase và Vercel, có thể đặt ngoài lãnh thổ Việt Nam. Chúng tôi áp dụng các biện pháp bảo vệ được nêu ở mục 8 khi truyền và lưu trữ dữ liệu.</p>
+    <p>Dữ liệu được lưu trên hạ tầng của Supabase (cơ sở dữ liệu và API), có thể đặt ngoài lãnh thổ Việt Nam. Chúng tôi áp dụng các biện pháp bảo vệ được nêu ở mục 8 khi truyền và lưu trữ dữ liệu.</p>
     <h2>7. Thời gian lưu và xóa</h2>
     <p>Dữ liệu được lưu cho đến khi chủ nhà xóa hoặc đóng không gian làm việc. Chúng tôi hoàn tất yêu cầu xóa đã xác minh trong vòng {LEGAL.deletionDays} ngày. Cách yêu cầu: xem <Link to="/data-deletion">hướng dẫn xóa dữ liệu</Link>.</p>
     <h2>8. Bảo mật</h2>
@@ -63,7 +64,7 @@ export function Privacy() {
     {/* English summary */}
     <section lang="en" className="mk-legal-en"><hr /><h2>Privacy policy (summary)</h2>
       <p>MaokiHouse runs a guest booking website and <b>Maoki Admin</b>, an app for property owners and staff of small hotels and homestays. We process guest booking details and the messages, comments and reviews that reach accounts a property owner has explicitly connected (Facebook Page, Instagram professional account, WhatsApp Business, Zalo Official Account, email, YouTube, Google Business Profile), plus call-log entries from the owner’s telephony provider. We use this data only to let that owner reply to and manage their own guests. We do not sell data, use it for advertising or profiling, or share platform data with data brokers. Our use of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.</p>
-      <p>Sub-processors: Supabase (database/auth), Vercel (API hosting), the owner’s email provider, the owner’s telephony provider. Channel tokens are stored in a private database area never returned to the browser and are deleted when the owner disconnects the channel. Data is kept until the owner deletes it or closes the workspace; verified deletion requests are completed within {LEGAL.deletionDays} days. Contact: {LEGAL.email}.</p>
+      <p>Sub-processors: Supabase (database, auth and API hosting), GitHub Pages (static website), the owner’s email provider, the owner’s telephony provider. Channel tokens are stored in a private database area never returned to the browser and are deleted when the owner disconnects the channel. Data is kept until the owner deletes it or closes the workspace; verified deletion requests are completed within {LEGAL.deletionDays} days. Contact: {LEGAL.email}.</p>
     </section>
   </Page>;
 }

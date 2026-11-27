@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
-import { handleChannels } from './channelApi';
-import { handleInbound, handleMessaging } from './messaging';
-import { handleReviews } from './reviews';
-import { handleYouTube } from './youtube';
+import { handleChannels } from '../../supabase/functions/_shared/channelApi';
+import { handleInbound, handleMessaging } from '../../supabase/functions/_shared/messaging';
+import { handleReviews } from '../../supabase/functions/_shared/reviews';
+import { handleYouTube } from '../../supabase/functions/_shared/youtube';
 
 const app = express();
 app.use((req, res, next) => (req.path === '/api/inbound' ? next() : express.json({ limit: '64kb' })(req, res, next)));

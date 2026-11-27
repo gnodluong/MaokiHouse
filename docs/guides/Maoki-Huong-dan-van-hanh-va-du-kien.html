@@ -61,12 +61,13 @@ tr { page-break-inside: avoid; }
 <tr><td><code>20261130090000_maoki_remove_ai</code></td><td>Gỡ bảng và hàm AI, xóa dữ liệu “Kiến thức”.</td></tr>
 <tr><td><b><code>20261201090000_maoki_stay_messaging</code></b></td><td><b>Mới:</b> trạng thái thanh toán và số khách của đơn; chu trình theo mốc đơn có điều kiện thanh toán; hàm xóa dữ liệu theo khách.</td></tr></table>
 <p class="small">Cách nhanh: <code>npm run sql:bundle</code> gộp các tệp thành một tệp để dán một lần.</p>
-<h3>2.2 Vercel và GitHub</h3>
-<ul><li>Vercel → Environment Variables: giữ <code>SUPABASE_URL</code>, <code>SUPABASE_PUBLISHABLE_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>WORKER_SECRET</code>. Có thể xóa <code>GEMINI_API_KEY</code> và <code>OPENROUTER_*</code>.</li>
-<li>GitHub → Settings → Secrets: <code>VITE_SUPABASE_URL</code>, <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>, <code>VITE_API_ORIGIN</code> (cho bản Android và desktop); <code>WORKER_SECRET</code> và địa chỉ worker cho tác vụ nền chạy 5 phút/lần.</li>
+<h3>2.2 Supabase Edge Function và GitHub (không còn Vercel)</h3>
+<ul><li>API chạy ở <code>https://&lt;mã-dự-án&gt;.supabase.co/functions/v1/api/&lt;endpoint&gt;</code>. Thêm secret <code>SUPABASE_ACCESS_TOKEN</code> (Supabase → Account → Access Tokens) rồi chạy workflow <b>Deploy Maoki API</b>; hoặc <code>npx supabase functions deploy api --no-verify-jwt</code>. Đặt khóa tác vụ nền một lần: <code>npx supabase secrets set WORKER_SECRET=&lt;chuỗi ≥24 ký tự&gt;</code>. Khóa service_role do Supabase tự cấp cho hàm.</li>
+<li>Website khách là trang tĩnh: workflow <b>Deploy guest website</b> đưa lên GitHub Pages. Cần tên miền riêng: GitHub → Settings → Pages → Custom domain, đặt biến <code>SITE_DOMAIN</code>, trỏ DNS (CNAME) tới <code>gnodluong.github.io</code>.</li>
+<li>GitHub → Settings → Secrets: <code>VITE_SUPABASE_URL</code>, <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>, <code>VITE_API_ORIGIN</code> (cho bản Android và desktop); <code>WORKER_SECRET</code> và <code>WORKER_URL</code> (<code>https://&lt;mã-dự-án&gt;.supabase.co/functions/v1/api</code>) cho tác vụ nền chạy 5 phút/lần.</li>
 <li>Actions → chạy “Android APK” để có tệp cài; chạy các workflow desktop để có bộ cài Windows (NSIS) và macOS (dmg).</li></ul>
 <h3>2.3 Thông tin pháp lý</h3>
-<p>Điền <code>src/constants/legal.ts</code> (tên pháp nhân, mã số thuế, địa chỉ, điện thoại, tên miền) và trỏ tên miền riêng có HTTPS tới Vercel. Ba trang <code>/privacy</code>, <code>/terms</code>, <code>/data-deletion</code> là điều kiện để nộp hồ sơ Meta, Zalo, Google.</p>
+<p>Điền <code>src/constants/legal.ts</code> (tên pháp nhân, mã số thuế, địa chỉ, điện thoại, tên miền) và trỏ tên miền riêng có HTTPS tới GitHub Pages. Ba trang <code>/privacy</code>, <code>/terms</code>, <code>/data-deletion</code> là điều kiện để nộp hồ sơ Meta, Zalo, Google.</p>
 
 <h2 class="pb">3. Cách dùng các tính năng mới</h2>
 <h3>3.1 Hộp thư gắn đơn và lọc theo ngày ở</h3>
@@ -131,7 +132,7 @@ Sau 1 ngày: Cảm ơn {{guest}} đã ở cùng chúng tôi.</div>
 <ul><li><b>Ứng dụng:</b> Maoki Admin, công cụ B2B quản lý lưu trú và chăm sóc khách, Windows, macOS, Android, website khách.</li>
 <li><b>Dữ liệu lưu:</b> văn bản tin nhắn, mã người gửi do nền tảng cấp, thời điểm, tên hiển thị; không lưu ảnh, tệp, danh sách bạn bè, bài đăng.</li>
 <li><b>Token:</b> lưu trong schema riêng, trình duyệt không bao giờ nhận giá trị; <b>chưa mã hóa cấp ứng dụng</b> (đã nêu trung thực).</li>
-<li><b>Bên thứ ba:</b> Supabase, Vercel; SMTP/IMAP và nhà cung cấp tổng đài khi chủ nhà bật. Không còn nhà cung cấp AI.</li>
+<li><b>Bên thứ ba:</b> Supabase (cơ sở dữ liệu và API), GitHub Pages (website khách); SMTP/IMAP và nhà cung cấp tổng đài khi chủ nhà bật. Không còn nhà cung cấp AI.</li>
 <li><b>Xóa dữ liệu:</b> trang <code>/data-deletion</code> và công cụ “Xóa dữ liệu của khách”. Chưa có Data Deletion Callback tự động.</li>
 <li><b>Điểm cuối:</b> <code>/api/inbound</code>, <code>/api/messaging</code>, <code>/api/reviews</code>, <code>/api/youtube</code>, <code>/api/channels</code>, <code>/api/worker</code>. Webhook Meta xác thực bằng X-Hub-Signature-256; Zalo bằng X-ZEvent-Signature.</li>
 <li><b>Còn thiếu để nộp:</b> thông tin pháp nhân, tên miền HTTPS, tài khoản dùng thử cho người duyệt, video thao tác từng quyền xin.</li></ul>

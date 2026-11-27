@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import publicConfig from '../../shared/supabase-public.json';
+import publicConfig from './supabase-public.json' with { type: 'json' };
+import type { Env } from './env.ts';
 
 const json = (status: number, body: object) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const inputSchema = z.discriminatedUnion('action', [
@@ -28,7 +29,7 @@ export function googleError(status: number, message: string) {
 }
 
 /** POST /api/reviews {action:'sync'} or {action:'reply',recordId,text}: Google Business Profile reviews for the signed-in workspace. */
-export async function handleReviews(request: Request, env: NodeJS.ProcessEnv = process.env, transport: typeof fetch = fetch): Promise<Response> {
+export async function handleReviews(request: Request, env: Env = process.env, transport: typeof fetch = fetch): Promise<Response> {
   if (request.method !== 'POST') return json(405, { error: 'Phương thức không được hỗ trợ.' });
   const token = request.headers.get('authorization')?.match(/^Bearer (\S+)$/)?.[1];
   if (!token) return json(401, { error: 'Vui lòng đăng nhập.' });
