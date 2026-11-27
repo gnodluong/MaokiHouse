@@ -1,0 +1,145 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>Maoki — Hướng dẫn vận hành và dữ kiện tổng hợp</title><style>
+@page { size: A4; margin: 22mm 18mm 20mm; }
+:root { --ink:#161a22; --muted:#566070; --line:#dfe3ea; --accent:#1f5fd6; --soft:#f3f5f8; --warn:#8a5a00; --warnbg:#fdf4dc; --ok:#1f7a47; --okbg:#e6f4ec; }
+* { box-sizing: border-box; }
+body { font-family: 'Inter', 'Segoe UI', sans-serif; font-size: 10.2pt; line-height: 1.55; color: var(--ink); margin: 0; }
+h1 { font-size: 21pt; line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 6pt; }
+h2 { font-size: 15pt; letter-spacing: -0.015em; margin: 26pt 0 8pt; padding-top: 10pt; border-top: 2px solid var(--ink); page-break-after: avoid; }
+h3 { font-size: 11.5pt; margin: 16pt 0 5pt; page-break-after: avoid; }
+h4 { font-size: 10.2pt; margin: 11pt 0 3pt; color: var(--accent); page-break-after: avoid; }
+p { margin: 0 0 7pt; } ul, ol { margin: 0 0 8pt; padding-left: 17pt; } li { margin-bottom: 2.5pt; }
+a { color: var(--accent); text-decoration: none; word-break: break-all; }
+code { font-family: 'DejaVu Sans Mono', monospace; font-size: 8.6pt; background: var(--soft); padding: 1px 4px; border-radius: 3px; word-break: break-all; }
+table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9pt; page-break-inside: auto; }
+th { text-align: left; background: var(--soft); border-bottom: 1.5px solid var(--ink); padding: 5pt 6pt; vertical-align: bottom; }
+td { border-bottom: 1px solid var(--line); padding: 5pt 6pt; vertical-align: top; }
+tr { page-break-inside: avoid; }
+.cover { height: 235mm; display: flex; flex-direction: column; justify-content: space-between; page-break-after: always; }
+.cover .brand { font-weight: 700; letter-spacing: .14em; font-size: 10pt; text-transform: uppercase; }
+.cover h1 { font-size: 34pt; max-width: 15em; }
+.cover .sub { font-size: 13pt; color: var(--muted); max-width: 30em; }
+.cover .meta { font-size: 9pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8pt; }
+.callout { border-left: 3px solid var(--accent); background: var(--soft); padding: 8pt 11pt; margin: 8pt 0 10pt; border-radius: 0 6px 6px 0; page-break-inside: avoid; }
+.callout.warn { border-color: #d49a1a; background: var(--warnbg); color: #4a3200; }
+.callout.ok { border-color: var(--ok); background: var(--okbg); }
+.callout b:first-child { display: block; margin-bottom: 2pt; }
+.tag { display: inline-block; font-size: 7.6pt; font-weight: 650; letter-spacing: .03em; padding: 1px 6px; border-radius: 9px; vertical-align: 1px; white-space: nowrap; }
+.t-ok { background: var(--okbg); color: var(--ok); } .t-chk { background: var(--warnbg); color: var(--warn); } .t-todo { background: #e6eefc; color: #1d4aa8; }
+.toc { columns: 2; column-gap: 24pt; font-size: 9.8pt; } .toc div { margin-bottom: 3pt; break-inside: avoid; } .toc b { color: var(--accent); margin-right: 5pt; }
+.email { border: 1px solid var(--line); background: #fff; padding: 9pt 12pt; margin: 6pt 0 10pt; border-radius: 6px; font-size: 9.2pt; page-break-inside: avoid; white-space: pre-wrap; }
+.email .h { color: var(--muted); font-size: 8.5pt; border-bottom: 1px solid var(--line); margin-bottom: 6pt; padding-bottom: 4pt; }
+.box { display: inline-block; width: 8pt; height: 8pt; border: 1.2px solid var(--ink); margin-right: 5pt; vertical-align: -1px; }
+.pb { page-break-before: always; }
+.small { font-size: 8.8pt; color: var(--muted); }
+
+.k { width: 28%; font-weight: 600; } td.v code { white-space: normal; }
+.svgbox { border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin: 8pt 0 12pt; page-break-inside: avoid; }
+</style></head><body>
+<div class="cover"><div class="brand">MaokiHouse</div><div><h1>Hướng dẫn vận hành và dữ kiện tổng hợp</h1><p class="sub">Việc cần làm để đưa Maoki Admin vào chạy thật, cách dùng các tính năng mới, danh sách thử với tài khoản thật, so sánh với Belldor và các dữ kiện gửi nền tảng.</p></div><div class="meta">Phiên bản 1.0 · 27/11/2026 · Đối chiếu với mã nguồn nhánh main (PR #3). Chỗ nào chưa chắc đều ghi rõ là cần kiểm tra.</div></div>
+
+<h2 style="border-top:0;margin-top:0">1. Hiện trạng một trang</h2>
+<table><tr><th style="width:28%">Mảng</th><th>Trạng thái</th></tr>
+<tr><td>Ứng dụng</td><td>Electron (Windows, macOS), Android APK (Capacitor), website khách. Quản trị web đã gỡ. Trợ lý AI đã gỡ hoàn toàn.</td></tr>
+<tr><td>Hộp thư chung</td><td>Zalo OA, Messenger, Instagram, WhatsApp, email, tổng đài, TikTok qua cầu nối: <span class="tag t-ok">ĐÃ LÀM, kiểm thử tự động</span>. Chưa thử với tài khoản thật.</td></tr>
+<tr><td>Đồng bộ OTA</td><td>Chỉ lịch (ngày bận) qua iCal, trễ vài giờ. Giá, đơn, tin nhắn Airbnb/Booking/Agoda <b>chưa có</b>: cần chứng nhận đối tác kết nối.</td></tr>
+<tr><td>Đánh giá và bình luận</td><td>Google Business, YouTube: đồng bộ, trả lời, tự trả lời đánh giá. Cần tài khoản thật để kiểm tra.</td></tr>
+<tr><td>Mới trong lần này</td><td>Hộp thư gắn đơn và lọc theo ngày ở; tin nhắn theo mốc đơn có điều kiện thanh toán; trang Cảnh báo; công cụ xóa dữ liệu theo khách.</td></tr>
+<tr><td>Chưa làm</td><td>Đăng nhập OAuth (Facebook, Google, Zalo) cho khách tự kết nối; Data Deletion Callback tự động của Meta; thử với tài khoản thật; thanh toán gói dịch vụ.</td></tr></table>
+
+<h2>2. Việc bạn cần làm, theo thứ tự</h2>
+<h3>2.1 Supabase: chạy các migration còn thiếu, đúng thứ tự</h3>
+<p>Mở Supabase → SQL Editor, chạy từng tệp trong <code>supabase/migrations/</code> theo tên tăng dần nếu chưa chạy. Các tệp gần đây, bắt buộc đủ:</p>
+<table><tr><th>Tệp</th><th>Thêm gì</th></tr>
+<tr><td><code>20261122090000…</code> và <code>20261122120000…</code></td><td>Thẻ, quy tắc, giờ làm, phiếu ghi, bot, chu trình, khách và trường tùy chọn.</td></tr>
+<tr><td><code>20261123090000_maoki_messaging_channels</code></td><td>Kênh Zalo OA và email, liên kết hội thoại.</td></tr>
+<tr><td><code>20261124090000_maoki_meta_channels</code></td><td>Messenger, Instagram.</td></tr>
+<tr><td><code>20261125090000_maoki_whatsapp_tiktok</code></td><td>WhatsApp, TikTok.</td></tr>
+<tr><td><code>20261126090000_maoki_calls_reviews</code></td><td>Tổng đài, Google Business.</td></tr>
+<tr><td><code>20261127090000_maoki_youtube</code></td><td>YouTube.</td></tr>
+<tr><td><code>20261128090000_maoki_background_automation</code></td><td>Hàng đợi gửi, chu trình, bot, tác vụ nền.</td></tr>
+<tr><td><code>20261129090000_maoki_plans</code></td><td>Gói Cơ bản / Vận hành / Chuyên nghiệp.</td></tr>
+<tr><td><code>20261130090000_maoki_remove_ai</code></td><td>Gỡ bảng và hàm AI, xóa dữ liệu “Kiến thức”.</td></tr>
+<tr><td><b><code>20261201090000_maoki_stay_messaging</code></b></td><td><b>Mới:</b> trạng thái thanh toán và số khách của đơn; chu trình theo mốc đơn có điều kiện thanh toán; hàm xóa dữ liệu theo khách.</td></tr></table>
+<p class="small">Cách nhanh: <code>npm run sql:bundle</code> gộp các tệp thành một tệp để dán một lần.</p>
+<h3>2.2 Vercel và GitHub</h3>
+<ul><li>Vercel → Environment Variables: giữ <code>SUPABASE_URL</code>, <code>SUPABASE_PUBLISHABLE_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>WORKER_SECRET</code>. Có thể xóa <code>GEMINI_API_KEY</code> và <code>OPENROUTER_*</code>.</li>
+<li>GitHub → Settings → Secrets: <code>VITE_SUPABASE_URL</code>, <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>, <code>VITE_API_ORIGIN</code> (cho bản Android và desktop); <code>WORKER_SECRET</code> và địa chỉ worker cho tác vụ nền chạy 5 phút/lần.</li>
+<li>Actions → chạy “Android APK” để có tệp cài; chạy các workflow desktop để có bộ cài Windows (NSIS) và macOS (dmg).</li></ul>
+<h3>2.3 Thông tin pháp lý</h3>
+<p>Điền <code>src/constants/legal.ts</code> (tên pháp nhân, mã số thuế, địa chỉ, điện thoại, tên miền) và trỏ tên miền riêng có HTTPS tới Vercel. Ba trang <code>/privacy</code>, <code>/terms</code>, <code>/data-deletion</code> là điều kiện để nộp hồ sơ Meta, Zalo, Google.</p>
+
+<h2 class="pb">3. Cách dùng các tính năng mới</h2>
+<h3>3.1 Hộp thư gắn đơn và lọc theo ngày ở</h3>
+<ul><li>Cột bên phải của mỗi hội thoại có mục <b>Đơn đang gắn với khách</b>: phòng, ngày ở, số đêm, số khách, tổng tiền khách trả, đã hay chưa thanh toán, và trạng thái (nhận phòng hôm nay, đang ở, trả phòng).</li>
+<li>Đơn được chọn theo thứ tự: đơn đang ở, rồi đơn sắp tới gần nhất, rồi đơn gần nhất đã qua. Cần đặt <b>Hồ sơ khách hàng</b> trong đơn để hội thoại tìm thấy đơn.</li>
+<li>Ô lọc “Lọc theo ngày ở” gồm: Nhận phòng hôm nay, Đang ở, Trả phòng hôm nay hoặc mai. Danh sách luôn xếp khách sắp đến và sắp đi lên trước.</li>
+<li><b>Giới hạn thật:</b> “tiền về tay” (sau phí sàn) chưa có vì hệ thống chưa nhận phí sàn từ OTA. Trường hiện có là Tổng tiền kỳ nghỉ.</li></ul>
+<h3>3.2 Tin nhắn tự gửi theo mốc đơn</h3>
+<p>Vào Chu trình chăm sóc → tạo chu trình, chọn “Bắt đầu khi”: Xác nhận đặt phòng, Trước ngày nhận phòng hoặc Sau ngày trả phòng. Mỗi dòng là một bước:</p>
+<div class="email">Trước 2 ngày: Chào {{guest}}, hẹn gặp bạn tại {{property}} ngày {{checkin}}.
+Trước 1 ngày: [đã thanh toán] Wifi: {{wifi}}, mật khẩu: {{wifipass}}.
+Sau 1 ngày: Cảm ơn {{guest}} đã ở cùng chúng tôi.</div>
+<ul><li>Biến dùng được: <code>{{guest}}</code>, <code>{{property}}</code>, <code>{{checkin}}</code>, <code>{{checkout}}</code>, <code>{{wifi}}</code>, <code>{{wifipass}}</code>, <code>{{guests}}</code>. Wifi lấy từ Sổ tay khách của đúng phòng.</li>
+<li><b>Không gửi tin dở dang:</b> nếu một biến được dùng mà thiếu giá trị (ví dụ chưa nhập mật khẩu wifi) thì bước đó <b>không gửi</b> và không bị đánh dấu là đã gửi; khi bạn bổ sung thông tin, tin sẽ gửi trong vòng 2 ngày kể từ mốc.</li>
+<li><b>[đã thanh toán]</b> ở đầu dòng: chỉ gửi khi đơn có Thanh toán = Đã thanh toán. Dùng cho mã cửa, wifi. Đơn chưa thanh toán sẽ bị bỏ qua cho tới khi bạn đổi trạng thái.</li>
+<li>Gửi qua email của khách; nếu đơn không có email thì gửi qua kênh chat đã liên kết với hồ sơ khách (Zalo, Messenger…). Nếu không có cả hai, không gửi.</li>
+<li>Mỗi bước chỉ gửi một lần cho mỗi đơn. Tác vụ nền cần chạy (xem 2.2).</li></ul>
+<h3>3.3 Trang Cảnh báo</h3>
+<p>Menu Hằng ngày → Cảnh báo. Hiện: đơn trùng lịch trong cùng phòng (cảnh báo cao); đơn chưa gắn phòng; đơn chờ xác nhận mà sắp đến; đơn đã xác nhận, chưa thanh toán, nhận phòng trong 3 ngày; đơn sắp đến mà không có email hay hồ sơ khách; kênh lịch bị lỗi hoặc quá 1 giờ chưa đồng bộ; tin nhắn gửi thất bại. Đơn trùng đã qua ngày ở không tính. Hai đơn nối tiếp (trả phòng và nhận phòng cùng ngày) không phải trùng.</p>
+<h3>3.4 Xóa dữ liệu theo khách</h3>
+<p>Khách hàng → biểu tượng “Xóa dữ liệu của khách” → gõ đúng tên để xác nhận. Xóa: mọi hội thoại, liên kết kênh, tin nhắn đang chờ gửi, câu trả lời trường tùy chọn và hồ sơ khách. Đơn phòng được giữ cho sổ sách nhưng đổi tên khách thành “Đã xóa theo yêu cầu” và bỏ email, số điện thoại, ghi chú. Chỉ chủ nhà và quản lý dùng được. Thao tác được ghi vào nhật ký hoạt động. Khi khách gửi yêu cầu xóa: tìm hồ sơ theo tên, email hoặc số điện thoại, bấm xóa, rồi báo lại cho khách trong thời hạn đã cam kết trên trang <code>/data-deletion</code>.</p>
+
+<h2 class="pb">4. Đăng nhập OAuth: vì sao chưa có và cách đi tiếp</h2>
+<p>Hiện chủ nhà dán token vào app. Đủ để <b>bạn tự dùng cho tài khoản của mình</b> (chế độ Standard Access hoặc Testing, không cần App Review), nhưng chưa đủ để khách của bạn tự bấm kết nối. Nút “Đăng nhập bằng Facebook/Google/Zalo” chỉ chạy được khi ứng dụng của bạn đã được nền tảng duyệt; xây trước khi có ID ứng dụng và duyệt sẽ không thử được. Thứ tự đề xuất:</p>
+<table><tr><th style="width:18%">Nền tảng</th><th>Cần trước khi xây</th><th>Quyền dự kiến</th></tr>
+<tr><td>Meta (Messenger, Instagram, WhatsApp)</td><td>Ứng dụng Meta loại Business, xác minh doanh nghiệp, Advanced Access cho từng quyền (App Review kèm video), trang quyền riêng tư và xóa dữ liệu.</td><td><code>pages_messaging</code>, <code>pages_show_list</code>, <code>instagram_manage_messages</code>, <code>whatsapp_business_messaging</code>, <code>whatsapp_business_management</code> (kiểm tra tên quyền hiện hành trong bảng điều khiển Meta).</td></tr>
+<tr><td>Google (Business Profile, YouTube)</td><td>Dự án Google Cloud, màn hình đồng ý OAuth, xác minh quyền nhạy cảm, tên miền xác minh.</td><td><code>business.manage</code>, <code>youtube.force-ssl</code>. Business Profile API cần xin quyền truy cập riêng.</td></tr>
+<tr><td>Zalo OA</td><td>Ứng dụng Zalo, OA đã xác thực, bật quyền gửi tin tư vấn.</td><td>Theo trang quyền của Zalo for Developers; kiểm tra tại đó.</td></tr></table>
+<p>Khi có ID ứng dụng, việc xây gồm: một điểm cuối <code>/oauth/callback/&lt;nền-tảng&gt;</code>, lưu token vào bảng kênh sẵn có, tự làm mới token và xử lý khi khách thu hồi quyền. Hồ sơ gửi nền tảng (mục 6) đã liệt kê đủ giá trị để điền.</p>
+
+<h2 class="pb">5. Danh sách thử với tài khoản thật</h2>
+<p>Mình không có tài khoản của các nền tảng, nên phần này do bạn thực hiện. Làm từng dòng, tích khi xong. Nếu một dòng lỗi, mở Thiết lập → Kênh nhắn tin để xem trạng thái và lỗi gần nhất của hàng đợi.</p>
+<table><tr><th style="width:17%">Kênh</th><th>Các bước</th><th style="width:30%">Kết quả đúng</th></tr>
+<tr><td><span class="box"></span>Zalo OA</td><td>Dán token và khóa OA, chép địa chỉ webhook của kênh vào Zalo for Developers; dùng tài khoản Zalo cá nhân nhắn tới OA, rồi trả lời từ app.</td><td>Tin hiện trong Hộp thư; trả lời tới Zalo trong vài giây; tài khoản cá nhân có hồ sơ khách.</td></tr>
+<tr><td><span class="box"></span>Messenger</td><td>Tạo ứng dụng Meta (chế độ Development), thêm Trang của bạn, dán địa chỉ webhook và verify token, đăng ký trường <code>messages</code>; nhắn vào Trang từ tài khoản là quản trị viên ứng dụng.</td><td>Tin về app; trả lời trong 24 giờ đến được khách. Ngoài 24 giờ báo lỗi rõ ràng.</td></tr>
+<tr><td><span class="box"></span>Instagram</td><td>Tài khoản Instagram Business gắn với Trang, đăng ký webhook Instagram.</td><td>Như Messenger.</td></tr>
+<tr><td><span class="box"></span>WhatsApp</td><td>Số thử của WhatsApp Cloud API, dán Phone number ID, token, App Secret; nhắn từ số cá nhân đã thêm vào danh sách thử.</td><td>Tin về app; ngoài 24 giờ dùng mẫu tin nhắn nếu đã cấu hình, nếu không báo lỗi.</td></tr>
+<tr><td><span class="box"></span>Email</td><td>Nhập SMTP và IMAP của hộp thư thật, gửi thư tới chính hộp thư đó.</td><td>Thư thành hội thoại trong tối đa 5 phút; trả lời đi bằng SMTP; thư của chính bạn không bị lặp.</td></tr>
+<tr><td><span class="box"></span>Google Business</td><td>Lấy refresh token, dán mã địa điểm, bấm đồng bộ, trả lời một đánh giá.</td><td>Đánh giá về app; phản hồi hiện trên Google.</td></tr>
+<tr><td><span class="box"></span>YouTube</td><td>Dán token và mã kênh, đồng bộ, trả lời một bình luận.</td><td>Bình luận về app; phản hồi hiện dưới video.</td></tr>
+<tr><td><span class="box"></span>Lịch iCal</td><td>Dán đường dẫn iCal của một listing Airbnb và Booking.com, đồng bộ; xuất đường dẫn lịch Maoki vào sàn.</td><td>Ngày bận về lịch; ngày Maoki bận xuất hiện bên sàn sau 1 đến 3 giờ.</td></tr>
+<tr><td><span class="box"></span>Chu trình</td><td>Tạo đơn thử có email của bạn, ngày nhận phòng trong 2 ngày tới, một chu trình “Trước 2 ngày”.</td><td>Email đến đúng một lần; đơn chưa thanh toán không nhận tin [đã thanh toán].</td></tr>
+<tr><td><span class="box"></span>Xóa dữ liệu</td><td>Tạo khách thử có hội thoại và đơn, bấm xóa.</td><td>Hồ sơ, hội thoại biến mất; đơn hiển thị “Đã xóa theo yêu cầu”.</td></tr></table>
+
+<h2 class="pb">6. So sánh với Belldor</h2>
+<div class="callout warn"><b>Giới hạn của bảng này</b>Trang belldor.com không truy cập được từ môi trường làm việc hôm nay, nên so sánh dựa trên nội dung đọc ngày 27/11/2026 (phụ lục A của hướng dẫn liên kết mạng xã hội). Hãy mở lại trang để xác nhận trước khi dùng làm thông tin bán hàng.</div>
+<table><tr><th>Năng lực</th><th>Belldor</th><th>Maoki hiện tại</th></tr>
+<tr><td>Đồng bộ giá, đơn, tin nhắn với Airbnb, Booking, Agoda, Trip.com và hơn 20 kênh</td><td>Có (nhà kết nối được chứng nhận)</td><td>Chỉ lịch qua iCal. Phần còn lại cần chứng nhận.</td></tr>
+<tr><td>Nối kênh giúp khách</td><td>Có, miễn phí cài đặt</td><td>Có thể bán dịch vụ này cho Zalo, Messenger, WhatsApp, email, iCal.</td></tr>
+<tr><td>Hộp thư gắn đơn và căn</td><td>Có</td><td>Có (mới). Chưa có “tiền về tay”.</td></tr>
+<tr><td>Ưu tiên theo ngày ở</td><td>Có</td><td>Có (mới).</td></tr>
+<tr><td>Tin mẫu theo mốc, không gửi khi thiếu thông tin, mã cửa chỉ gửi khi đã thanh toán</td><td>Có</td><td>Có (mới).</td></tr>
+<tr><td>Bảng cảnh báo kênh và đơn chờ duyệt</td><td>Có</td><td>Có (mới): đơn trùng, đơn mồ côi, lịch cũ, tin lỗi.</td></tr>
+<tr><td>Ma trận giá theo ngày và kênh</td><td>Có</td><td>Giá theo khoảng ngày cho từng phòng; chưa đẩy giá lên sàn.</td></tr>
+<tr><td>Lãi lỗ từng căn, chia lợi nhuận</td><td>Có</td><td>Có trong Báo cáo: thu, chi, ròng từng phòng và đối soát chủ sở hữu theo % phí quản lý.</td></tr>
+<tr><td>Trả lời đánh giá</td><td>Có</td><td>Có (Google, YouTube, tự trả lời).</td></tr>
+<tr><td>Hộp thư Zalo-first, trang đặt phòng trực tiếp, chiến dịch theo nhãn, tổng đài, YouTube</td><td>Chưa thấy công bố</td><td>Có.</td></tr></table>
+<p><b>Câu mô tả bán hàng trung thực:</b> “Đồng bộ lịch với Airbnb, Booking.com, Agoda, Trip.com và các kênh hỗ trợ iCal. Gói Cơ bản không nối kênh. Từ gói Chuyên nghiệp, tin nhắn Zalo OA, Messenger, Instagram, WhatsApp và email về chung một hộp thư; tin nhắn Trip.com trả lời trong app Trip.com.” Không viết “đồng bộ giá và đơn” cho tới khi có chứng nhận đối tác.</p>
+
+<h2 class="pb">7. Dữ kiện gửi nền tảng (tóm tắt)</h2>
+<p>Đầy đủ ở <code>docs/submission/Maoki-Developer-Submission-Pack.pdf</code>. Những điều khẳng định trong hồ sơ đều đã đối chiếu với mã nguồn:</p>
+<ul><li><b>Ứng dụng:</b> Maoki Admin, công cụ B2B quản lý lưu trú và chăm sóc khách, Windows, macOS, Android, website khách.</li>
+<li><b>Dữ liệu lưu:</b> văn bản tin nhắn, mã người gửi do nền tảng cấp, thời điểm, tên hiển thị; không lưu ảnh, tệp, danh sách bạn bè, bài đăng.</li>
+<li><b>Token:</b> lưu trong schema riêng, trình duyệt không bao giờ nhận giá trị; <b>chưa mã hóa cấp ứng dụng</b> (đã nêu trung thực).</li>
+<li><b>Bên thứ ba:</b> Supabase, Vercel; SMTP/IMAP và nhà cung cấp tổng đài khi chủ nhà bật. Không còn nhà cung cấp AI.</li>
+<li><b>Xóa dữ liệu:</b> trang <code>/data-deletion</code> và công cụ “Xóa dữ liệu của khách”. Chưa có Data Deletion Callback tự động.</li>
+<li><b>Điểm cuối:</b> <code>/api/inbound</code>, <code>/api/messaging</code>, <code>/api/reviews</code>, <code>/api/youtube</code>, <code>/api/channels</code>, <code>/api/worker</code>. Webhook Meta xác thực bằng X-Hub-Signature-256; Zalo bằng X-ZEvent-Signature.</li>
+<li><b>Còn thiếu để nộp:</b> thông tin pháp nhân, tên miền HTTPS, tài khoản dùng thử cho người duyệt, video thao tác từng quyền xin.</li></ul>
+
+<h2>8. Việc còn lại và đề xuất tiếp theo</h2>
+<ol><li>Chạy migration mới và thử danh sách ở mục 5 với tài khoản thật (bạn).</li>
+<li>Điền thông tin pháp lý và tên miền; nộp Meta, Zalo, Google bằng hồ sơ ở mục 7.</li>
+<li>Khi có ID ứng dụng được duyệt: xây OAuth và Data Deletion Callback (mình làm).</li>
+<li>Bán “nối kênh giúp” cho các kênh đã có trong lúc chờ chứng nhận OTA.</li>
+<li>Thanh toán và dùng thử 14 ngày cho gói dịch vụ.</li></ol>
+</body></html>

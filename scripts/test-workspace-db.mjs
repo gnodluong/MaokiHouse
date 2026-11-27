@@ -229,6 +229,30 @@ try {
  const tick2=await wk('maoki_worker_tick'); ok(tick2.queued===0,'journey steps are created exactly once');
  queued=await raw("select platform,external_id,text,kind from maoki_private.outbound_queue where kind='journey'");
  ok(queued.some(x=>x.platform==='email' && x.external_id==='journey@example.test' && x.text==='Chào Journey Guest, hẹn gặp bạn!'),'journey email goes to the booking guest with the name filled in');
+
+ // stay messaging: paid-only step, no blank placeholders, wifi from the guidebook
+ const villa=await rpc('save','properties',null,{title:'Wifi Villa',basePrice:900000});
+ await ex('save','journeys',null,{name:'Wifi before arrival',trigger:'before_checkin',steps:'Trước 2 ngày: [đã thanh toán] {{property}}: wifi {{wifi}} mật khẩu {{wifipass}}',status:'active'});
+ const wb=await rpc('save','bookings',null,{propertyId:villa.id,guestName:'Wifi Guest',guestEmail:'wifi@example.test',checkIn:nowLocal.d1,checkOut:nowLocal.d2,status:'confirmed',payoutAmount:0,guests:2});
+ const wifiQueued=async()=>(await raw("select text from maoki_private.outbound_queue where kind='journey' and external_id='wifi@example.test' and text like '%wifi %'")).length;
+ await wk('maoki_worker_tick'); ok(await wifiQueued()===0,'a paid-only step is not sent while the booking is unpaid');
+ await rpc('save','bookings',wb.id,{paymentStatus:'paid'});
+ await wk('maoki_worker_tick'); ok(await wifiQueued()===0,'a paid booking still sends nothing while the wifi details are missing');
+ await rpc('save','guidebooks',null,{title:'Villa guide',propertyId:villa.id,wifiName:'VillaNet',wifiPassword:'s3cret'});
+ await wk('maoki_worker_tick'); ok(await wifiQueued()===1,'once paid and complete, the step is sent with property and wifi filled in');
+ await wk('maoki_worker_tick'); ok(await wifiQueued()===1,'the paid-only step is still sent only once');
+ ok((await raw("select text from maoki_private.outbound_queue where external_id='wifi@example.test' and text like '%wifi %'"))[0].text==='Wifi Villa: wifi VillaNet mật khẩu s3cret','placeholders are replaced without leaving blanks');
+ // deleting one sender's data
+ const gone=await rpc('save','contacts',null,{name:'Erase Me',email:'erase@example.test'});
+ const goneConv=await rpc('save','conversations',null,{guestName:'Erase Me',platform:'zalo',contactId:gone.id});
+ await raw("insert into maoki_private.channel_threads(workspace_id,platform,external_id,conversation_id) select workspace_id,'zalo','erase-1',id from public.maoki_records where id=$1",[goneConv.id]);
+ const goneBooking=await rpc('save','bookings',null,{propertyId:villa.id,guestName:'Erase Me',guestEmail:'erase@example.test',contactId:gone.id,checkIn:'2098-05-01',checkOut:'2098-05-03',payoutAmount:0});
+ const del=(await db.query('select public.maoki_delete_sender_data($1) as r',[gone.id])).rows[0].r;
+ ok(del.conversations===1 && del.channelLinks===1 && del.bookingsAnonymised===1,'deleting a sender reports what it removed');
+ const left=await raw("select (select count(*) from public.maoki_records where id=any($1))::int n,(select data from public.maoki_records where id=$2) b,(select count(*) from maoki_private.channel_threads where external_id='erase-1')::int t",[[gone.id,goneConv.id],goneBooking.id]);
+ ok(left[0].n===0 && left[0].t===0 && left[0].b.guestName==='Đã xóa theo yêu cầu' && !left[0].b.guestEmail,'contact, conversation and channel link are gone and the booking is anonymised');
+ await denied(()=>db.query('select public.maoki_delete_sender_data($1)',[gone.id]),'deleting an already removed sender fails cleanly');
+
  // worker queue lifecycle + permissions
  await denied(()=>db.query('select public.maoki_worker_claim(5)'),'signed-in users cannot call worker functions'); await login(a);
  const jobs=await wk('maoki_worker_claim',50); ok(jobs.length>=3 && jobs.every(j=>j.attempts===1),'worker claims pending jobs and counts the attempt');

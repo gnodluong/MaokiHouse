@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { FiGrid, FiHome, FiCalendar, FiBookmark, FiDollarSign, FiClipboard, FiBookOpen, FiUsers, FiMessageSquare, FiZap, FiSend, FiFileText, FiPieChart, FiSettings, FiLink, FiSearch, FiLogOut, FiArrowUpRight, FiRefreshCw, FiCpu, FiBriefcase, FiUserCheck, FiSun, FiMoon, FiSliders, FiTag, FiShuffle, FiWatch, FiBell, FiLifeBuoy, FiTrendingUp, FiRepeat, FiShoppingBag, FiPackage, FiCode, FiLayers, FiEdit3, FiCornerUpRight, FiUsers as FiGroup, FiPhoneCall, FiStar, FiYoutube } from 'react-icons/fi';
+import { FiGrid, FiHome, FiCalendar, FiBookmark, FiDollarSign, FiClipboard, FiBookOpen, FiUsers, FiMessageSquare, FiZap, FiSend, FiFileText, FiPieChart, FiSettings, FiLink, FiSearch, FiLogOut, FiArrowUpRight, FiRefreshCw, FiCpu, FiBriefcase, FiUserCheck, FiSun, FiMoon, FiSliders, FiTag, FiShuffle, FiWatch, FiBell, FiLifeBuoy, FiTrendingUp, FiRepeat, FiShoppingBag, FiPackage, FiCode, FiLayers, FiEdit3, FiCornerUpRight, FiUsers as FiGroup, FiPhoneCall, FiStar, FiYoutube, FiAlertTriangle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useSession } from '../../src/workspace/Session';
 import WorkspaceProvider from '../../src/workspace/Provider';
@@ -18,7 +18,7 @@ import type { UiKey } from './i18n/ui';
 
 export const navGroups: { title?: UiKey; links: [string, UiKey, typeof FiGrid][] }[] = [
   { links: [['', 'nav.overview', FiGrid]] },
-  { title: 'nav.daily', links: [['calendar', 'nav.calendar', FiCalendar], ['bookings', 'nav.bookings', FiBookmark], ['messages', 'nav.messages', FiMessageSquare], ['tasks', 'nav.tasks', FiClipboard]] },
+  { title: 'nav.daily', links: [['calendar', 'nav.calendar', FiCalendar], ['bookings', 'nav.bookings', FiBookmark], ['messages', 'nav.messages', FiMessageSquare], ['alerts', 'nav.alerts', FiAlertTriangle], ['tasks', 'nav.tasks', FiClipboard]] },
   { title: 'nav.support', links: [['reminders', 'nav.reminders', FiBell], ['calls', 'nav.calls', FiPhoneCall], ['reviews', 'nav.reviews', FiStar], ['youtube', 'nav.youtube', FiYoutube], ['tickets', 'nav.tickets', FiLifeBuoy], ['ticket-types', 'nav.ticketTypes', FiClipboard], ['insights', 'nav.insights', FiTrendingUp], ['handover', 'nav.handover', FiCornerUpRight]] },
   { title: 'nav.stays', links: [['properties', 'nav.properties', FiHome], ['rates', 'nav.rates', FiDollarSign], ['guidebooks', 'nav.guidebooks', FiBookOpen]] },
   { title: 'nav.guests', links: [['contacts', 'nav.contacts', FiUsers], ['replies', 'nav.replies', FiFileText], ['automations', 'nav.automations', FiZap], ['custom-fields', 'nav.customFields', FiEdit3], ['field-values', 'nav.fieldValues', FiLayers], ['campaigns', 'nav.campaigns', FiSend], ['popups', 'nav.popups', FiLayers], ['bots', 'nav.bots', FiCpu], ['journeys', 'nav.journeys', FiRepeat]] },

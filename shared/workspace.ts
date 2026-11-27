@@ -3,7 +3,7 @@ import type { Booking, Employee, Property, RevenueEntry } from '../src/types';
 export type Platform = 'direct' | 'airbnb' | 'booking' | 'agoda' | 'facebook' | 'instagram' | 'zalo' | 'email' | 'webchat' | 'whatsapp' | 'tiktok';
 export interface RecordBase { id: string; hostId: string; createdAt?: number; updatedAt?: number }
 export interface Stay extends Property { description?: string; bedrooms?: number; capacity?: number; published?: boolean }
-export interface Reservation extends Booking { contactId?: string; guestEmail?: string; guestPhone?: string; notes?: string }
+export interface Reservation extends Booking { contactId?: string; guestEmail?: string; guestPhone?: string; notes?: string; paymentStatus?: 'unpaid' | 'paid'; guests?: number }
 export interface Contact extends RecordBase { name: string; email: string; phone: string; source: Platform; stage: 'lead' | 'guest' | 'returning'; tags: string[]; notes: string }
 export interface ConversationMessage { sender: 'guest' | 'host'; text: string; timestamp: number; delivery?: 'local' }
 export interface Conversation extends RecordBase { guestName: string; platform: Platform; contactId: string; assignee: string; status: 'open' | 'pending' | 'closed'; tags: string[]; messages: ConversationMessage[]; lastMessageAt: number; unread: boolean }

@@ -118,9 +118,9 @@ tr { page-break-inside: avoid; }
 <p>Lưu trong bảng <code>maoki_private.channel_accounts</code> (schema riêng; quyền đọc/ghi của vai trò <code>anon</code> và <code>authenticated</code> bị thu hồi). Trình duyệt/ứng dụng chỉ nhận cờ “đã lưu” (đúng/sai), không bao giờ nhận giá trị. Chủ/quản lý xóa bằng nút “Xóa kết nối”. <b>Chính xác về mã hóa:</b> token được lưu dạng văn bản trong schema bị hạn chế quyền (cần để gọi API thay chủ nhà); dữ liệu được mã hóa ở mức đĩa bởi nhà cung cấp hạ tầng, <b>chưa có mã hóa cấp ứng dụng cho từng token</b>. Không nên khẳng định “mã hóa từng token” trong hồ sơ cho tới khi bổ sung.</p>
 <h3>5.3 Thời gian lưu và xóa</h3>
 <ul>
-<li>Không có tác vụ tự xóa dữ liệu hội thoại. Dữ liệu lưu đến khi chủ nhà xóa hoặc xóa không gian làm việc (xóa không gian kéo theo toàn bộ bản ghi, <code>on delete cascade</code>).</li>
+<li>Không có tác vụ tự xóa theo thời hạn; xóa theo yêu cầu bằng công cụ <b>“Xóa dữ liệu của khách”</b> (Khách hàng → chọn khách; hàm <code>maoki_delete_sender_data</code>; chỉ chủ nhà/quản lý; xóa hội thoại, liên kết kênh, tin nhắn đang chờ, hồ sơ; đơn phòng được ẩn danh). Dữ liệu còn lại lưu đến khi chủ nhà xóa hoặc xóa không gian làm việc (xóa không gian kéo theo toàn bộ bản ghi, <code>on delete cascade</code>).</li>
 <li>Phiên chat khách trên website hết hạn sau 7 ngày; lời mời thành viên có hạn.</li>
-<li>Xóa theo yêu cầu: hiện xử lý thủ công (tìm theo mã người gửi/email/số điện thoại trong bảng bản ghi và bảng liên kết hội thoại, rồi xóa). <span class="tag t-todo">CHỦ SẢN PHẨM ĐIỀN</span> thời hạn cam kết (đang 30 ngày). Nên xây công cụ “xóa theo người gửi” trước khi mở rộng.</li>
+<li>Xóa theo yêu cầu: chủ nhà bấm “Xóa dữ liệu của khách”; khách nhắn qua Zalo, Messenger, Instagram, WhatsApp hay email đều có hồ sơ khách tự tạo nên xóa được trong một lần gọi. <span class="tag t-todo">CHỦ SẢN PHẨM ĐIỀN</span> thời hạn cam kết (đang 30 ngày).</li>
 </ul>
 <h3>5.4 Xử lý bởi bên thứ ba</h3>
 <table>
@@ -179,11 +179,11 @@ tr { page-break-inside: avoid; }
 <table>
 <tr><th style="width:5%">#</th><th>Hạng mục</th><th style="width:26%">Cần để</th></tr>
 <tr><td>1</td><td>Đăng nhập OAuth: Facebook Login for Business (chọn Trang), Google Sign-In (Business Profile, YouTube), Zalo OAuth; lưu token, xử lý hết hạn/thu hồi.</td><td>Advanced Access, xác minh OAuth Google</td></tr>
-<tr><td>2</td><td>Data Deletion Callback tự động (Meta) + công cụ “xóa theo người gửi”.</td><td>Meta App Review, cam kết xóa</td></tr>
+<tr><td>2</td><td>Data Deletion Callback tự động (Meta). Công cụ “xóa theo người gửi” đã có trong app (chủ nhà bấm tay); callback sẽ gọi cùng hàm đó.</td><td>Meta App Review, cam kết xóa</td></tr>
 <tr><td>3</td><td>Mã hóa cấp ứng dụng cho token (khóa quản lý bên ngoài cơ sở dữ liệu).</td><td>Nâng mức bảo mật, trả lời bảng câu hỏi bảo mật</td></tr>
 <tr><td>4</td><td>Embedded Signup cho WhatsApp (nếu phục vụ nhiều chủ nhà).</td><td>Tech Provider</td></tr>
-<tr><td>6</td><td>Bản web đăng nhập tạm cho người duyệt hoặc video + bản cài.</td><td>Môi trường duyệt</td></tr>
-<tr><td>7</td><td>Nhật ký đồng bộ theo từng lệnh gọi OTA, giám sát và cảnh báo.</td><td>Chứng nhận đối tác OTA</td></tr>
+<tr><td>5</td><td>Bản web đăng nhập tạm cho người duyệt hoặc video + bản cài.</td><td>Môi trường duyệt</td></tr>
+<tr><td>6</td><td>Nhật ký đồng bộ theo từng lệnh gọi OTA, giám sát và cảnh báo.</td><td>Chứng nhận đối tác OTA</td></tr>
 </table>
 
 <h2>10. Khối văn bản sẵn dán (tiếng Anh) theo từng nền tảng</h2>
