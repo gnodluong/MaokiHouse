@@ -655,3 +655,7 @@
 .mk-guest-header { padding-top: env(safe-area-inset-top); }
 .mk-guest-footer-bottom { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
 .mk-blossom-intro .mk-blossom-skip { bottom: calc(clamp(16px, 3vw, 32px) + env(safe-area-inset-bottom)); }
+
+/* Three.js petal layer behind the hero (see PetalField.tsx). */
+.mk-petal-field { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.mk-petal-field canvas { width: 100%; height: 100%; display: block; }

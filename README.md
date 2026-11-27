@@ -17,6 +17,8 @@ npm run dev
 
 Lần đầu sử dụng, mở **`/setup`** trên website: trang này có SQL sẵn để sao chép hoặc tải xuống, liên kết đúng SQL Editor, nút kiểm tra kết nối và hướng dẫn tạo tài khoản/bật AI. Không cần terminal. Xem thêm [kích hoạt Supabase](docs/SUPABASE.md). Đường dẫn `/admin` mở đăng nhập/đăng ký; `/admin/dashboard` mở không gian quản lý. Website công khai hiển thị phòng được chủ nhà chủ động xuất bản. Dữ liệu Firebase cũ chưa được nhập sang Supabase.
 
+> **Cập nhật 2026-11:** trang web chỉ còn dành cho **khách** (trang chủ, đặt phòng, sổ tay, chat). Quản trị nằm trong ứng dụng **Maoki Admin** (`desktop/` cho Windows/macOS, `mobile/` cho Android/iOS), dùng chung dự án Supabase. Các script `test:browser`, `test:supabase-browser`, `screenshots:admin` kiểm tra giao diện quản trị cũ trên web nên không còn áp dụng; kiểm tra bằng `npm run test:db` và các test API.
+
 ## Các luồng đã xây dựng
 
 | Nhóm | Chức năng |
