@@ -101,6 +101,7 @@ export function DataDeletion() {
     <ol>
       <li><b>Ngắt một kênh:</b> Thiết lập → Kênh nhắn tin → chọn kênh → <b>Xóa kết nối</b>. Token và khóa của kênh bị xóa ngay; Maoki không còn nhận hoặc gửi tin cho kênh đó.</li>
       <li><b>Xóa hội thoại, khách, đặt phòng:</b> dùng nút xóa trong từng danh sách (Khách hàng, Hộp thư, Đặt phòng…).</li>
+      <li><b>Xóa toàn bộ dữ liệu của một khách theo yêu cầu:</b> Khách hàng → chọn khách → <b>Xóa dữ liệu của khách</b>. Công cụ xóa mọi hội thoại, liên kết kênh và tin nhắn đang chờ gửi của khách đó, rồi xóa hồ sơ; các đặt phòng được giữ lại cho sổ sách nhưng bỏ tên, email và số điện thoại.</li>
       <li><b>Xóa toàn bộ không gian làm việc và tài khoản:</b> gửi yêu cầu tới <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a> từ chính email đăng nhập, tiêu đề “Yêu cầu xóa dữ liệu”.</li>
     </ol>
     <h2>B. Bạn là khách (đã nhắn tin hoặc đặt phòng với một cơ sở dùng Maoki)</h2>
@@ -114,7 +115,7 @@ export function DataDeletion() {
     <h2>D. Dữ liệu nào bị xóa</h2>
     <p>Hội thoại và tin nhắn, hồ sơ khách và các giá trị bổ sung, nhật ký cuộc gọi, đánh giá và bình luận đã đồng bộ, token kết nối. Nhật ký hoạt động chỉ ghi nhãn hành động nên được ẩn danh khi tài khoản bị xóa. Dữ liệu sao lưu của nhà cung cấp hạ tầng được loại bỏ theo chu kỳ của họ.</p>
     <section lang="en" className="mk-legal-en"><hr /><h2>Data deletion instructions</h2>
-      <p><b>Property owners / managers:</b> Settings → Messaging channels → choose a channel → “Remove connection” deletes its tokens immediately; delete conversations, guests and bookings from their lists; to delete the whole workspace, email {LEGAL.email} from your login email with the subject “Data deletion request”. <b>Guests:</b> email {LEGAL.email} with that subject, naming the Page/account you messaged and your email or phone number; we verify and delete within {LEGAL.deletionDays} days and confirm by email. <b>Revoke access:</b> Facebook → Settings → Apps and websites → remove “Maoki Admin”; Google → myaccount.google.com/permissions; Zalo → unlink the app from your OA.</p>
+      <p><b>Property owners / managers:</b> Settings → Messaging channels → choose a channel → “Remove connection” deletes its tokens immediately; delete conversations, guests and bookings from their lists; to erase everything about one guest, use Guests → choose the guest → “Delete guest data” (removes conversations, channel links and queued messages; bookings are kept but anonymised); to delete the whole workspace, email {LEGAL.email} from your login email with the subject “Data deletion request”. <b>Guests:</b> email {LEGAL.email} with that subject, naming the Page/account you messaged and your email or phone number; we verify and delete within {LEGAL.deletionDays} days and confirm by email. <b>Revoke access:</b> Facebook → Settings → Apps and websites → remove “Maoki Admin”; Google → myaccount.google.com/permissions; Zalo → unlink the app from your OA.</p>
     </section>
   </Page>;
 }

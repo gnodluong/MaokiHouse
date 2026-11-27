@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { FiGitMerge, FiPhoneCall, FiPlus, FiSearch, FiDownload, FiEdit2, FiTrash2, FiArrowUpRight, FiCheckCircle, FiPlay, FiCopy } from 'react-icons/fi';
+import { FiGitMerge, FiUserX, FiPhoneCall, FiPlus, FiSearch, FiDownload, FiEdit2, FiTrash2, FiArrowUpRight, FiCheckCircle, FiPlay, FiCopy } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useEditor, useWorkspace } from './context';
 import { definitions, labels, enumLabels } from './definitions';
@@ -8,6 +8,7 @@ import { canEdit } from './permissions';
 import { publicPath } from './publicApi';
 import { Badge, Button, Dialog, Empty, PageHeader } from './ui';
 import MergeContacts from './MergeContacts';
+import DeleteSender from './DeleteSender';
 import { dateLabel, errorMessage, exportCSV, money, propertyName, valueOf } from './utils';
 import type { Automation, Contact, ResourceName, ResourceRecord, WorkspaceSnapshot } from '../../shared/workspace';
 
@@ -32,7 +33,7 @@ function display(record: ResourceRecord, key: string, data: WorkspaceSnapshot) {
 
 export default function ResourcePage({ resource }: { resource: ResourceName }) {
   const { data, save, request, reload } = useWorkspace(); const editor = useEditor();
-  const [query, setQuery] = useState(''); const [filter, setFilter] = useState(''); const [run, setRun] = useState<Automation | null>(null); const [merge, setMerge] = useState<Contact | null>(null); const [context, setContext] = useState(''); const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState(''); const [filter, setFilter] = useState(''); const [run, setRun] = useState<Automation | null>(null); const [merge, setMerge] = useState<Contact | null>(null); const [erase, setErase] = useState<Contact | null>(null); const [context, setContext] = useState(''); const [busy, setBusy] = useState(false);
   const [params, setParams] = useSearchParams(); const editId = params.get('edit');
   useEffect(() => { if (data && editId) { const record = data[resource].find(item => item.id === editId); if (record) { editor.open(resource, record); setParams({}, { replace: true }); } } }, [data, editId, editor, resource, setParams]);
   useEffect(() => { setQuery(''); setFilter(''); }, [resource]);
@@ -56,6 +57,7 @@ export default function ResourcePage({ resource }: { resource: ResourceName }) {
       {['contacts', 'calls'].includes(resource) && String(valueOf(record, resource === 'calls' ? 'number' : 'phone') || '') && <a className="mk-icon-button" aria-label="Gọi điện" title="Gọi điện" href={`tel:${String(valueOf(record, resource === 'calls' ? 'number' : 'phone')).replace(/[^\d+]/g, '')}`}><FiPhoneCall /></a>}
       {resource === 'calls' && String(valueOf(record, 'recordingUrl') || '') && <a className="mk-icon-button" aria-label="Nghe ghi âm" title="Nghe ghi âm" href={String(valueOf(record, 'recordingUrl'))} target="_blank" rel="noreferrer"><FiPlay /></a>}
       {editable && resource === 'contacts' && data.contacts.length > 1 && <button className="mk-icon-button" aria-label="Gộp khách hàng" title="Gộp khách hàng" onClick={() => setMerge(record as Contact)}><FiGitMerge /></button>}
+      {editable && resource === 'contacts' && !data.capabilities.localDemo && <button className="mk-icon-button danger" aria-label="Xóa dữ liệu của khách" title="Xóa dữ liệu của khách" onClick={() => setErase(record as Contact)}><FiUserX /></button>}
       {resource === 'contacts' && <Link className="mk-icon-button" aria-label="Xem hội thoại của khách" to={`../messages?contact=${record.id}`}><FiArrowUpRight /></Link>}
       {editable && ['tasks', 'reminders', 'tickets'].includes(resource) && valueOf(record, 'status') !== 'done' && <button className="mk-icon-button" aria-label="Hoàn tất công việc" onClick={() => void save(resource, { status: 'done' }, record.id).then(() => toast.success('Công việc đã hoàn tất')).catch(cause => toast.error(errorMessage(cause)))}><FiCheckCircle /></button>}
       {editable && resource === 'automations' && <button className="mk-icon-button" aria-label="Chạy quy tắc" onClick={() => { setRun(record as Automation); setContext(''); }}><FiPlay /></button>}
@@ -63,6 +65,7 @@ export default function ResourcePage({ resource }: { resource: ResourceName }) {
       <button disabled={!editable} className="mk-icon-button" aria-label={`Chỉnh sửa ${String(valueOf(record, definition.labelKey))}`} onClick={() => editor.open(resource, record)}><FiEdit2 /></button><button disabled={!editable} className="mk-icon-button danger" aria-label={`Xóa ${String(valueOf(record, definition.labelKey))}`} onClick={() => editor.confirmDelete(resource, record)}><FiTrash2 /></button>
     </div></td></tr>)}</tbody></table></div>}</div>
     {merge && <MergeContacts source={merge} onClose={() => setMerge(null)} />}
+    {erase && <DeleteSender source={erase} onClose={() => setErase(null)} />}
     {run && <Dialog title="Chạy quy tắc" onClose={() => setRun(null)} busy={busy}><div className="mk-dialog-body"><h3>{run.name}</h3><p>Thao tác sẽ thực hiện trên bản ghi được chọn và lưu vào lịch sử.</p><label className="mk-field">{run.action === 'create_task' ? 'Đặt phòng' : 'Hội thoại'}<select value={context} onChange={event => setContext(event.target.value)}><option value="">Chọn bản ghi</option>{(run.action === 'create_task' ? data.bookings : data.conversations).map(item => <option key={item.id} value={item.id}>{item.guestName}</option>)}</select></label></div><footer><Button onClick={() => setRun(null)}>Hủy</Button><Button kind="primary" disabled={!context || !run.enabled} busy={busy} onClick={() => { setBusy(true); void request(`/automations/${run.id}/run`, { [run.action === 'create_task' ? 'bookingId' : 'conversationId']: context }).then(async () => { await reload(); setRun(null); toast.success('Quy tắc đã thực hiện'); }).catch(cause => toast.error(errorMessage(cause))).finally(() => setBusy(false)); }}><FiPlay />Chạy quy tắc</Button></footer></Dialog>}
   </>;
 }

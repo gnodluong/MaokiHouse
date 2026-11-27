@@ -14,6 +14,7 @@ import Reviews from './Reviews';
 import YouTube from './YouTube';
 import PlanGate from './PlanGate';
 
+const Alerts = lazy(() => import('../../src/workspace/Alerts'));
 const Connections = lazy(() => import('../../src/workspace/Connections'));
 
 const resourceRoutes = [['properties', 'properties'], ['bookings', 'bookings'], ['contacts', 'contacts'], ['tasks', 'tasks'], ['rates', 'rates'], ['guidebooks', 'guidebooks'], ['owners', 'owners'], ['automations', 'automations'], ['campaigns', 'campaigns'], ['replies', 'replies'], ['hr', 'employees'], ['revenue', 'revenue'], ['tags', 'tags'], ['rules', 'rules'], ['hours', 'hours'], ['reminders', 'reminders'], ['ticket-types', 'ticketTypes'], ['tickets', 'tickets'], ['custom-fields', 'customFields'], ['field-values', 'fieldValues'], ['popups', 'popups'], ['products', 'products'], ['orders', 'orders'], ['webhooks', 'webhooks'], ['agent-groups', 'agentGroups'], ['calls', 'calls']] as const;
@@ -25,6 +26,7 @@ export const adminChildRoutes = <>
   <Route index element={<Overview />} />
   <Route path="calendar" element={<Calendar />} />
   <Route path="messages" element={<Inbox />} />
+  <Route path="alerts" element={<Alerts />} />
   <Route path="reports" element={<Reports />} />
   <Route path="insights" element={<Insights />} />
   <Route path="handover" element={<Handover />} />
