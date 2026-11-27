@@ -265,6 +265,15 @@ try {
  await rv('upsert',{items:[{reviewId:'R5',reviewName:'accounts/123/locations/456/reviews/R5',reviewer:'Hoa',rating:5,comment:'Tuyệt',reviewedAt:'2099-04-01T00:00:00Z'},{reviewId:'R6',reviewName:'accounts/123/locations/456/reviews/R6',reviewer:'Tom',rating:2,comment:'Meh',reviewedAt:'2099-04-02T00:00:00Z'}]});
  const cands=await wk('maoki_worker_review_candidates'); ok(cands.length===1 && cands[0].text==='Cảm ơn Hoa!' && cands[0].reviewName.endsWith('/R5'),'only new reviews at or above the threshold are auto-reply candidates');
  await wk('maoki_worker_review_replied',cands[0].recordId,'Cảm ơn Hoa!'); ok((await wk('maoki_worker_review_candidates')).length===0 && (await ex('snapshot')).reviews.find(x=>x.reviewId==='R5').status==='replied','an auto-replied review is marked replied and not repeated');
+ // ── service plans ──
+ await login(a); ok((await ex('snapshot')).plan==='professional' && (await db.query('select public.maoki_plan() as p')).rows[0].p==='professional','workspaces start on the professional plan during the beta');
+ await raw("update public.maoki_workspaces set plan='basic' where id=$1",[wsId]);
+ await denied(()=>ch('save',{platform:'email',config:{fromName:'Maoki'}}),'the basic plan cannot connect messaging channels');
+ ok((await ex('snapshot')).plan==='basic','the plan is delivered to the client with the extras snapshot');
+ await raw("update public.maoki_workspaces set plan='operations' where id=$1",[wsId]); await denied(()=>ch('save',{platform:'email',config:{fromName:'Maoki'}}),'the operations plan still cannot connect messaging channels');
+ await denied(()=>raw("update public.maoki_workspaces set plan='gold' where id=$1",[wsId]),'unknown plans are rejected');
+ await raw("update public.maoki_workspaces set plan='professional' where id=$1",[wsId]); await ch('save',{platform:'email',config:{fromName:'Maoki'}}); checks++; console.log('PASS the professional plan can connect channels again');
+ await rpc('save','tasks',null,{title:'Still works on any plan',dueDate:'2099-01-03'}); checks++; console.log('PASS plans do not limit core operations');
  await login(agent,'agent@example.test'); await denied(()=>ch('status'),'agent cannot read channel settings'); await denied(()=>ch('save',{platform:'email',config:{}}),'agent cannot change channels');
  await login(a);
  await login(a); await rpc('revoke_member','',null,{id:agent}); await login(agent,'agent@example.test'); ok((await db.query('select * from public.maoki_records')).rows.length===0,'revoked membership immediately loses RLS access');

@@ -21,6 +21,7 @@ import morganAvatar from '../assets/images/reviews/morgan.jpg';
 import myAvatar from '../assets/images/reviews/my.jpg';
 import paigeAvatar from '../assets/images/reviews/paige.jpg';
 import { Blossom } from './guest/Blossom';
+import PetalField from './guest/PetalField';
 import { publicFetch, publicPath } from './publicApi';
 import { addDays, money, todayIn } from './utils';
 import './workspace.css';
@@ -219,6 +220,7 @@ export default function Landing() {
   const [liveReady, setLiveReady] = useState(false);
   const [activeChapter, setActiveChapter] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [petals3d, setPetals3d] = useState(true);
   const [activeMoment, setActiveMoment] = useState(0);
 
   const [query, setQuery] = useState('');
@@ -301,7 +303,8 @@ export default function Landing() {
       >
         <Blossom index={0} className="mk-hero-blossom is-a" />
         <Blossom index={3} className="mk-hero-blossom is-b" />
-        {driftPetals.map((petal, i) => (
+        {petals3d && <PetalField onUnavailable={() => setPetals3d(false)} />}
+        {!petals3d && driftPetals.map((petal, i) => (
           <Blossom
             key={i}
             kind="petal"

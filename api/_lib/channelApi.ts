@@ -44,6 +44,8 @@ export async function handleChannels(request: Request, env: NodeJS.ProcessEnv = 
     try { parsed = inputSchema.safeParse(JSON.parse(raw)); } catch { return json(400, { error: 'Yêu cầu không hợp lệ.' }); }
     if (!parsed.success) return json(400, { error: 'Thông tin kết nối không hợp lệ.' });
     const body = parsed.data;
+    // The basic plan does not connect channels (an older database without plans keeps working).
+    if (body.action !== 'disconnect') { const { data: plan } = await client.rpc('maoki_plan'); if (plan === 'basic') return json(403, { error: 'Gói Cơ bản không nối kênh. Hãy nâng cấp lên gói Vận hành để đồng bộ lịch.' }); }
     if (body.action === 'disconnect') { await rpc('disconnect', body.id); return json(200, { disconnected: true }); }
     if (body.action === 'sync') return json(200, await sync(body.id));
     // Store the parsed, normalised form so the database pattern check sees lowercase hosts.

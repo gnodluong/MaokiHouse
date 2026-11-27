@@ -1,0 +1,39 @@
+name: Android APK
+
+# Builds an installable Android APK of Maoki Admin (Capacitor). Run it from the Actions tab, or push a tag like mobile-v0.1.0
+# to also attach the APK to a GitHub Release. The APK is signed with the standard debug key: fine for installing and
+# testing on a phone; replace with a release keystore before publishing to Google Play.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['mobile-v*']
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - run: npm ci
+      - run: npm run mobile:build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_API_ORIGIN: ${{ secrets.VITE_API_ORIGIN }}
+      - run: npx cap sync android
+      - run: ./gradlew assembleDebug --no-daemon
+        working-directory: android
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk Maoki-Admin-debug.apk
+      - uses: actions/upload-artifact@v4
+        with: { name: maoki-admin-android-apk, path: Maoki-Admin-debug.apk }
+      - if: startsWith(github.ref, 'refs/tags/mobile-v')
+        uses: softprops/action-gh-release@v2
+        with: { files: Maoki-Admin-debug.apk }

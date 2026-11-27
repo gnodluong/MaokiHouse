@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><title>Cẩm nang liên kết các nền tảng — Maoki</title>
+<style>
+@page { size: A4; margin: 22mm 18mm 20mm; }
+:root { --ink:#161a22; --muted:#566070; --line:#dfe3ea; --accent:#1f5fd6; --soft:#f3f5f8; --warn:#8a5a00; --warnbg:#fdf4dc; --ok:#1f7a47; --okbg:#e6f4ec; }
+* { box-sizing: border-box; }
+body { font-family: 'Inter', 'Segoe UI', sans-serif; font-size: 10.2pt; line-height: 1.55; color: var(--ink); margin: 0; }
+h1 { font-size: 21pt; line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 6pt; }
+h2 { font-size: 15pt; letter-spacing: -0.015em; margin: 26pt 0 8pt; padding-top: 10pt; border-top: 2px solid var(--ink); page-break-after: avoid; }
+h3 { font-size: 11.5pt; margin: 16pt 0 5pt; page-break-after: avoid; }
+h4 { font-size: 10.2pt; margin: 11pt 0 3pt; color: var(--accent); page-break-after: avoid; }
+p { margin: 0 0 7pt; } ul, ol { margin: 0 0 8pt; padding-left: 17pt; } li { margin-bottom: 2.5pt; }
+a { color: var(--accent); text-decoration: none; word-break: break-all; }
+code { font-family: 'DejaVu Sans Mono', monospace; font-size: 8.6pt; background: var(--soft); padding: 1px 4px; border-radius: 3px; word-break: break-all; }
+table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9pt; page-break-inside: auto; }
+th { text-align: left; background: var(--soft); border-bottom: 1.5px solid var(--ink); padding: 5pt 6pt; vertical-align: bottom; }
+td { border-bottom: 1px solid var(--line); padding: 5pt 6pt; vertical-align: top; }
+tr { page-break-inside: avoid; }
+.cover { height: 235mm; display: flex; flex-direction: column; justify-content: space-between; page-break-after: always; }
+.cover .brand { font-weight: 700; letter-spacing: .14em; font-size: 10pt; text-transform: uppercase; }
+.cover h1 { font-size: 34pt; max-width: 15em; }
+.cover .sub { font-size: 13pt; color: var(--muted); max-width: 30em; }
+.cover .meta { font-size: 9pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8pt; }
+.callout { border-left: 3px solid var(--accent); background: var(--soft); padding: 8pt 11pt; margin: 8pt 0 10pt; border-radius: 0 6px 6px 0; page-break-inside: avoid; }
+.callout.warn { border-color: #d49a1a; background: var(--warnbg); color: #4a3200; }
+.callout.ok { border-color: var(--ok); background: var(--okbg); }
+.callout b:first-child { display: block; margin-bottom: 2pt; }
+.tag { display: inline-block; font-size: 7.6pt; font-weight: 650; letter-spacing: .03em; padding: 1px 6px; border-radius: 9px; vertical-align: 1px; white-space: nowrap; }
+.t-ok { background: var(--okbg); color: var(--ok); } .t-chk { background: var(--warnbg); color: var(--warn); } .t-todo { background: #e6eefc; color: #1d4aa8; }
+.toc { columns: 2; column-gap: 24pt; font-size: 9.8pt; } .toc div { margin-bottom: 3pt; break-inside: avoid; } .toc b { color: var(--accent); margin-right: 5pt; }
+.email { border: 1px solid var(--line); background: #fff; padding: 9pt 12pt; margin: 6pt 0 10pt; border-radius: 6px; font-size: 9.2pt; page-break-inside: avoid; white-space: pre-wrap; }
+.email .h { color: var(--muted); font-size: 8.5pt; border-bottom: 1px solid var(--line); margin-bottom: 6pt; padding-bottom: 4pt; }
+.box { display: inline-block; width: 8pt; height: 8pt; border: 1.2px solid var(--ink); margin-right: 5pt; vertical-align: -1px; }
+.pb { page-break-before: always; }
+.small { font-size: 8.8pt; color: var(--muted); }
+</style></head><body>
+
+<section class="cover">
+  <div class="brand">MaokiHouse</div>
+  <div>
+    <h1>Cẩm nang liên kết các nền tảng mạng xã hội và kênh bán</h1>
+    <p class="sub">Từng bước xin quyền, nộp hồ sơ và liên hệ đối tác: Facebook Messenger, Instagram, WhatsApp, Zalo OA, TikTok, Google Business, YouTube, tổng đài và các sàn OTA (Airbnb, Booking.com, Agoda, Trip.com, Expedia, Traveloka).</p>
+  </div>
+  <div class="meta">Phiên bản 1.0 · 27/11/2026 · Soạn cho chủ sản phẩm Maoki Admin<br>
+  Nguồn: tài liệu nội bộ của Maoki (mã nguồn, các migration, <code>docs/product/plans-and-scope.md</code>), trung tâm hỗ trợ và trang sản phẩm công khai của Belldor PMS (đọc ngày 27/11/2026) và hiểu biết của người soạn về chính sách các nền tảng. <b>Xem mục 0: những gì đã và chưa được kiểm chứng.</b></div>
+</section>
+
+<h1>Mục lục</h1>
+<div class="toc">
+<div><b>0</b>Đọc trước: độ tin cậy của cẩm nang này</div>
+<div><b>1</b>Bản đồ tổng quan: cần xin gì, ở đâu, mất bao lâu</div>
+<div><b>2</b>Bộ hồ sơ chung (làm một lần, dùng cho mọi nền tảng)</div>
+<div><b>3</b>Meta: Facebook Messenger, Instagram, WhatsApp</div>
+<div><b>4</b>Zalo Official Account</div>
+<div><b>5</b>TikTok</div>
+<div><b>6</b>Google Business Profile</div>
+<div><b>7</b>YouTube</div>
+<div><b>8</b>Tổng đài điện thoại</div>
+<div><b>9</b>Các sàn OTA: Airbnb, Booking.com, Agoda, Trip.com, Expedia, Traveloka, Vrbo</div>
+<div><b>10</b>Mẫu thư và nội dung điền form</div>
+<div><b>11</b>Kịch bản quay video duyệt quyền (screencast)</div>
+<div><b>12</b>Lộ trình, ngân sách thời gian và danh sách kiểm</div>
+<div><b>13</b>Phụ lục A: Belldor đã làm gì (tham khảo)</div>
+<div><b>14</b>Phụ lục B: lỗi bị từ chối thường gặp và cách tránh</div>
+<div><b>15</b>Phụ lục C: địa chỉ chính thức và thuật ngữ</div>
+</div>
+
+<h2 class="pb" id="s0">0. Đọc trước: độ tin cậy của cẩm nang này</h2>
+<p>Cẩm nang này nhằm giúp bạn có đủ hồ sơ và đúng thứ tự để liên hệ từng nền tảng và xin giấy phép (quyền truy cập API). Có bốn điều bạn cần biết trước khi dựa vào nó.</p>
+<div class="callout warn"><b>Điều quan trọng nhất</b>Môi trường soạn tài liệu không truy cập được các trang chính sách chính thức của Meta, Zalo, Google, TikTok, Booking.com, Airbnb, Agoda hay Trip.com. Các chính sách này thay đổi thường xuyên (tên quyền, thời gian duyệt, giá, điều kiện). Vì vậy mỗi thông tin trong cẩm nang mang một trong ba nhãn:</div>
+<table>
+<tr><td style="width:23%"><span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span></td><td>Đọc trực tiếp từ tài liệu công khai của Belldor ngày 27/11/2026 hoặc từ chính mã nguồn Maoki (ví dụ: cách Maoki gọi API, phương thức lưu token).</td></tr>
+<tr><td><span class="tag t-chk">CẦN KIỂM TRA</span></td><td>Dựa trên hiểu biết của người soạn đến khoảng 2025. Thường đúng về cấu trúc và thứ tự, nhưng tên quyền, hạn mức, giá, thời gian duyệt có thể đã đổi. Hãy mở trang chính thức ở Phụ lục C để xác nhận trước khi nộp.</td></tr>
+<tr><td><span class="tag t-todo">BẠN ĐIỀN</span></td><td>Thông tin riêng của doanh nghiệp bạn (tên pháp nhân, mã số thuế, địa chỉ, số điện thoại…). Cẩm nang không đoán thay bạn.</td></tr>
+</table>
+<p><b>Không có email, số điện thoại hay đường dẫn nào trong cẩm nang này được bịa ra.</b> Chỗ nào chưa chắc, cẩm nang chỉ tên cổng chính thức để bạn tìm, thay vì đưa một địa chỉ có thể sai. Hai ngoại lệ đã đối chiếu: địa chỉ hỗ trợ công khai của Belldor (<code>hotro@belldor.com</code>) và các trang <code>belldor.com</code>, dùng làm tài liệu tham khảo.</p>
+<p><b>Phân biệt “dùng cho chính mình” và “bán cho nhiều khách”.</b> Maoki hiện cho phép mỗi không gian dán thông tin kênh của mình (token Page, token WhatsApp, refresh token Google…). Cách này hợp lệ để <i>chính bạn</i> dùng cho <i>chính các trang của bạn</i>, thường không cần duyệt nặng. Nhưng nếu muốn <i>các chủ nhà khác</i> bấm “Kết nối Facebook/Zalo/Google” và tự cấp quyền cho Maoki, bạn cần hoàn tất duyệt ứng dụng (App Review), xác minh doanh nghiệp và có chính sách quyền riêng tư. Phần lớn cẩm nang này viết cho trường hợp thứ hai, vì đó là mục tiêu thương mại.</p>
+<div class="callout"><b>Trạng thái trong Maoki</b>Nhận và trả lời tin nhắn Zalo OA, Messenger, Instagram, WhatsApp, email; nhật ký cuộc gọi; đánh giá Google; bình luận YouTube đã được lập trình và kiểm thử bằng dữ liệu giả. <b>Chưa có thử nghiệm nào với tài khoản thật của các nền tảng</b>, và chưa có luồng “Đăng nhập bằng Facebook/Google/Zalo” (OAuth) cho khách tự kết nối. Giá, đơn và tin nhắn của Airbnb/Booking.com/Agoda chưa được làm: đó là các quyền chỉ dành cho đối tác kết nối được chứng nhận (mục 9).</div>
+
+<h2 id="s1">1. Bản đồ tổng quan: cần xin gì, ở đâu, mất bao lâu</h2>
+<p>Thời gian là ước lượng thận trọng cho một hồ sơ đầy đủ ngay lần nộp đầu. Hồ sơ thiếu hoặc bị từ chối sẽ kéo dài gấp 2–3 lần.</p>
+<table>
+<tr><th style="width:15%">Nền tảng</th><th style="width:28%">Cần xin</th><th style="width:21%">Nơi nộp</th><th style="width:12%">Thời gian</th><th>Mức độ khó</th></tr>
+<tr><td><b>Facebook Messenger</b></td><td>Quyền <code>pages_messaging</code> (và các quyền đi kèm) ở mức Advanced Access; xác minh doanh nghiệp</td><td>Meta for Developers → App Review; Meta Business Suite → Xác minh doanh nghiệp</td><td>2–6 tuần</td><td>Trung bình–cao <span class="tag t-chk">CẦN KIỂM TRA</span></td></tr>
+<tr><td><b>Instagram</b></td><td><code>instagram_manage_messages</code> + liên kết Page với tài khoản Instagram chuyên nghiệp</td><td>Như trên (cùng ứng dụng Meta)</td><td>Cùng lượt duyệt</td><td>Trung bình–cao</td></tr>
+<tr><td><b>WhatsApp</b></td><td>WABA, số điện thoại, tên hiển thị được duyệt, mẫu tin; nếu phục vụ nhiều khách: Tech Provider + Embedded Signup</td><td>Meta Business Suite; WhatsApp Manager</td><td>1–8 tuần</td><td>Cao (nhiều khách) / Trung bình (chỉ bạn)</td></tr>
+<tr><td><b>Zalo OA</b></td><td>OA đã xác thực, ứng dụng Zalo được duyệt quyền quản lý tin nhắn</td><td>oa.zalo.me; developers.zalo.me</td><td>1–3 tuần</td><td>Trung bình <span class="tag t-chk">CẦN KIỂM TRA</span></td></tr>
+<tr><td><b>TikTok</b></td><td>Quyền Business Messaging API (thường dành cho đối tác được chọn)</td><td>TikTok for Business → Developer Portal</td><td>Không xác định</td><td>Rất cao / có thể không khả dụng</td></tr>
+<tr><td><b>Google Business Profile</b></td><td>Quyền truy cập Business Profile APIs (hạn mức mặc định bằng 0 cho tới khi được duyệt); xác minh OAuth cho scope <code>business.manage</code></td><td>Google Cloud Console; biểu mẫu yêu cầu truy cập API</td><td>1–3 tuần</td><td>Trung bình</td></tr>
+<tr><td><b>YouTube</b></td><td>OAuth cho scope <code>youtube.force-ssl</code>; tăng hạn mức nếu cần</td><td>Google Cloud Console; biểu mẫu Audit &amp; Quota Extension</td><td>2–6 tuần (xác minh)</td><td>Trung bình</td></tr>
+<tr><td><b>Tổng đài</b></td><td>Số điện thoại/đầu số và webhook sự kiện cuộc gọi từ nhà cung cấp</td><td>Nhà cung cấp tổng đài</td><td>Vài ngày</td><td>Thấp (về kỹ thuật); cần chú ý pháp lý ghi âm</td></tr>
+<tr><td><b>Airbnb · Booking.com · Agoda · Trip.com · Expedia · Traveloka</b></td><td>Chứng nhận <i>đối tác kết nối</i> (Connectivity Partner) để dùng API giá/đơn/tin nhắn; hoặc dùng nhà cung cấp channel manager đã được chứng nhận</td><td>Cổng đối tác của từng sàn</td><td>3–12 tháng mỗi sàn nếu tự làm</td><td>Rất cao <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> hướng đi qua Belldor</td></tr>
+</table>
+<div class="callout ok"><b>Gợi ý thứ tự làm</b>1) Bộ hồ sơ chung (mục 2) — chặn mọi thứ khác. 2) Nộp song song Meta, Google, Zalo ngay sau khi có hồ sơ, vì chúng duyệt độc lập. 3) Tổng đài làm bất cứ lúc nào (không cần duyệt). 4) Với OTA, đừng bắt đầu bằng đơn xin chứng nhận: hãy xem mục 9 để chọn hướng rẻ hơn trước.</div>
+<h2 class="pb" id="s2">2. Bộ hồ sơ chung (làm một lần, dùng cho mọi nền tảng)</h2>
+<p>Mọi nền tảng hỏi gần như cùng một bộ giấy tờ và đường dẫn. Hoàn thiện nó trước giúp mỗi lần nộp chỉ còn việc dán lại. Mỗi mục có ô tick để theo dõi.</p>
+
+<h3>2.1 Thông tin pháp nhân <span class="tag t-todo">BẠN ĐIỀN</span></h3>
+<table>
+<tr><th style="width:36%">Thông tin</th><th>Ghi chú</th></tr>
+<tr><td><span class="box"></span>Tên pháp nhân (đúng từng chữ như trên giấy phép)</td><td>Meta, Google, TikTok so khớp tên này với giấy tờ. Sai một dấu là bị từ chối xác minh.</td></tr>
+<tr><td><span class="box"></span>Giấy chứng nhận đăng ký doanh nghiệp / hộ kinh doanh, mã số thuế</td><td>Bản scan rõ nét, còn hiệu lực. Hộ kinh doanh cá thể vẫn được xác minh bằng giấy chứng nhận đăng ký hộ kinh doanh.</td></tr>
+<tr><td><span class="box"></span>Địa chỉ trụ sở, số điện thoại công ty, email theo tên miền riêng</td><td>Dùng email <code>@tên-miền-của-bạn</code>, không dùng Gmail cá nhân cho tài khoản doanh nghiệp. Email miền riêng tăng khả năng qua xác minh.</td></tr>
+<tr><td><span class="box"></span>Một giấy tờ chứng minh địa chỉ (hóa đơn điện/nước/internet, sao kê ngân hàng) đứng tên pháp nhân, trong 3 tháng gần nhất</td><td>Meta thường chấp nhận nhiều loại; chọn loại có tên và địa chỉ trùng khớp tuyệt đối.</td></tr>
+<tr><td><span class="box"></span>Người đại diện/người liên hệ kỹ thuật và hành chính</td><td>Nền tảng có thể gọi điện hoặc gửi mã xác minh tới số này.</td></tr>
+</table>
+
+<h3>2.2 Website và các trang pháp lý bắt buộc</h3>
+<p>Gần như mọi hồ sơ duyệt quyền đều yêu cầu địa chỉ HTTPS công khai (không đăng nhập) cho các trang sau. Chúng phải <b>tồn tại thật và mở được</b> khi người duyệt bấm vào.</p>
+<table>
+<tr><th style="width:26%">Trang</th><th style="width:38%">Nội dung bắt buộc</th><th>Gợi ý địa chỉ</th></tr>
+<tr><td><span class="box"></span><b>Chính sách quyền riêng tư</b></td><td>Dữ liệu thu thập; mục đích; bên thứ ba nhận dữ liệu (Supabase, nhà cung cấp tổng đài…); thời gian lưu; quyền của chủ thể dữ liệu; cách liên hệ; ngày hiệu lực. Xem mẫu ở 2.3.</td><td><code>https://tên-miền/privacy</code></td></tr>
+<tr><td><span class="box"></span><b>Điều khoản sử dụng</b></td><td>Phạm vi dịch vụ, trách nhiệm người dùng, giới hạn trách nhiệm, luật áp dụng.</td><td><code>https://tên-miền/terms</code></td></tr>
+<tr><td><span class="box"></span><b>Hướng dẫn xóa dữ liệu người dùng</b></td><td>Meta bắt buộc. Nêu rõ cách yêu cầu xóa (email/biểu mẫu), thời hạn xử lý, dữ liệu nào bị xóa. Hoặc cung cấp “Data Deletion Callback URL” tự động.</td><td><code>https://tên-miền/data-deletion</code></td></tr>
+<tr><td><span class="box"></span><b>Trang giới thiệu sản phẩm</b></td><td>Mô tả rõ Maoki làm gì, dành cho ai, vì sao cần quyền xin. Người duyệt đọc trang này để hiểu bối cảnh.</td><td>Trang chủ</td></tr>
+<tr><td><span class="box"></span><b>Trang hỗ trợ</b></td><td>Email và số điện thoại hỗ trợ có người trả lời.</td><td><code>https://tên-miền/support</code></td></tr>
+</table>
+<div class="callout warn"><b>Hiện trạng Maoki</b>Website khách của Maoki (trang chủ, đặt phòng, sổ tay) đã có, nhưng <b>chưa có ba trang: quyền riêng tư, điều khoản, xóa dữ liệu</b>. Phải làm trước khi nộp bất kỳ hồ sơ nào ở mục 3–7. Đây là việc đầu tiên trong danh sách kiểm (mục 12). Tên miền cần là tên miền riêng, không phải <code>*.vercel.app</code>.</div>
+
+<h3>2.3 Mẫu khung chính sách quyền riêng tư (điền và nhờ luật sư rà soát)</h3>
+<div class="callout">Cẩm nang không thay thế tư vấn pháp lý. Khung dưới đây liệt kê các mục thường được người duyệt tìm. <span class="tag t-todo">BẠN ĐIỀN</span> ở các chỗ cần thông tin thật.</div>
+<ol>
+<li><b>Ai chúng tôi là:</b> tên pháp nhân, địa chỉ, người liên hệ về dữ liệu, email.</li>
+<li><b>Dữ liệu chúng tôi xử lý:</b> (a) tài khoản quản trị: email, tên; (b) dữ liệu lưu trú: tên khách, email, số điện thoại, ngày ở, ghi chú; (c) tin nhắn khách gửi qua các kênh đã kết nối (Messenger, Instagram, WhatsApp, Zalo OA, email, YouTube, Google); (d) nhật ký cuộc gọi: số điện thoại, thời lượng, ghi âm nếu có.</li>
+<li><b>Mục đích:</b> chỉ để chủ nhà trả lời và quản lý khách của chính họ trong Maoki. Không bán dữ liệu; không dùng để huấn luyện mô hình cho bên thứ ba; không quảng cáo nhắm đối tượng.</li>
+<li><b>Dữ liệu từ nền tảng bên thứ ba:</b> nêu từng nền tảng, quyền nào được dùng và dùng để làm gì (ví dụ “đọc và trả lời tin nhắn gửi tới Trang Facebook của chủ nhà”).</li>
+<li><b>Nơi lưu và bảo mật:</b> cơ sở dữ liệu Supabase (<span class="tag t-todo">BẠN ĐIỀN</span> khu vực máy chủ), mã hóa khi truyền (HTTPS), phân quyền theo từng không gian làm việc (RLS), token và khóa API lưu trong bảng riêng không trả về trình duyệt <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> với mã nguồn Maoki.</li>
+<li><b>Thời gian lưu:</b> <span class="tag t-todo">BẠN ĐIỀN</span> (ví dụ: đến khi chủ nhà xóa hoặc đóng tài khoản; sau đó xóa trong 30 ngày).</li>
+<li><b>Quyền của chủ thể dữ liệu:</b> truy cập, chỉnh sửa, xóa, rút lại đồng ý, phản đối xử lý; cách thực hiện; thời hạn phản hồi.</li>
+<li><b>Chia sẻ với bên khác:</b> nhà cung cấp hạ tầng (Supabase, Vercel), nhà cung cấp tổng đài, nhà cung cấp email; không chia sẻ cho mục đích khác.</li>
+<li><b>Chuyển dữ liệu ra nước ngoài</b> nếu máy chủ ở ngoài Việt Nam; căn cứ pháp lý. Tham khảo Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân và luật bảo vệ dữ liệu cá nhân mới ban hành. <span class="tag t-chk">CẦN KIỂM TRA</span> với luật sư về văn bản có hiệu lực hiện hành.</li>
+<li><b>Ghi âm cuộc gọi:</b> thông báo rõ khi ghi âm và mục đích.</li>
+<li><b>Cập nhật chính sách</b> và ngày hiệu lực.</li>
+</ol>
+
+<h3>2.4 Trang xóa dữ liệu (mẫu nội dung ngắn)</h3>
+<div class="email"><div class="h">Trang /data-deletion</div>Để yêu cầu xóa dữ liệu của bạn khỏi Maoki, gửi email tới [email hỗ trợ] với tiêu đề “Yêu cầu xóa dữ liệu”, kèm tên Trang/tài khoản đã kết nối và email hoặc số điện thoại bạn dùng. Chúng tôi xác minh yêu cầu và xóa trong vòng [30] ngày, rồi gửi email xác nhận. Dữ liệu bị xóa gồm: hồ sơ khách, hội thoại và tin nhắn, token kết nối. Nếu bạn là chủ nhà muốn ngắt kết nối một nền tảng, vào Thiết lập → Kênh nhắn tin và bấm “Xóa kết nối”: token bị xóa ngay.</div>
+<p class="small">Maoki đã có thao tác “Xóa kết nối” cho từng kênh (xóa token) <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span>. Quy trình xóa hồ sơ khách theo yêu cầu hiện làm thủ công bằng SQL: nên ghi rõ thời hạn bạn có thể đáp ứng.</p>
+
+<h3>2.5 Tài sản hình ảnh và mô tả ứng dụng</h3>
+<ul>
+<li><span class="box"></span>Biểu tượng ứng dụng 1024×1024 PNG (nền đồng nhất, không bo góc sẵn). Dùng logo Maoki.</li>
+<li><span class="box"></span>Tên ứng dụng thống nhất mọi nơi: “Maoki Admin”. Không chứa tên thương hiệu của nền tảng (Facebook, Zalo, TikTok, Instagram, WhatsApp, Google, YouTube) trong tên ứng dụng.</li>
+<li><span class="box"></span>Mô tả ngắn (≤ 80 ký tự) và dài (2–3 đoạn) tiếng Việt và tiếng Anh. Mẫu ở mục 10.</li>
+<li><span class="box"></span>Ảnh chụp màn hình thật của Hộp thư, Lịch, Kênh nhắn tin (đã che dữ liệu khách).</li>
+<li><span class="box"></span>Sơ đồ luồng dữ liệu một trang: Khách nhắn → nền tảng → webhook Maoki → cơ sở dữ liệu → chủ nhà trả lời → API nền tảng → khách. Người duyệt rất thích sơ đồ này.</li>
+</ul>
+
+<h3>2.6 Tài khoản dùng thử cho người duyệt</h3>
+<p>Hầu hết quy trình duyệt yêu cầu tài khoản đăng nhập thật để họ tự thao tác. Chuẩn bị:</p>
+<ul>
+<li><span class="box"></span>Một không gian Maoki riêng tên “Reviewer Demo” (gói Chuyên nghiệp), có sẵn 2–3 phòng, vài đặt phòng và hội thoại mẫu.</li>
+<li><span class="box"></span>Email + mật khẩu đăng nhập, mật khẩu không đổi trong suốt thời gian duyệt (thường 2–6 tuần).</li>
+<li><span class="box"></span>Ứng dụng phải cài/dùng được mà không cần trả phí hay thông qua người bán hàng. Nếu chỉ có app desktop/Android: cung cấp link tải bản cài đặt hoặc APK và một bản web để người duyệt thao tác nhanh.</li>
+<li><span class="box"></span>Hướng dẫn từng bước (kịch bản quay ở mục 11 đồng thời là hướng dẫn cho người duyệt).</li>
+</ul>
+<div class="callout warn"><b>Rủi ro hiện tại</b>Quản trị web của Maoki đã được gỡ; người duyệt không đăng nhập được bằng trình duyệt. Nếu nền tảng yêu cầu người duyệt tự dùng thử, hãy dựng một bản web đăng nhập tạm cho bộ hồ sơ duyệt, hoặc gửi bản cài Windows/Android kèm video. Đây là một quyết định cần cân nhắc trước khi nộp.</div>
+
+<h3>2.7 Phát hiện nhanh bằng bảng: mỗi nền tảng cần từ bộ hồ sơ chung</h3>
+<table>
+<tr><th>Hạng mục</th><th>Meta</th><th>Zalo</th><th>Google</th><th>YouTube</th><th>TikTok</th></tr>
+<tr><td>Giấy phép kinh doanh</td><td>Có (xác minh)</td><td>Có (xác thực OA)</td><td>Ít</td><td>Không</td><td>Có</td></tr>
+<tr><td>Quyền riêng tư</td><td>Có</td><td>Có</td><td>Có</td><td>Có</td><td>Có</td></tr>
+<tr><td>Hướng dẫn xóa dữ liệu</td><td>Có</td><td>Nên có</td><td>Nên có</td><td>Nên có</td><td>Có</td></tr>
+<tr><td>Điều khoản</td><td>Nên có</td><td>Nên có</td><td>Có</td><td>Có</td><td>Có</td></tr>
+<tr><td>Video demo</td><td>Có, mỗi quyền</td><td>Có thể</td><td>Có (OAuth)</td><td>Có (OAuth)</td><td>Có</td></tr>
+<tr><td>Tài khoản dùng thử</td><td>Có</td><td>Có thể</td><td>Có</td><td>Có</td><td>Có</td></tr>
+</table>
+<p class="small">Bảng chỉ chỉ hướng; yêu cầu cụ thể mỗi lần nộp có thể khác. <span class="tag t-chk">CẦN KIỂM TRA</span></p>
+<h2 class="pb" id="s3">3. Meta: Facebook Messenger, Instagram, WhatsApp</h2>
+<p>Ba kênh dùng chung một hệ thống: tài khoản Meta Business, một ứng dụng trên Meta for Developers, và quy trình duyệt quyền (App Review). Làm một lần cho cả ba.</p>
+<div class="callout"><b>Maoki đã làm gì</b>Webhook nhận tin (<code>/api/inbound</code>) kiểm tra chữ ký <code>X-Hub-Signature-256</code> bằng App Secret; trả lời gửi qua Graph API bằng Page access token (Messenger/Instagram) và token WhatsApp; xác minh webhook bằng Verify token. <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> với mã nguồn. <b>Chưa có:</b> luồng “Đăng nhập bằng Facebook” để chủ nhà tự cấp quyền, và Embedded Signup cho WhatsApp.</div>
+
+<h3>3.1 Hai chế độ truy cập quyết định mọi thứ <span class="tag t-chk">CẦN KIỂM TRA</span></h3>
+<table>
+<tr><th style="width:20%">Chế độ</th><th>Ai dùng được</th><th>Cần duyệt?</th></tr>
+<tr><td><b>Standard Access</b></td><td>Chỉ những người có vai trò trong ứng dụng (Admin, Developer, Tester) và các Trang/tài khoản họ sở hữu.</td><td>Không cần App Review. <b>Đủ để chính bạn dùng Maoki cho các Trang của bạn.</b></td></tr>
+<tr><td><b>Advanced Access</b></td><td>Bất kỳ ai, kể cả khách hàng của bạn đăng nhập từ Facebook của họ.</td><td>Cần App Review cho từng quyền; thường kèm xác minh doanh nghiệp.</td></tr>
+</table>
+<p><b>Con đường rẻ nhất để bắt đầu:</b> ngay hôm nay dùng Standard Access với ứng dụng ở chế độ phát triển, thêm chủ nhà đầu tiên làm Tester/Developer, để họ dùng thử trên Trang thật. Nộp App Review song song để lên Advanced Access khi sẵn sàng bán rộng.</p>
+
+<h3>3.2 Chuẩn bị tài khoản Meta (bắt buộc, làm trước)</h3>
+<ol>
+<li><b>Tài khoản Facebook cá nhân</b> của người quản trị, bật xác thực hai lớp (bắt buộc cho nhiều bước).</li>
+<li><b>Trang Facebook (Page)</b> của thương hiệu Maoki và của từng cơ sở nếu có. Người quản trị phải có vai trò Admin trên Trang.</li>
+<li><b>Business Portfolio</b> (Meta Business Suite / Business Manager): tạo tại <code>business.facebook.com</code>. Điền đúng tên pháp nhân, địa chỉ, số điện thoại, website.</li>
+<li><b>Xác minh doanh nghiệp (Business Verification)</b> trong Business Settings → Security Center. Chuẩn bị giấy tờ ở mục 2.1. Quy trình: chọn quốc gia và pháp nhân → tải giấy tờ → xác nhận email miền công ty hoặc nhận mã qua điện thoại/ email. Thời gian thường vài ngày đến 2 tuần. <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+<li><b>Tài khoản nhà phát triển:</b> đăng ký tại <code>developers.facebook.com</code> bằng tài khoản Facebook đã xác thực, liên kết với Business Portfolio.</li>
+<li><b>Tạo ứng dụng:</b> loại <i>Business</i>. Điền tên “Maoki Admin”, email liên hệ, Business Portfolio. Thêm các sản phẩm: <i>Messenger</i>, <i>Instagram</i> (Instagram API with Messaging), <i>WhatsApp</i>, và <i>Webhooks</i>.</li>
+<li><b>Cài đặt cơ bản của ứng dụng (App Settings → Basic):</b> biểu tượng 1024×1024, URL chính sách quyền riêng tư, URL điều khoản, “User data deletion” (URL hướng dẫn hoặc callback), danh mục, App Domains. Lấy <b>App ID</b> và <b>App Secret</b> (App Secret là thứ Maoki cần nhập).</li>
+</ol>
+
+<h3>3.3 Facebook Messenger</h3>
+<h4>Quyền cần xin</h4>
+<table>
+<tr><th style="width:28%">Quyền</th><th>Dùng để làm gì trong Maoki</th></tr>
+<tr><td><code>pages_messaging</code></td><td>Nhận tin nhắn gửi tới Trang và trả lời khách trong Hộp thư.</td></tr>
+<tr><td><code>pages_manage_metadata</code></td><td>Đăng ký webhook cho Trang để nhận tin theo thời gian thực.</td></tr>
+<tr><td><code>pages_show_list</code></td><td>Cho chủ nhà chọn Trang muốn kết nối (chỉ cần khi có luồng đăng nhập Facebook).</td></tr>
+<tr><td><code>pages_read_engagement</code> (nếu cần)</td><td>Đọc thông tin cơ bản của Trang để hiển thị tên.</td></tr>
+</table>
+<p class="small">Tên và phạm vi quyền thay đổi theo từng đợt cập nhật API. <span class="tag t-chk">CẦN KIỂM TRA</span> danh sách hiện hành trong mục “App Review → Permissions and Features”.</p>
+<h4>Các bước</h4>
+<ol>
+<li>Trong ứng dụng, mục <b>Messenger → Messenger API Settings</b>: thêm Trang, tạo Page access token (dài hạn).</li>
+<li>Đăng ký webhook: URL callback là <code>https://tên-miền-vercel/api/inbound?token=…</code> (lấy trong Maoki: Thiết lập → Kênh nhắn tin → Facebook Messenger); Verify token cũng hiển thị ở đó. Đăng ký trường <code>messages</code> (và <code>messaging_postbacks</code> nếu dùng nút).</li>
+<li>Đăng ký ứng dụng nhận sự kiện của Trang (subscribe app to page).</li>
+<li>Trong Maoki, nhập App Secret, Page ID, Page access token → Lưu.</li>
+<li>Nhắn thử từ tài khoản có vai trò trong ứng dụng; kiểm tra tin xuất hiện trong Hộp thư và trả lời được.</li>
+<li>Khi sẵn sàng bán rộng: nộp <b>App Review</b> (3.7) cho từng quyền.</li>
+</ol>
+<h4>Khung 24 giờ và Human Agent</h4>
+<p>Mặc định chỉ được gửi tin cho khách trong <b>24 giờ</b> kể từ tin cuối của họ. Có thẻ <i>Human Agent</i> cho phép trả lời đến 7 ngày khi người thật hỗ trợ, nhưng cần xin riêng tính năng này. <span class="tag t-chk">CẦN KIỂM TRA</span> Maoki hiện báo lỗi rõ khi quá hạn 24 giờ <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span>.</p>
+
+<h3>3.4 Instagram</h3>
+<ol>
+<li>Tài khoản Instagram phải là <b>Business hoặc Creator</b> (chuyên nghiệp) và được <b>liên kết với Trang Facebook</b> của bạn (Cài đặt Trang → Tài khoản được liên kết). Trong Instagram: Cài đặt → Quyền riêng tư tin nhắn → bật “Cho phép truy cập tin nhắn” cho ứng dụng kết nối.</li>
+<li>Thêm sản phẩm Instagram vào ứng dụng, cấu hình webhook (đối tượng <i>instagram</i>, trường <code>messages</code>) tới cùng địa chỉ Maoki (kênh Instagram có token riêng).</li>
+<li>Quyền thường cần: <code>instagram_basic</code>, <code>instagram_manage_messages</code>, <code>pages_manage_metadata</code> và <code>pages_show_list</code>. <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+<li>Trong Maoki, kênh Instagram dùng Page access token của Trang đã liên kết và ID tài khoản Instagram làm “Page ID / account ID”.</li>
+<li>Giới hạn: cửa sổ trả lời 24 giờ; chỉ văn bản trong phiên bản Maoki hiện tại (chưa có ảnh/file).</li>
+</ol>
+
+<h3>3.5 WhatsApp Business (Cloud API)</h3>
+<ol>
+<li><b>WhatsApp Business Account (WABA):</b> tạo trong Meta Business Suite → WhatsApp Manager (hoặc từ sản phẩm WhatsApp trong ứng dụng).</li>
+<li><b>Số điện thoại:</b> dùng số chưa đăng ký tài khoản WhatsApp thường/WhatsApp Business app (nếu đã đăng ký, phải xóa tài khoản đó trước khi dùng cho Cloud API, trừ khi dùng tính năng cùng tồn tại mà Meta cung cấp <span class="tag t-chk">CẦN KIỂM TRA</span>). Nhận mã xác minh qua SMS hoặc cuộc gọi.</li>
+<li><b>Tên hiển thị (display name):</b> được Meta duyệt; phải liên quan thật tới doanh nghiệp (ví dụ “Maoki House”). Tên chung chung hoặc vi phạm thương hiệu bị từ chối.</li>
+<li><b>Token:</b> tạo <i>System User</i> trong Business Settings, gán WABA, tạo token vĩnh viễn với quyền <code>whatsapp_business_messaging</code> và <code>whatsapp_business_management</code>. Token này là thứ Maoki cần (không dùng token tạm 24 giờ trong trang API Setup).</li>
+<li><b>Webhook:</b> trong WhatsApp → Configuration, dán Callback URL và Verify token từ Maoki; đăng ký trường <code>messages</code>.</li>
+<li><b>Mẫu tin (message templates):</b> ngoài 24 giờ kể từ tin cuối của khách, chỉ gửi được mẫu đã được duyệt. Tạo trong WhatsApp Manager, chọn loại (utility, marketing, authentication), ngôn ngữ, nội dung có <b>đúng một tham số {{1}}</b> nếu muốn dùng với chức năng dự phòng của Maoki <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span>. Mẫu thường được duyệt trong vài phút đến vài giờ. Ví dụ mẫu tiện ích: “Xin chào, {{1}}” là quá chung nên dễ bị từ chối; nội dung cụ thể về đặt phòng và có tên cơ sở sẽ ổn hơn.</li>
+<li><b>Giới hạn và chất lượng:</b> số tin được gửi chủ động theo “bậc” (tier) tăng dần khi có xác minh doanh nghiệp và chất lượng tốt; báo cáo spam/chặn làm giảm chất lượng và có thể khóa số. <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+<li><b>Giá:</b> WhatsApp tính phí theo loại tin/hội thoại và quốc gia; cách tính đã thay đổi trong những năm gần đây. Xem bảng giá hiện hành trong WhatsApp Manager. Tin trả lời trong 24 giờ từ khách thường không tính như tin chủ động. <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+</ol>
+<div class="callout warn"><b>Nếu phục vụ nhiều chủ nhà (mô hình SaaS)</b>Mỗi chủ nhà có WABA và số riêng. Để họ tự kết nối WhatsApp vào Maoki bằng vài cú bấm, Meta yêu cầu Maoki trở thành <b>Tech Provider</b> (hoặc Solution Partner) và dùng <b>Embedded Signup</b>. Điều kiện thường gồm: xác minh doanh nghiệp, App Review cho các quyền WhatsApp ở Advanced Access, chấp nhận điều khoản dành cho nhà cung cấp công nghệ. Nếu chưa làm được, phương án chuyển tiếp là chính chủ nhà tạo WABA, tạo System User token và dán vào Maoki (đã hỗ trợ), kèm hướng dẫn từng bước cho họ. <span class="tag t-chk">CẦN KIỂM TRA</span></div>
+
+<h3>3.6 Điều chủ nhà (khách hàng của bạn) cần làm</h3>
+<p>Với phương án “dán token” hiện có, mỗi chủ nhà cần: (1) là Admin của Trang/Instagram/WABA; (2) được bạn thêm làm Tester/Developer của ứng dụng (khi còn Standard Access); (3) tạo token và dán vào Maoki. Đây là nút thắt khi bán rộng, vì vậy luồng “Đăng nhập bằng Facebook” + App Review là việc nên ưu tiên làm sau khi có khách trả tiền đầu tiên.</p>
+
+<h3 id="s37">3.7 App Review: làm từng bước</h3>
+<ol>
+<li>Vào ứng dụng → <b>App Review → Permissions and Features</b>. Với mỗi quyền cần xin, bấm “Request advanced access”.</li>
+<li>Với mỗi quyền, điền: <b>(a) mô tả cách ứng dụng dùng quyền</b> (mẫu ở mục 10.2), <b>(b) video quay màn hình</b> chứng minh luồng dùng (kịch bản mục 11), <b>(c) hướng dẫn thao tác</b> cho người duyệt và tài khoản thử nghiệm (mục 2.6).</li>
+<li>Xác nhận “Data handling”: loại dữ liệu thu thập, mục đích, bên nhận.</li>
+<li>Gửi. Theo dõi email và mục “App Review → Requests”. Người duyệt có thể hỏi thêm; trả lời nhanh trong thời hạn yêu cầu.</li>
+<li>Khi được chấp nhận, chuyển ứng dụng sang chế độ <b>Live</b> (công khai) trong App Settings.</li>
+</ol>
+<h4>Thời gian dự kiến <span class="tag t-chk">CẦN KIỂM TRA</span></h4>
+<p>Xác minh doanh nghiệp: vài ngày–2 tuần. App Review mỗi lượt: vài ngày–2 tuần; bị từ chối thì sửa và nộp lại, mỗi vòng thêm vài ngày. Tổng thực tế để lên Live thường 3–8 tuần.</p>
+<h4>Lý do bị từ chối thường gặp (xem thêm Phụ lục B)</h4>
+<ul>
+<li>Video không cho thấy luồng đầy đủ từ lúc đăng nhập tới lúc dùng quyền; không có phụ đề giải thích bằng tiếng Anh.</li>
+<li>Người duyệt không đăng nhập được hoặc không thấy dữ liệu mẫu.</li>
+<li>Xin quá nhiều quyền không dùng tới (chỉ xin đúng quyền cần).</li>
+<li>Chính sách quyền riêng tư không mở được hoặc không nhắc tới dữ liệu Meta.</li>
+<li>Trang xóa dữ liệu thiếu hướng dẫn cụ thể.</li>
+</ul>
+
+<h3>3.8 Liên hệ Meta khi bị kẹt</h3>
+<ul>
+<li><b>Hỗ trợ nhà phát triển:</b> <code>developers.facebook.com/support</code> (gửi yêu cầu có mã ứng dụng, mô tả lỗi, ảnh chụp). <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+<li><b>Hỗ trợ doanh nghiệp (xác minh, khóa tài khoản):</b> Business Support Home trong Meta Business Suite → “Get support”.</li>
+<li><b>Đối tác tại Việt Nam:</b> Meta làm việc với các đối tác (agency/Business Partner) có kênh hỗ trợ ưu tiên; đây là cách thực tế nhanh nhất khi hồ sơ bị chặn lâu. Tìm danh sách trong “Meta Business Partners Directory”. <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+</ul>
+<p>Mẫu thư gửi hỗ trợ: mục 10.3.</p>
+
+<h2 class="pb" id="s4">4. Zalo Official Account</h2>
+<div class="callout"><b>Maoki đã làm gì</b>Nhận sự kiện <code>user_send_text</code> qua webhook, kiểm tra chữ ký <code>X-ZEvent-Signature</code> bằng App ID + nội dung + timestamp + Secret key; gửi “tin tư vấn” qua <code>openapi.zalo.me/v3.0/oa/message/cs</code>; tự làm mới token bằng refresh token. <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> với mã nguồn. <span class="tag t-chk">CẦN KIỂM TRA</span> công thức chữ ký và tên trường với tài liệu hiện hành của Zalo trước khi chạy thật.</div>
+
+<h3>4.1 Chuẩn bị Official Account</h3>
+<ol>
+<li>Tạo OA tại <code>oa.zalo.me</code> bằng tài khoản Zalo của người quản trị. Chọn loại hình, danh mục, tên OA (đúng thương hiệu).</li>
+<li><b>Xác thực OA:</b> nộp giấy tờ doanh nghiệp (mục 2.1) để có dấu xác thực. OA chưa xác thực bị hạn chế nhiều tính năng và API. <span class="tag t-chk">CẦN KIỂM TRA</span> điều kiện từng loại.</li>
+<li><b>Gói/cấp của OA:</b> Zalo có các gói OA và mức quyền sử dụng API khác nhau (gửi tin tư vấn, tin giao dịch, ZNS…). Kiểm tra gói đang dùng có cho phép gửi tin chủ động và dùng API không; có thể phải nâng gói. <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+</ol>
+<h3>4.2 Tạo ứng dụng Zalo</h3>
+<ol>
+<li>Vào <code>developers.zalo.me</code> bằng cùng tài khoản quản trị OA → Tạo ứng dụng. Điền tên, danh mục, biểu tượng, mô tả.</li>
+<li><b>Liên kết OA với ứng dụng:</b> trong ứng dụng → Official Account → liên kết. Chỉ quản trị viên OA mới liên kết được.</li>
+<li><b>Xác minh tên miền</b> website của bạn (thẻ meta hoặc tệp HTML do Zalo cung cấp), cần cho Callback URL.</li>
+<li><b>Callback URL (OAuth)</b> và <b>Webhook URL</b>: dán địa chỉ Maoki (<code>/api/inbound?token=…</code>). Bật các sự kiện tin nhắn người dùng gửi OA.</li>
+<li><b>Quyền (Permissions):</b> bật các quyền quản lý tin nhắn/gửi tin và đọc thông tin người quan tâm cần dùng. Một số quyền cần gửi yêu cầu duyệt. <span class="tag t-chk">CẦN KIỂM TRA</span> danh sách hiện hành.</li>
+<li><b>Lấy Access token và Refresh token:</b> qua luồng cấp quyền OAuth của OA (người quản trị OA bấm đồng ý). Access token hết hạn sau thời gian ngắn; refresh token dùng để lấy cặp mới và <b>chỉ dùng một lần</b> (Maoki lưu cặp mới mỗi lần làm mới <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span>).</li>
+<li>Nhập vào Maoki: App ID, OA ID, Secret key, Access token, Refresh token → Lưu.</li>
+</ol>
+<h3>4.3 Gửi tin sau khi được duyệt</h3>
+<ul>
+<li><b>Tin tư vấn</b> (trả lời khách đã nhắn): chỉ trong khung thời gian quy định sau tin cuối của khách (Maoki hiện dùng 48 giờ). <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+<li><b>Tin giao dịch / ZNS / ZBS:</b> cần mẫu tin được duyệt và tính phí. Maoki chưa hỗ trợ.</li>
+<li>Chiến dịch hàng loạt: cần mẫu và quyền riêng; không làm trong phạm vi hiện tại.</li>
+</ul>
+<h3>4.4 Thời gian và liên hệ</h3>
+<p>Xác thực OA và duyệt quyền thường vài ngày đến vài tuần. Liên hệ qua mục hỗ trợ trong <code>oa.zalo.me</code> (OA) và <code>developers.zalo.me</code> (ứng dụng/API); khi bị chậm, nhắn qua kênh hỗ trợ chính thức của Zalo Developers kèm mã ứng dụng. <span class="tag t-chk">CẦN KIỂM TRA</span> kênh liên hệ hiện hành. Mẫu thư: mục 10.4.</p>
+
+<h2 class="pb" id="s5">5. TikTok</h2>
+<div class="callout warn"><b>Trung thực về TikTok</b>Theo hiểu biết của người soạn, TikTok không có API nhắn tin công khai cho mọi doanh nghiệp tự đăng ký; chức năng nhắn tin trực tiếp (Business Messaging) qua API thường chỉ mở cho đối tác được chọn và theo khu vực. Người soạn không kiểm tra được cổng chính thức, nên mục này vừa là hướng dẫn, vừa là danh sách câu hỏi để bạn hỏi thẳng TikTok. <span class="tag t-chk">CẦN KIỂM TRA</span></div>
+<h3>5.1 Bạn cần có</h3>
+<ul>
+<li>Tài khoản <b>TikTok Business</b> của thương hiệu (không phải tài khoản cá nhân) và, nếu chạy quảng cáo, <b>TikTok Ads Manager</b>.</li>
+<li>Tài khoản <b>TikTok for Business Developers</b> (cổng nhà phát triển) với ứng dụng đã tạo.</li>
+<li>Bộ hồ sơ chung ở mục 2 (đặc biệt chính sách quyền riêng tư và xóa dữ liệu).</li>
+</ul>
+<h3>5.2 Các bước nên thử</h3>
+<ol>
+<li>Đăng nhập cổng nhà phát triển của TikTok for Business, tạo ứng dụng và xem danh sách <i>scope/sản phẩm</i> có sẵn. Tìm mục liên quan tới “Business Messaging”, “Direct Message”, “Comment management”.</li>
+<li>Nếu có mục đăng ký: nộp theo hướng dẫn; nếu mục ghi “mời” hoặc “đối tác”: dùng form “Contact us/Partnership” của TikTok for Business và hỏi trực tiếp (mẫu thư: 10.5).</li>
+<li>Nếu không đăng ký được: dùng <b>bên trung gian đã là đối tác</b> (các nền tảng hộp thư đa kênh có tích hợp TikTok, ví dụ Subiz có tài liệu tích hợp TikTok Business <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> từ tài liệu Subiz) hoặc dịch vụ automation. Maoki đã có sẵn “cầu nối TikTok”: dịch vụ đó gửi tin vào Webhook URL của Maoki và nhận trả lời qua địa chỉ cầu nối. <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span></li>
+</ol>
+<h3>5.3 Câu hỏi nên đặt cho TikTok</h3>
+<ul>
+<li>Business Messaging API có mở cho Việt Nam và cho loại ngành lưu trú không?</li>
+<li>Điều kiện trở thành đối tác (số tài khoản quản lý tối thiểu, hồ sơ pháp lý, bảo mật)?</li>
+<li>Cho phép gửi và nhận tin nhắn trực tiếp từ tài khoản business, hay chỉ nhận tin từ quảng cáo/lead?</li>
+<li>Khung thời gian trả lời, giới hạn tốc độ, phí?</li>
+</ul>
+
+<h2 class="pb" id="s6">6. Google Business Profile</h2>
+<div class="callout"><b>Maoki đã làm gì</b>Đồng bộ đánh giá qua <code>mybusiness.googleapis.com/v4/accounts/{id}/locations/{id}/reviews</code> và đăng phản hồi bằng <code>PUT …/reviews/{id}/reply</code>; làm mới access token bằng OAuth. Tự trả lời theo ngưỡng sao là tùy chọn, mặc định tắt. <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> với mã nguồn; <span class="tag t-chk">CẦN KIỂM TRA</span> tên điểm cuối với tài liệu hiện hành của Google.</div>
+<h3>6.1 Điều kiện</h3>
+<ul>
+<li>Hồ sơ doanh nghiệp trên Google (Business Profile) đã <b>được xác minh</b> và <b>hoạt động ít nhất 60 ngày</b>. <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+<li>Website của doanh nghiệp, mô tả rõ trường hợp sử dụng, và email miền công ty.</li>
+<li>Tài khoản Google quản lý địa điểm là Chủ sở hữu (Owner) hoặc Quản lý của địa điểm.</li>
+</ul>
+<h3>6.2 Các bước</h3>
+<ol>
+<li><b>Tạo dự án trên Google Cloud Console</b> (<code>console.cloud.google.com</code>). Ghi lại <b>Project Number</b> (số, không phải Project ID).</li>
+<li><b>Yêu cầu quyền truy cập Business Profile APIs:</b> trong tài liệu chính thức của Business Profile APIs có mục “Prerequisites / Request access”: điền biểu mẫu (tên doanh nghiệp, website, email, Project Number, mô tả use case). Hạn mức mặc định của dự án là <b>0 yêu cầu/phút</b> cho tới khi được duyệt, sau đó có hạn mức dương. Thường vài ngày đến vài tuần. <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+<li><b>Bật các API</b> sau khi được duyệt: các “My Business …” API tương ứng (quản lý tài khoản, thông tin doanh nghiệp) và API đánh giá. Reviews hiện còn nằm ở API phiên bản cũ (v4) theo hiểu biết của người soạn. <span class="tag t-chk">CẦN KIỂM TRA</span></li>
+<li><b>Màn hình đồng ý OAuth (OAuth consent screen):</b> loại External; tên ứng dụng; biểu tượng; email hỗ trợ; tên miền; URL chính sách quyền riêng tư và điều khoản. Thêm scope <code>https://www.googleapis.com/auth/business.manage</code>.</li>
+<li><b>Tạo OAuth client</b> (Web application) với Redirect URI bạn dùng để lấy mã cấp quyền (có thể dùng OAuth Playground cho lần đầu). Lấy Client ID và Client secret.</li>
+<li><b>Lấy refresh token:</b> đăng nhập bằng tài khoản quản lý địa điểm, đồng ý cấp quyền, đổi mã lấy refresh token (cần <code>access_type=offline</code>, <code>prompt=consent</code>).</li>
+<li><b>Lấy Account ID và Location ID</b> (chỉ gồm chữ số) từ API quản lý tài khoản/địa điểm hoặc từ đường dẫn trong Business Profile Manager.</li>
+<li>Nhập vào Maoki → Kênh nhắn tin → Google Business: Client ID, Client secret, Refresh token, Account ID, Location ID.</li>
+</ol>
+<div class="callout warn"><b>Bẫy “Testing”: refresh token hết hạn sau 7 ngày</b>Nếu màn hình đồng ý OAuth ở trạng thái <i>Testing</i> (chưa chuyển sang <i>In production</i>), refresh token chỉ sống khoảng 7 ngày, khiến Maoki đột nhiên mất kết nối. Hãy chuyển sang In production. Với scope nhạy cảm, ứng dụng chưa xác minh sẽ hiện cảnh báo “Google chưa xác minh ứng dụng này” và giới hạn khoảng 100 người dùng; chính bạn có thể bấm bỏ qua cảnh báo khi cấp quyền. <span class="tag t-chk">CẦN KIỂM TRA</span></div>
+<h3>6.3 Xác minh OAuth (khi muốn khách tự kết nối)</h3>
+<p>Nộp “Verification” trong OAuth consent screen: tên miền được xác minh trong Google Search Console, chính sách quyền riêng tư công khai, giải thích từng scope, và <b>video demo</b> thể hiện luồng cấp quyền và cách dùng dữ liệu (mục 11). Thời gian vài tuần. Với scope hạn chế (restricted) có thể cần đánh giá bảo mật bên thứ ba; theo hiểu biết của người soạn <code>business.manage</code> không thuộc nhóm đó, nhưng cần xác nhận. <span class="tag t-chk">CẦN KIỂM TRA</span> Mẫu điền: mục 10.6.</p>
+<h3>6.4 Liên hệ</h3>
+<p>Hỗ trợ Business Profile APIs: mục “Support” trong tài liệu API của Google (biểu mẫu liên hệ nhóm API) và Google Cloud Console → Support. Nêu rõ Project Number và mã yêu cầu trước đó. Tham khảo Phụ lục C.</p>
+
+<h2 class="pb" id="s7">7. YouTube</h2>
+<div class="callout"><b>Maoki đã làm gì</b>Đồng bộ bình luận qua <code>commentThreads.list</code> với <code>allThreadsRelatedToChannelId</code>; đăng phản hồi bằng <code>comments.insert</code>; đánh dấu “đã phản hồi” khi chính kênh trả lời. <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> với mã nguồn. <span class="tag t-chk">CẦN KIỂM TRA</span> điểm cuối/tham số hiện hành.</div>
+<h3>7.1 Các bước</h3>
+<ol>
+<li>Dùng cùng dự án Google Cloud (hoặc tạo dự án riêng). <b>Bật “YouTube Data API v3”</b> trong Library.</li>
+<li>OAuth consent screen: thêm scope <code>https://www.googleapis.com/auth/youtube.force-ssl</code> (quản lý bình luận). Đây là scope nhạy cảm.</li>
+<li>Tạo OAuth client, lấy refresh token bằng tài khoản <b>chủ kênh</b> (đăng nhập bằng đúng Google Account sở hữu/quản lý kênh; nếu có “tài khoản thương hiệu” hãy chọn kênh khi cấp quyền).</li>
+<li><b>Channel ID</b> dạng <code>UC…</code>: YouTube Studio → Cài đặt → Kênh → Thông tin nâng cao.</li>
+<li>Nhập vào Maoki → Kênh nhắn tin → YouTube.</li>
+</ol>
+<h3>7.2 Hạn mức và tăng hạn mức</h3>
+<p>Hạn mức mặc định khoảng <b>10.000 đơn vị/ngày</b>. Đọc danh sách bình luận tốn rất ít; đăng một phản hồi tốn khoảng <b>50 đơn vị</b>, nên khoảng 200 phản hồi mỗi ngày là hết. Nếu cần nhiều hơn, nộp biểu mẫu <b>“YouTube API Services – Audit and Quota Extension Form”</b>: mô tả sản phẩm, vì sao cần thêm, cách tuân thủ Điều khoản dịch vụ API của YouTube, ảnh chụp màn hình. Duyệt vài tuần. <span class="tag t-chk">CẦN KIỂM TRA</span></p>
+<h3>7.3 Điều khoản của YouTube API</h3>
+<ul>
+<li>Phải hiển thị chính sách quyền riêng tư và liên kết Chính sách quyền riêng tư của Google.</li>
+<li>Không lưu dữ liệu API quá thời gian cho phép nếu không làm mới; cho phép người dùng thu hồi quyền (trang thu hồi quyền của Google) và xóa dữ liệu.</li>
+<li>Không dùng bình luận để huấn luyện mô hình cho bên thứ ba ngoài mục đích đã khai báo.</li>
+</ul>
+<p>Cũng áp dụng “bẫy Testing” và quy trình xác minh OAuth giống mục 6. Mẫu điền: mục 10.6.</p>
+
+<h2 class="pb" id="s8">8. Tổng đài điện thoại</h2>
+<div class="callout"><b>Maoki đã làm gì</b>Nhận webhook sự kiện cuộc gọi (JSON hoặc dạng form kiểu Twilio) và ghi vào Nhật ký cuộc gọi: số, hướng gọi, kết quả, thời lượng, link ghi âm; tự khớp khách theo số điện thoại; nút “Gọi điện” mở ứng dụng gọi của máy. <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> Chưa có gọi trực tiếp trong ứng dụng (VoIP), chưa kiểm tra chữ ký riêng của từng nhà cung cấp.</div>
+<h3>8.1 Chọn nhà cung cấp</h3>
+<p>Điều kiện bắt buộc: có <b>webhook sự kiện cuộc gọi</b> (gọi tới/đi/kết thúc, kèm thời lượng và link ghi âm). Các nhà cung cấp tổng đài ảo phổ biến tại Việt Nam và quốc tế thường có (ví dụ Stringee, VoiceCloud, CareSoft, Twilio); <b>hãy hỏi từng nhà</b>: “Có webhook cho sự kiện cuộc gọi không? Định dạng và các trường nào? Có chữ ký/ token xác thực không? Ghi âm có link tải không và hết hạn sau bao lâu?”. <span class="tag t-chk">CẦN KIỂM TRA</span> từng nhà.</p>
+<h3>8.2 Việc cần làm</h3>
+<ol>
+<li>Đăng ký số/đầu số (1900…, 1800…, số cố định theo tỉnh, số di động ảo) với nhà cung cấp; họ làm thủ tục với nhà mạng. Đầu số có thể yêu cầu giấy tờ doanh nghiệp và mất vài ngày–vài tuần.</li>
+<li>Trong Maoki: Kênh nhắn tin → Tổng đài → Lưu → sao chép Webhook URL. Dán vào cấu hình webhook của nhà cung cấp.</li>
+<li>Kiểm tra bằng một cuộc gọi thử; xác nhận cuộc gọi xuất hiện trong Nhật ký cuộc gọi và khớp khách.</li>
+<li>Nếu nhà cung cấp gửi cuộc gọi qua nhiều sự kiện, đảm bảo có <code>callId</code> chung để Maoki cập nhật đúng bản ghi.</li>
+</ol>
+<h3>8.3 Pháp lý ghi âm và dữ liệu</h3>
+<ul>
+<li>Thông báo cho người gọi rằng cuộc gọi có thể được ghi âm (lời chào đầu cuộc gọi) và ghi trong chính sách quyền riêng tư.</li>
+<li>Xử lý số điện thoại và ghi âm là dữ liệu cá nhân: tuân thủ quy định bảo vệ dữ liệu cá nhân hiện hành tại Việt Nam (Nghị định 13/2023/NĐ-CP và luật mới). <span class="tag t-chk">CẦN KIỂM TRA</span> với luật sư.</li>
+<li>Quy định về dịch vụ viễn thông và đầu số do nhà cung cấp lo; bạn chỉ cần dùng nhà cung cấp có giấy phép.</li>
+</ul>
+<h2 class="pb" id="s9">9. Các sàn OTA: Airbnb, Booking.com, Agoda, Trip.com, Expedia, Traveloka, Vrbo</h2>
+<p>Đây là phần khó nhất và cũng là phần quyết định sản phẩm có thể hứa “đồng bộ lịch, giá và đơn” hay không. Mục này dựa nhiều nhất vào tài liệu của Belldor, vì họ đang vận hành đúng mô hình này.</p>
+
+<h3>9.1 Vì sao các sàn khác với mạng xã hội <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> (Belldor)</h3>
+<p>Với Meta hay Google, bạn đăng ký ứng dụng và xin quyền. Với các sàn OTA, API giá, phòng trống, đơn và tin nhắn <b>không mở cho nhà phát triển bình thường</b>: chỉ <b>đối tác kết nối đã được sàn chứng nhận</b> mới dùng được. Cách Belldor làm, theo chính trung tâm hỗ trợ của họ (bài “Chuẩn bị Booking.com, Agoda, Trip.com, Expedia, Traveloka để kết nối” và “Chuẩn bị tài khoản Airbnb…”):</p>
+<ul>
+<li>Chủ nhà <b>không tự nối kênh</b>; đội Belldor làm: nhập căn, ghép từng căn với từng kênh, chuyển các đơn sắp tới, kiểm lịch và giá trước khi bật (miễn phí cài đặt).</li>
+<li>Trên <b>Booking.com, Agoda, Trip.com</b>: chủ nhà đăng nhập trang quản lý của sàn, gửi Belldor <b>mã cơ sở</b> (mã khách sạn/chỗ nghỉ) và <b>chọn nhà kết nối theo đúng tên Belldor gửi</b> trong trang quản lý của sàn.</li>
+<li>Trên <b>Expedia</b>: Partner Central → Rooms and Rates → Connectivity Settings → chọn nhà kết nối cho giá, phòng trống và đặt phòng. Trên <b>Traveloka</b>: TERA → mục Channel Manager. (Đòi xác thực 2 lớp nên chủ nhà tự làm.)</li>
+<li>Trên <b>Airbnb</b>: chủ nhà đăng nhập bằng tài khoản chủ listing và <b>bấm link ủy quyền</b> do Belldor gửi (luồng OAuth của đối tác Airbnb).</li>
+<li><b>Agoda</b>: phải đặt giá tối thiểu/tối đa từng phòng sao cho bao được giá bán, nếu không Agoda bỏ qua giá gửi sang. Nhận tin nhắn Agoda: thêm email của nhà kết nối vào mục <i>Customer messages</i> trong Contacts.</li>
+<li><b>Trip.com</b>: gắn gói giá cho từng loại phòng; đặt số khách tối đa đúng. <b>Traveloka và Vrbo không chuyển tin nhắn</b> qua kết nối: trả lời trên trang của sàn.</li>
+</ul>
+<p>Nhịp đồng bộ Belldor công bố: đơn từ sàn về khoảng 5 phút/lần; lịch trống gửi ngay khi lưu; giá khoảng 5 phút/lần; lịch iCal của listing chưa nối 15 phút/lần; tin nhắn về sau vài giây (có kiểm lại 5 phút/lần). Chúng tôi dùng các con số này làm mốc để Maoki cạnh tranh về trải nghiệm.</p>
+<div class="callout"><b>Kết luận thực tế</b>Belldor là <i>nhà kết nối được chứng nhận</i> của hầu hết các sàn trên. Maoki hiện <b>không phải</b> nhà kết nối nào. Hai việc khác nhau hoàn toàn: (1) Maoki vẫn đồng bộ <b>lịch</b> qua iCal (đã làm); (2) để đồng bộ <b>giá, đơn, tin nhắn</b>, Maoki phải trở thành nhà kết nối được chứng nhận hoặc đi qua một nhà kết nối đã được chứng nhận.</div>
+
+<h3>9.2 Ba con đường</h3>
+<table>
+<tr><th style="width:24%">Con đường</th><th>Ưu</th><th>Nhược</th><th style="width:20%">Thời gian / chi phí</th></tr>
+<tr><td><b>A. Tự chứng nhận từng sàn</b></td><td>Sở hữu hoàn toàn, biên lợi nhuận cao, kiểm soát chất lượng.</td><td>Mỗi sàn một đặc tả, một bộ kiểm thử, một quy trình; cần đội kỹ thuật và hỗ trợ lâu dài; thường có tiêu chí tối thiểu về số cơ sở/chất lượng.</td><td>3–12 tháng mỗi sàn; chi phí nhân sự lớn</td></tr>
+<tr><td><b>B. Dùng nhà cung cấp API channel manager</b> đã được các sàn chứng nhận (họ bán API cho phần mềm quản lý)</td><td>Nhanh; một API cho nhiều sàn; không phải tự chứng nhận.</td><td>Phụ thuộc bên thứ ba; trả phí theo phòng/kết nối; khác biệt tính năng; cần hợp đồng và đánh giá chất lượng.</td><td>Vài tuần đến vài tháng; phí theo phòng</td></tr>
+<tr><td><b>C. Chỉ iCal</b> (hiện tại)</td><td>Đã chạy; không cần xin quyền; hợp cho hộ nhỏ.</td><td>Chỉ ngày bận/trống, trễ 1–3 giờ do sàn quyết định; không có giá, không có chi tiết đơn, không có tin nhắn.</td><td>Đã xong</td></tr>
+</table>
+<p><b>Khuyến nghị:</b> giữ C để bán ngay; khảo sát B với 2–3 nhà cung cấp trong tháng tới (danh sách câu hỏi ở mục 10.10); chỉ cân nhắc A khi đã có đủ khách trả tiền để biện minh chi phí. Mọi nội dung quảng cáo phải phản ánh đúng con đường đang dùng (xem mục “cách viết trung thực” trong <code>docs/product/plans-and-scope.md</code>).</p>
+
+<h3>9.3 Nếu chọn B: cách đánh giá nhà cung cấp channel manager</h3>
+<ul>
+<li>Danh sách sàn được chứng nhận cho <i>đúng loại hình của bạn</i> (căn hộ/homestay, khách sạn) và tại Việt Nam.</li>
+<li>Từng năng lực có thật không: đẩy giá, nhận đơn mới/sửa/hủy, đẩy phòng trống, <b>tin nhắn</b> (thường khác nhau theo sàn), đánh giá.</li>
+<li>Mô hình hợp đồng cho phần mềm: có cho phép “white-label” để khách chọn đúng tên nhà kết nối trên extranet, hay khách phải chọn tên của họ?</li>
+<li>Giá: theo phòng/tháng, phí khởi tạo, mức tối thiểu; có tách bạch phí sàn?</li>
+<li>Hỗ trợ: giờ làm việc, kênh liên hệ, cam kết thời gian xử lý sự cố, tình trạng (status page).</li>
+<li>Chất lượng: tỷ lệ đồng bộ thành công, độ trễ, xử lý đơn trùng, đơn bị từ chối; sandbox để thử.</li>
+<li>Rủi ro thoát: dữ liệu và kết nối có chuyển đi được nếu đổi nhà cung cấp?</li>
+</ul>
+
+<h3>9.4 Nếu chọn A: quy trình chung của một chương trình đối tác kết nối <span class="tag t-chk">CẦN KIỂM TRA</span></h3>
+<ol>
+<li><b>Đăng ký quan tâm:</b> điền biểu mẫu đối tác trên cổng chính thức của sàn (thông tin công ty, sản phẩm, loại hình, số cơ sở sẽ kết nối, thị trường).</li>
+<li><b>Sàng lọc:</b> sàn xem xét năng lực kỹ thuật và thương mại; có thể yêu cầu cuộc gọi giới thiệu và khách hàng thí điểm.</li>
+<li><b>Hợp đồng và bảo mật:</b> ký thỏa thuận đối tác và thỏa thuận xử lý dữ liệu; nhận tài khoản kiểm thử (sandbox).</li>
+<li><b>Phát triển theo đặc tả</b> của sàn (định dạng, giới hạn tốc độ, cách xác thực, cách xử lý lỗi).</li>
+<li><b>Kiểm thử chứng nhận:</b> chạy bộ kịch bản của sàn (tạo/sửa/hủy đơn, đẩy giá/phòng trống, các trường hợp lỗi); sàn đánh giá kết quả.</li>
+<li><b>Chạy thí điểm</b> với một vài cơ sở thật; sàn theo dõi chất lượng.</li>
+<li><b>Chính thức</b> và theo dõi chỉ số chất lượng liên tục (tỷ lệ lỗi, độ trễ, phản hồi hỗ trợ).</li>
+</ol>
+<h4>Mức sẵn sàng kỹ thuật của Maoki so với yêu cầu thường gặp</h4>
+<table>
+<tr><th>Yêu cầu</th><th>Hiện trạng Maoki</th></tr>
+<tr><td>Hàng đợi gửi tin có thử lại, chống trùng</td><td>Có hàng đợi gửi (thử lại 3 lần). <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> Chưa có cơ chế chống trùng ở mức đơn OTA.</td></tr>
+<tr><td>Nhật ký kiểm toán các lần đồng bộ</td><td>Có nhật ký hoạt động chung; chưa có nhật ký đồng bộ theo từng lệnh gọi OTA.</td></tr>
+<tr><td>Không bán trùng đêm (khóa nguyên tử)</td><td>Có, kiểm tra trùng lịch trong cơ sở dữ liệu cho đặt phòng và ngày bận iCal. <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span></td></tr>
+<tr><td>Giám sát, cảnh báo, trang trạng thái</td><td>Chưa có.</td></tr>
+<tr><td>Hỗ trợ khách 24/7 hoặc theo giờ cam kết</td><td>Chưa có.</td></tr>
+<tr><td>Môi trường kiểm thử riêng</td><td>Chưa; cần một dự án Supabase kiểm thử tách biệt.</td></tr>
+</table>
+<h3>9.5 Từng sàn: nên tìm gì và hỏi ai</h3>
+<table>
+<tr><th style="width:15%">Sàn</th><th>Việc cần làm / điều cần hỏi</th></tr>
+<tr><td><b>Airbnb</b></td><td>Tìm chương trình “Airbnb Connectivity Partner” trên trang dành cho đối tác của Airbnb. Hỏi: tiêu chí tối thiểu; có chương trình cho phần mềm mới; phạm vi API (lịch, giá, đơn, tin nhắn, đánh giá); luồng ủy quyền OAuth cho chủ listing (Belldor dùng link ủy quyền gửi chủ nhà <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span>).</td></tr>
+<tr><td><b>Booking.com</b></td><td>Tìm “Booking.com Connectivity Partner Programme” (cổng đối tác/connectivity của Booking.com). Chủ nhà chọn nhà kết nối trên extranet theo tên bạn đăng ký. Hỏi về các API: phòng trống/giá, đơn, tin nhắn; quy trình chứng nhận; các cấp độ đối tác.</td></tr>
+<tr><td><b>Agoda</b></td><td>Tìm chương trình kết nối/đối tác công nghệ của Agoda (liên quan hệ thống YCS). Lưu ý giá tối thiểu/tối đa, và email nhận tin nhắn khách (Customer messages) như Belldor mô tả.</td></tr>
+<tr><td><b>Trip.com</b></td><td>Tìm cổng đối tác kết nối/eBooking của Trip.com Group. Gói giá theo từng loại phòng và số khách tối đa là điều kiện để bán qua kết nối.</td></tr>
+<tr><td><b>Expedia / Vrbo</b></td><td>Expedia Partner Central có mục Connectivity Settings để chọn nhà kết nối; tìm “Expedia Group Connectivity” để đăng ký làm nhà kết nối. Vrbo thuộc cùng tập đoàn.</td></tr>
+<tr><td><b>Traveloka</b></td><td>TERA có mục Channel Manager để chọn nhà kết nối; tìm chương trình đăng ký nhà kết nối của Traveloka. Không chuyển tin nhắn qua kết nối <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span> (Belldor).</td></tr>
+</table>
+<p class="small">Cẩm nang cố ý không ghi địa chỉ email của bộ phận đối tác từng sàn vì người soạn không xác minh được. Hãy dùng biểu mẫu trên cổng chính thức hoặc qua quản lý tài khoản của sàn (nếu cơ sở của bạn đã có).</p>
+<div class="callout"><b>Trip.com: tin nhắn</b>Bản mô tả gói bạn đưa ra nói tin nhắn Trip.com được trả lời trong ứng dụng Trip.com. Điều đó nhất quán và an toàn: Maoki chỉ nên hiển thị đơn/ngày bận, kèm nút mở ứng dụng Trip.com để trả lời, thay vì hứa tin nhắn về chung hộp thư.</div>
+
+<h2 class="pb" id="s10">10. Mẫu thư và nội dung điền form</h2>
+<p>Tất cả mẫu đều ngắn gọn có chủ ý: người duyệt đọc hàng trăm hồ sơ. Thay <code>[…]</code> bằng thông tin thật. Giữ tiếng Anh cho nền tảng quốc tế.</p>
+
+<h3>10.1 Mô tả ứng dụng (dùng cho Meta, Google, TikTok, Zalo)</h3>
+<div class="email"><div class="h">English – short (≤ 80 characters)</div>Guest messaging and reviews for small hotels and homestays.</div>
+<div class="email"><div class="h">English – long</div>Maoki Admin is a property-management and guest-communication tool for small hotels, serviced apartments and homestays in Vietnam. Property owners connect their own business accounts (Facebook Page, Instagram professional account, WhatsApp Business number, Zalo Official Account, Google Business Profile, YouTube channel) so their staff can read and reply to guests in one inbox, track bookings and respond to public reviews. Maoki only accesses accounts that the property owner explicitly authorizes, only to deliver the messages and reviews that belong to that owner, and never sells or shares the data.</div>
+<div class="email"><div class="h">Tiếng Việt – ngắn</div>Hộp thư khách và đánh giá dành cho khách sạn nhỏ và homestay.</div>
+<div class="email"><div class="h">Tiếng Việt – dài</div>Maoki Admin là công cụ quản lý lưu trú và chăm sóc khách cho khách sạn nhỏ, căn hộ dịch vụ và homestay tại Việt Nam. Chủ nhà kết nối chính các tài khoản của mình (Trang Facebook, Instagram chuyên nghiệp, số WhatsApp Business, Zalo OA, Google Business Profile, kênh YouTube) để nhân viên đọc và trả lời khách trong một hộp thư, theo dõi đặt phòng và phản hồi đánh giá công khai. Maoki chỉ truy cập tài khoản mà chủ nhà chủ động cấp quyền, chỉ để chuyển tin nhắn và đánh giá thuộc về chủ nhà đó, và không bán hay chia sẻ dữ liệu.</div>
+
+<h3>10.2 Mô tả cách dùng từng quyền (dán vào ô “How will you use this permission?”)</h3>
+<div class="email"><div class="h">pages_messaging</div>Maoki lets a property owner reply to guests who message the owner's own Facebook Page. When a guest sends a message to the Page, Maoki receives it through the Messenger webhook and shows it in the owner's inbox next to the guest's booking. When the owner types a reply, Maoki sends it with the Send API, within 24 hours of the guest's last message. We use this permission only to receive and send these one-to-one conversations on behalf of the Page owner; messages are never used for advertising, sold or shared. See the screencast: login → Settings → Messaging channels → Messenger connected → guest message arrives → owner replies → guest receives it.</div>
+<div class="email"><div class="h">pages_manage_metadata</div>Needed to subscribe the app to webhooks for the owner's Page so new guest messages arrive in real time. We do not read, change or publish any other Page content.</div>
+<div class="email"><div class="h">instagram_manage_messages</div>Maoki lets the owner of an Instagram professional account reply to guest direct messages in the same inbox as the owner's bookings. Messages are received through the Instagram webhook and replies are sent within the 24-hour window. Used only for conversations with guests of that owner's property.</div>
+<div class="email"><div class="h">whatsapp_business_messaging / whatsapp_business_management</div>Maoki lets a hotel or homestay answer guests on its own WhatsApp Business number from the shared inbox, and send pre-approved templates outside the 24-hour window (for example a check-in reminder to a guest who booked). We manage only the owner's WhatsApp Business Account, its message templates and its phone number settings, and do not send unsolicited marketing.</div>
+<div class="email"><div class="h">Zalo (Tiếng Việt)</div>Maoki cho phép chủ nhà nhận và trả lời tin nhắn khách gửi tới Official Account của chính họ ngay trong hộp thư chung cùng đơn đặt phòng. Chúng tôi dùng quyền quản lý tin nhắn chỉ để nhận tin khách gửi tới OA và gửi tin tư vấn trả lời trong khung thời gian cho phép; không gửi tin quảng cáo, không chia sẻ dữ liệu.</div>
+
+<h3>10.3 Thư gửi hỗ trợ Meta (khi hồ sơ bị chặn lâu)</h3>
+<div class="email"><div class="h">To: Meta for Developers support / Business Support · Subject: App Review / Business Verification pending for app [App ID]</div>Hello,
+We submitted App Review for app [name] (ID [App ID]) on [date] for [permissions], and Business Verification for [business name] (Business ID [ID]) on [date]. The status has been [pending / unchanged] for [N] days.
+The app lets small hotels reply to guest messages from their own Page, Instagram account and WhatsApp number in one inbox. Privacy policy: [URL]. Data deletion instructions: [URL]. Reviewer login and screencasts are attached to each permission request.
+Could you tell us whether anything is missing, and who can help to move the review forward? Contact: [name, email, phone].
+Thank you.</div>
+
+<h3>10.4 Thư gửi Zalo Developers / OA</h3>
+<div class="email"><div class="h">Tiêu đề: Đề nghị hỗ trợ duyệt quyền ứng dụng [tên ứng dụng] (App ID [ID])</div>Kính gửi đội ngũ Zalo Developers,
+Chúng tôi là [tên pháp nhân], MST [số], phát triển ứng dụng Maoki Admin giúp khách sạn nhỏ và homestay quản lý tin nhắn khách. Ứng dụng [ID] đã liên kết với Official Account [tên OA, OA ID]. Chúng tôi đề nghị được duyệt quyền [liệt kê quyền] để nhận và trả lời tin nhắn khách gửi tới OA.
+Chính sách quyền riêng tư: [URL]. Tên miền đã xác minh: [tên miền]. Webhook: [URL]. Tài khoản dùng thử và video hướng dẫn xin gửi kèm.
+Rất mong nhận được phản hồi về tình trạng hồ sơ và thông tin cần bổ sung. Người liên hệ: [họ tên, điện thoại, email].
+Trân trọng.</div>
+
+<h3>10.5 Thư hỏi TikTok về Business Messaging</h3>
+<div class="email"><div class="h">Subject: Access to Business Messaging API for a Vietnam-based hospitality tool</div>Hello,
+[Company], a Vietnam-based software company, builds Maoki Admin, an inbox and booking tool for small hotels and homestays. Our customers' TikTok Business accounts receive guest questions as direct messages and comments. We would like to understand whether the Business Messaging (direct message) API is available to us, in Vietnam and for the hospitality category.
+(1) What are the eligibility and application steps? (2) Is a partner program required? (3) Which scopes cover reading and replying to direct messages and comments? (4) Rate limits, review time and fees? We can provide our privacy policy, data-flow diagram and a demo environment. Contact: [name, email].
+Thank you.</div>
+
+<h3>10.6 Google và YouTube: biểu mẫu truy cập API và xác minh OAuth</h3>
+<div class="email"><div class="h">Business Profile API access request – use case</div>We operate Maoki Admin, a management tool for small hotels and homestays in Vietnam. A property owner connects their own Business Profile location so staff can read customer reviews and publish replies from the same inbox as their bookings. We use the Business Profile APIs only for locations whose owner explicitly authorizes the app, to read reviews and post owner replies. We do not modify listing data, ratings or photos, and do not use the data for advertising. Website: [URL]. Privacy policy: [URL]. Google Cloud project number: [number]. Business Profile: [name, verified since date].</div>
+<div class="email"><div class="h">OAuth verification – justification per scope (business.manage / youtube.force-ssl)</div>business.manage: required to list reviews and post replies for the locations the user manages; no narrower scope allows replying to reviews. youtube.force-ssl: required to list comment threads on the user's channel videos and to publish replies as the channel; reading alone is insufficient because replying is the core feature. The app requests these scopes only after the user explicitly connects the account, stores refresh tokens encrypted at rest in a private schema that is never returned to the browser, and lets the user disconnect (which deletes the token) at any time.</div>
+<div class="email"><div class="h">YouTube Audit and Quota Extension – additional units request</div>Our app replies to comments on a hotel's own channel. Reading comments costs about 1 unit; each posted reply costs 50 units. The default 10,000 daily units limit allows about 200 replies per day across all connected channels. We expect [N] connected channels and [M] replies per day, so we request [X] units/day. We comply with the YouTube API Services Terms: privacy policy at [URL], users can revoke access at any time, and we delete data on request.</div>
+
+<h3>10.7 Thư hỏi Booking.com / Airbnb / Agoda / Trip.com / Expedia / Traveloka (cùng khung)</h3>
+<div class="email"><div class="h">Subject: Connectivity partnership inquiry – [Company], Vietnam</div>Hello,
+[Company] builds Maoki Admin, a property-management and guest-communication tool for small hotels, serviced apartments and homestays in Vietnam ([N] properties onboarded / planned). We would like to apply to become a [Connectivity Partner / Channel Manager] for [OTA name] and integrate availability, rates, reservations [and messaging].
+Could you please share: (1) eligibility criteria and the application route; (2) the technical specification and sandbox access; (3) the certification process and typical timeline; (4) any minimum volume, quality or support requirements; (5) a contact in the Vietnam market team.
+Company profile: [URL / attached]. Contact: [name, title, email, phone].
+Thank you for your time.</div>
+
+<h3>10.8 Thư gửi nhà cung cấp API channel manager (phương án B)</h3>
+<div class="email"><div class="h">Subject: API partnership for a small-property PMS in Vietnam</div>Hello,
+We run Maoki Admin, a PMS for small properties in Vietnam, and want to offer our customers two-way sync with Airbnb, Booking.com, Agoda, Trip.com and Expedia without becoming a certified partner of each OTA. Please share: the list of OTAs you are certified for and whether certification covers Vietnam and homestay/apartment inventory; which capabilities are live per OTA (availability, rates, reservations, messages, reviews); the commercial model for a PMS partner (per-room fee, setup fee, minimum); whether our customers can authorize through our own branded flow; sandbox access; and support commitments and status reporting.
+Contact: [name, email].
+Thank you.</div>
+
+<h3>10.9 Bộ câu hỏi 10 phút để khảo sát một nhà cung cấp</h3>
+<ol>
+<li>Chứng nhận của bạn gồm những sàn nào, cho loại hình nào, tại thị trường nào?</li>
+<li>Độ trễ trung bình đơn về / phòng trống đi / giá đi?</li>
+<li>Khi một đơn bị sàn từ chối hoặc trùng, hệ thống xử lý thế nào và báo cho ai?</li>
+<li>Có tin nhắn hai chiều cho sàn nào?</li>
+<li>Tách bạch phí: phí của bạn, phí của sàn?</li>
+<li>Khách của chúng tôi có phải tạo tài khoản với bạn không?</li>
+<li>Hợp đồng thoát: dữ liệu và kết nối có chuyển đi được không?</li>
+<li>Cam kết hỗ trợ: giờ, kênh, thời gian xử lý?</li>
+<li>Sandbox và tài liệu API công khai?</li>
+<li>Khách tham chiếu tại Việt Nam để hỏi ý kiến?</li>
+</ol>
+
+<h2 class="pb" id="s11">11. Kịch bản quay video duyệt quyền (screencast)</h2>
+<p>Hầu hết lý do bị từ chối là video không đủ rõ. Video tốt cho người duyệt thấy <b>đầy đủ luồng từ đăng nhập tới khi quyền được dùng</b>, bằng phụ đề tiếng Anh, không cắt ghép lạ.</p>
+<h3>11.1 Quy tắc chung</h3>
+<ul>
+<li>Độ phân giải 1080p, màn hình rộng, <b>thấy thanh địa chỉ</b> (URL) suốt video để chứng minh ứng dụng chạy ở đúng tên miền đã khai.</li>
+<li>Phụ đề hoặc giọng nói tiếng Anh (có thể kèm tiếng Việt). Mỗi bước một dòng chú thích.</li>
+<li>Dữ liệu thử nghiệm: dùng khách tên giả, che thông tin thật.</li>
+<li>Mỗi quyền một video (hoặc một đoạn có tiêu đề rõ). Độ dài khuyến nghị 1–4 phút.</li>
+<li>Nếu ứng dụng chỉ là app desktop/Android, quay cả màn hình cài đặt/đăng nhập; nếu có bản web cho người duyệt, quay bản web.</li>
+<li>Ngôn ngữ giao diện: bật tiếng Anh (Maoki có nút VI/EN) để người duyệt đọc được.</li>
+</ul>
+<h3>11.2 Messenger / Instagram (<code>pages_messaging</code>, <code>instagram_manage_messages</code>)</h3>
+<ol>
+<li>Màn hình giới thiệu: tên ứng dụng, mô tả một câu.</li>
+<li>Đăng nhập Maoki bằng tài khoản thử; mở <b>Thiết lập → Kênh nhắn tin</b>.</li>
+<li>Cho thấy Page/Instagram đã kết nối (tên Trang, trạng thái “Đang bật”); mở trang Meta cho thấy webhook đang đăng ký và quyền được cấp.</li>
+<li>Từ một tài khoản khách khác (điện thoại thứ hai hoặc trình duyệt khác), nhắn vào Trang/Instagram: “Hi, do you have a room this weekend?”.</li>
+<li>Trong Maoki, mở <b>Hộp thư</b>: tin xuất hiện, hồ sơ khách hiển thị.</li>
+<li>Gõ trả lời và gửi; quay lại tài khoản khách cho thấy đã nhận.</li>
+<li>Nêu lời thoại: “We use this permission only to receive and reply to messages sent to the owner’s Page.”</li>
+<li>Cho thấy nút <b>Xóa kết nối</b> và giải thích token bị xóa.</li>
+</ol>
+<h3>11.3 WhatsApp</h3>
+<ol>
+<li>Cho thấy WABA, số điện thoại, trạng thái tên hiển thị trong WhatsApp Manager.</li>
+<li>Khách nhắn tới số; tin về Hộp thư Maoki; trả lời trong 24 giờ.</li>
+<li>Cho thấy mẫu tin đã duyệt, rồi gửi mẫu cho khách đã quá 24 giờ (qua chức năng dự phòng mẫu).</li>
+</ol>
+<h3>11.4 Zalo OA</h3>
+<ol>
+<li>Cho thấy OA đã xác thực, ứng dụng và Webhook đã cấu hình.</li>
+<li>Khách nhắn tới OA; tin về Hộp thư; trả lời; khách nhận trong Zalo.</li>
+</ol>
+<h3>11.5 Google / YouTube (xác minh OAuth)</h3>
+<ol>
+<li>Bắt đầu từ Maoki, bấm “Kết nối Google/YouTube”.</li>
+<li><b>Cho thấy toàn bộ màn hình đồng ý OAuth</b> của Google: tên ứng dụng, tên miền, từng scope được liệt kê, và bấm “Cho phép”. Đây là điểm người duyệt Google bắt buộc xem.</li>
+<li>Quay lại Maoki: đồng bộ, cho thấy đánh giá/bình luận về; đăng phản hồi; mở Google/YouTube xác nhận phản hồi đã hiển thị.</li>
+<li>Cho thấy cách ngắt kết nối và trang thu hồi quyền của Google.</li>
+</ol>
+<div class="callout warn"><b>Khoảng trống hiện tại</b>Maoki chưa có nút “Kết nối Google/YouTube/Facebook” kiểu OAuth: hiện chủ nhà dán token. Người duyệt Meta/Google thường yêu cầu thấy luồng cấp quyền thật. Trước khi nộp xác minh để khách tự kết nối, cần xây luồng đăng nhập OAuth (Facebook Login for Business, Google Sign-In, Zalo OAuth). Đây là hạng mục kỹ thuật nên ưu tiên sau khi có tên miền và trang pháp lý.</div>
+<h2 class="pb" id="s12">12. Lộ trình, ngân sách thời gian và danh sách kiểm</h2>
+<h3>12.1 Lộ trình đề xuất (song song hóa tối đa)</h3>
+<table>
+<tr><th style="width:14%">Tuần</th><th>Việc chính</th><th style="width:22%">Phụ thuộc</th></tr>
+<tr><td><b>0–1</b></td><td>Tên miền riêng + HTTPS; ba trang pháp lý; bộ hồ sơ pháp nhân; tài khoản dùng thử cho người duyệt; email miền công ty.</td><td>—</td></tr>
+<tr><td><b>1–2</b></td><td>Meta: Business Portfolio, Xác minh doanh nghiệp, ứng dụng, Standard Access để dùng thử. Google: dự án Cloud, form Business Profile APIs. Zalo: xác thực OA, tạo ứng dụng.</td><td>Hồ sơ chung</td></tr>
+<tr><td><b>2–4</b></td><td>Chạy thử thật với tài khoản của chính bạn: một Trang, một OA, một địa điểm Google, một kênh YouTube, một số WhatsApp. Sửa lỗi phát hiện (công thức chữ ký, điểm cuối API…). Tổng đài: chọn nhà cung cấp và nối webhook.</td><td>Token đầu tiên</td></tr>
+<tr><td><b>3–6</b></td><td>Xây luồng OAuth (Facebook/Google/Zalo); quay video; nộp App Review (Meta) và xác minh OAuth (Google/YouTube); nộp duyệt quyền Zalo.</td><td>Chạy thử ổn định</td></tr>
+<tr><td><b>5–10</b></td><td>Xử lý phản hồi người duyệt; chuyển ứng dụng sang Live; mở cho khách đầu tiên (5 khách thí điểm).</td><td>Được duyệt</td></tr>
+<tr><td><b>song song</b></td><td>Khảo sát nhà cung cấp channel manager (9.3); phỏng vấn 10 chủ nhà về giá trị của hộp thư và lịch iCal; quyết định A/B/C.</td><td>—</td></tr>
+</table>
+<h3>12.2 Danh sách kiểm tổng</h3>
+<table>
+<tr><th style="width:55%">Hạng mục</th><th>Trạng thái</th></tr>
+<tr><td><b>Nền tảng chung</b></td><td></td></tr>
+<tr><td><span class="box"></span>Tên miền riêng, HTTPS, email miền công ty</td><td></td></tr>
+<tr><td><span class="box"></span>Trang quyền riêng tư, điều khoản, xóa dữ liệu, hỗ trợ</td><td></td></tr>
+<tr><td><span class="box"></span>Giấy tờ pháp nhân + chứng minh địa chỉ đã scan</td><td></td></tr>
+<tr><td><span class="box"></span>Tài khoản dùng thử cho người duyệt (không đổi mật khẩu)</td><td></td></tr>
+<tr><td><span class="box"></span>Sơ đồ luồng dữ liệu một trang; ảnh chụp màn hình</td><td></td></tr>
+<tr><td><b>Meta</b></td><td></td></tr>
+<tr><td><span class="box"></span>Business Portfolio + Xác minh doanh nghiệp</td><td></td></tr>
+<tr><td><span class="box"></span>Ứng dụng loại Business; webhook; chạy thử với Standard Access</td><td></td></tr>
+<tr><td><span class="box"></span>Instagram liên kết Page; WABA + số + tên hiển thị + mẫu tin</td><td></td></tr>
+<tr><td><span class="box"></span>Video và mô tả từng quyền; nộp App Review; chuyển Live</td><td></td></tr>
+<tr><td><b>Zalo</b></td><td></td></tr>
+<tr><td><span class="box"></span>OA xác thực; ứng dụng; xác minh tên miền; webhook; quyền được duyệt</td><td></td></tr>
+<tr><td><b>Google / YouTube</b></td><td></td></tr>
+<tr><td><span class="box"></span>Dự án Cloud; form Business Profile APIs được duyệt (hạn mức &gt; 0)</td><td></td></tr>
+<tr><td><span class="box"></span>OAuth consent screen ở trạng thái <b>In production</b> (không để Testing)</td><td></td></tr>
+<tr><td><span class="box"></span>Xác minh OAuth (khi mở cho khách); form tăng hạn mức YouTube (nếu cần)</td><td></td></tr>
+<tr><td><b>TikTok</b></td><td></td></tr>
+<tr><td><span class="box"></span>Thư hỏi đã gửi; câu trả lời được lưu; quyết định dùng trực tiếp hay cầu nối</td><td></td></tr>
+<tr><td><b>Tổng đài</b></td><td></td></tr>
+<tr><td><span class="box"></span>Nhà cung cấp có webhook; số/đầu số; thông báo ghi âm; thử cuộc gọi</td><td></td></tr>
+<tr><td><b>OTA</b></td><td></td></tr>
+<tr><td><span class="box"></span>Quyết định A/B/C; khảo sát ít nhất 2 nhà cung cấp; thư hỏi các sàn đã gửi</td><td></td></tr>
+<tr><td><span class="box"></span>Chỉnh nội dung quảng cáo cho đúng con đường đang dùng</td><td></td></tr>
+<tr><td><b>Ứng dụng di động (khi phát hành chính thức)</b></td><td></td></tr>
+<tr><td><span class="box"></span>Google Play: tài khoản nhà phát triển (phí đăng ký một lần), Data safety form, chính sách quyền riêng tư; ký APK bằng keystore riêng. Apple App Store: Apple Developer Program (phí hằng năm), App Privacy, tài khoản dùng thử cho người duyệt, build trên macOS. <span class="tag t-chk">CẦN KIỂM TRA</span> mức phí hiện hành.</td><td></td></tr>
+</table>
+
+<h2 class="pb" id="s13">13. Phụ lục A: Belldor đã làm gì (tham khảo) <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span></h2>
+<p>Đọc trực tiếp từ <code>belldor.com</code> ngày 27/11/2026. Dùng để học cách đóng gói, không sao chép.</p>
+<h3>13.1 Định vị</h3>
+<ul>
+<li>“Năm căn hay năm mươi căn, vẫn nhẹ như một. Lịch, giá và tin nhắn của mọi kênh bán, cùng sổ sách chủ đầu tư, gom về một màn hình.”</li>
+<li>Bán theo <b>số phòng</b>, thử 14 ngày, trả tối thiểu 3 tháng, trả năm giảm 15%.</li>
+<li>Điểm khác biệt vận hành: <b>đội Belldor nối kênh cùng khách, miễn phí cài đặt</b> (nhập căn, ghép kênh, chuyển đơn sắp tới, kiểm lịch và giá trước khi bật).</li>
+</ul>
+<h3>13.2 Ba gói và vị trí của tính năng</h3>
+<table>
+<tr><th style="width:20%">Gói</th><th style="width:20%">Giá công bố</th><th>Có gì</th></tr>
+<tr><td><b>Cơ bản</b></td><td>từ 20.000đ / phòng / tháng</td><td>Lịch, đơn tay (ghi nguồn khách), sổ sách, dọn phòng, app điện thoại, phân quyền. <b>Không đồng bộ với sàn</b>: tự đóng phòng trên Booking.com, Agoda.</td></tr>
+<tr><td><b>Vận hành</b></td><td>từ 30.000đ / phòng / tháng (bảng giá hiển thị 42.000đ trước giảm)</td><td>Thêm: đồng bộ lịch, giá, đơn với Airbnb, Booking.com, Agoda, Trip.com và hơn 20 kênh; ma trận giá theo ngày và kênh; dọn phòng tự sinh theo đơn. Khách vẫn nhắn trong app của từng sàn.</td></tr>
+<tr><td><b>Chuyên nghiệp</b></td><td>từ 58.000đ / phòng / tháng (bảng giá hiển thị 80.000đ trước giảm)</td><td>Thêm: <b>hộp thư chung</b> Airbnb/Booking.com/Agoda + Zalo, Messenger, WhatsApp; tin nhắn mẫu tự gửi; sổ tay khách; trả lời đánh giá; AI agents trả lời khách; lãi lỗ từng căn; chia lợi nhuận.</td></tr>
+</table>
+<p class="small">Giá hiển thị trên trang có nhiều tầng (giá niêm yết, giảm trả năm, bậc theo số phòng). Con số trong bảng lấy từ các trang <code>/tinh-nang/kenh-ban</code> và <code>/bang-gia</code>; hãy mở lại trang để xem giá hiện hành.</p>
+<p>Mô tả bạn gửi (“Đồng bộ lịch, giá và đơn với… Gói Cơ bản không nối kênh. Từ gói Chuyên nghiệp, tin nhắn Airbnb, Booking.com, Agoda cùng Zalo OA, Messenger, WhatsApp về chung một hộp thư; tin nhắn Trip.com trả lời trong app Trip.com”) là sự pha trộn giữa gói Vận hành (đồng bộ) và Chuyên nghiệp (hộp thư) của Belldor. Maoki đề xuất ba gói tương ứng (<code>docs/product/plans-and-scope.md</code>).</p>
+<h3>13.3 Những chi tiết đáng học</h3>
+<ul>
+<li><b>Hộp thư gắn sẵn đơn và căn:</b> bên cạnh hội thoại hiển thị đơn, căn, ngày ở, số khách, khách trả bao nhiêu và tiền về tay.</li>
+<li><b>Ưu tiên theo ngày ở:</b> lọc hộp thư theo “nhận phòng hôm nay / đang ở / trả phòng mai” để khách sắp tới được trả lời trước.</li>
+<li><b>Tin nhắn mẫu tự gửi theo mốc</b> (xác nhận đơn, trước ngày đến, sau trả phòng) và thiếu thông tin thì <i>không gửi</i> (không có tin “Chào ,”). Tin có mã cửa, wifi chỉ gửi khi đơn đã thanh toán.</li>
+<li><b>Nói thẳng giới hạn:</b> “Traveloka và Vrbo không chuyển tin nhắn qua kết nối”; “Belldor gửi ra sàn lịch và giá, không sửa được chính đơn của sàn”; khuyên thỉnh thoảng đối chiếu lại app của sàn.</li>
+<li><b>Bảng cảnh báo kênh</b> và <b>đơn chờ duyệt</b> (đơn trùng hay chưa gắn căn không tự vào lịch).</li>
+</ul>
+<h3>13.4 Hệ quả cho Maoki</h3>
+<p>Điểm mạnh của Belldor nằm ở (1) chứng nhận kết nối với nhiều sàn, và (2) dịch vụ cài đặt tận tay. Maoki khó đuổi kịp (1) trong ngắn hạn; (2) thì làm được ngay bằng cách bán kèm “nối kênh giúp bạn” cho các kênh đã có: Zalo OA, Messenger, WhatsApp, email, lịch iCal. Một lợi thế tự nhiên khác: Maoki đã có trang đặt phòng trực tiếp, hộp thư kiểu Zalo-first cho thị trường Việt, bot/chu trình, và tự trả lời đánh giá.</p>
+
+<h2 class="pb" id="s14">14. Phụ lục B: lỗi bị từ chối thường gặp và cách tránh <span class="tag t-chk">CẦN KIỂM TRA</span></h2>
+<table>
+<tr><th style="width:30%">Lý do bị từ chối</th><th>Cách tránh</th></tr>
+<tr><td>Người duyệt không đăng nhập được</td><td>Tài khoản dùng thử riêng, mật khẩu cố định, ghi trong hướng dẫn; thử đăng nhập từ máy sạch trước khi nộp.</td></tr>
+<tr><td>Video không thấy toàn bộ luồng cấp quyền</td><td>Quay liền một mạch từ nút “Kết nối” tới khi dùng quyền; thấy rõ thanh địa chỉ và màn hình đồng ý của nền tảng.</td></tr>
+<tr><td>Xin quyền không dùng tới</td><td>Chỉ xin quyền tối thiểu; mỗi quyền phải có đoạn trong video.</td></tr>
+<tr><td>Chính sách quyền riêng tư không đạt</td><td>Có đủ mục ở 2.3, nêu rõ tên nền tảng và loại dữ liệu; link mở được không cần đăng nhập; cùng tên miền với ứng dụng.</td></tr>
+<tr><td>Mô tả ứng dụng mơ hồ</td><td>Một câu rõ: ai dùng, làm gì, vì sao cần quyền này.</td></tr>
+<tr><td>Tên ứng dụng chứa thương hiệu nền tảng</td><td>Đặt tên “Maoki Admin”, không có “Facebook/Zalo/TikTok/Google/WhatsApp/Instagram/YouTube”.</td></tr>
+<tr><td>Giấy tờ xác minh không khớp</td><td>Tên và địa chỉ đúng từng ký tự; giấy tờ còn hạn; ảnh rõ nét, không che.</td></tr>
+<tr><td>Chế độ Testing làm token hết hạn (Google)</td><td>Chuyển consent screen sang In production trước khi giao cho khách.</td></tr>
+<tr><td>Khách nhắn quá khung 24 giờ bị lỗi</td><td>Dùng mẫu tin đã duyệt (WhatsApp) hoặc thẻ Human Agent (Meta, nếu được cấp); hiển thị cảnh báo rõ cho nhân viên.</td></tr>
+<tr><td>Chữ ký webhook sai</td><td>Dùng đúng App Secret; kiểm tra đúng byte thô của thân yêu cầu (Maoki đã xử lý). Nếu sau khi nhập mà vẫn “Yêu cầu bị từ chối” thì kiểm tra công thức theo tài liệu hiện hành của nền tảng.</td></tr>
+</table>
+
+<h2 id="s15">15. Phụ lục C: địa chỉ chính thức và thuật ngữ</h2>
+<h3>15.1 Địa chỉ nên bắt đầu từ đó <span class="tag t-chk">CẦN KIỂM TRA</span></h3>
+<p class="small">Đây là các địa chỉ gốc ổn định nhất theo hiểu biết của người soạn. Đường dẫn con có thể đổi; từ trang gốc hãy tìm mục “Documentation / Support / Partner”. Các địa chỉ OTA chỉ là hướng tìm, không phải liên kết đã kiểm.</p>
+<table>
+<tr><th style="width:24%">Nền tảng</th><th>Địa chỉ gốc / từ khóa tìm</th></tr>
+<tr><td>Meta (nhà phát triển)</td><td><code>developers.facebook.com</code> (Messenger Platform, Instagram, WhatsApp; mục App Review)</td></tr>
+<tr><td>Meta (doanh nghiệp)</td><td><code>business.facebook.com</code> (Business Settings, Security Center, WhatsApp Manager, Business Support Home)</td></tr>
+<tr><td>Zalo</td><td><code>developers.zalo.me</code> · <code>oa.zalo.me</code></td></tr>
+<tr><td>TikTok</td><td>“TikTok for Business Developers” / <code>business-api.tiktok.com</code> · <code>developers.tiktok.com</code></td></tr>
+<tr><td>Google</td><td><code>console.cloud.google.com</code> · <code>developers.google.com/my-business</code> · <code>developers.google.com/youtube/v3</code> · <code>support.google.com/business</code></td></tr>
+<tr><td>Booking.com</td><td>Từ khóa: “Booking.com Connectivity Partner Programme”; trang quản lý: extranet của đối tác</td></tr>
+<tr><td>Airbnb</td><td>Từ khóa: “Airbnb Connectivity Partner”</td></tr>
+<tr><td>Agoda</td><td>Từ khóa: “Agoda connectivity partner”, YCS</td></tr>
+<tr><td>Trip.com</td><td>Từ khóa: “Trip.com Group connectivity partner”, eBooking</td></tr>
+<tr><td>Expedia</td><td>Expedia Partner Central; từ khóa “Expedia Group Connectivity”</td></tr>
+<tr><td>Traveloka</td><td>TERA; từ khóa “Traveloka channel manager partner”</td></tr>
+<tr><td>Belldor (tham khảo)</td><td><code>belldor.com</code> · trung tâm hỗ trợ <code>belldor.com/huong-dan</code> · hỗ trợ <code>hotro@belldor.com</code> <span class="tag t-ok">ĐÃ ĐỐI CHIẾU</span></td></tr>
+</table>
+<h3>15.2 Thuật ngữ</h3>
+<table>
+<tr><td style="width:24%"><b>App Review</b></td><td>Quy trình Meta duyệt ứng dụng và từng quyền trước khi cho người ngoài nhóm kiểm thử dùng.</td></tr>
+<tr><td><b>Standard / Advanced Access</b></td><td>Chế độ truy cập quyền của Meta: chỉ vai trò trong ứng dụng / mọi người dùng.</td></tr>
+<tr><td><b>Business Verification</b></td><td>Xác minh pháp nhân với Meta bằng giấy tờ.</td></tr>
+<tr><td><b>WABA</b></td><td>WhatsApp Business Account: tài khoản doanh nghiệp chứa số điện thoại và mẫu tin.</td></tr>
+<tr><td><b>Tech Provider / Embedded Signup</b></td><td>Chương trình của Meta cho phần mềm phục vụ nhiều khách WhatsApp, kèm luồng đăng ký nhúng trong sản phẩm.</td></tr>
+<tr><td><b>Webhook</b></td><td>Địa chỉ của Maoki mà nền tảng gọi tới khi có sự kiện (tin nhắn, cuộc gọi).</td></tr>
+<tr><td><b>OAuth / refresh token</b></td><td>Cơ chế cho người dùng cấp quyền cho ứng dụng không cần chia sẻ mật khẩu; refresh token để lấy access token mới.</td></tr>
+<tr><td><b>Consent screen</b></td><td>Màn hình Google hiển thị quyền mà ứng dụng xin khi người dùng đồng ý.</td></tr>
+<tr><td><b>Connectivity Partner</b></td><td>Đối tác kỹ thuật được sàn OTA chứng nhận để dùng API giá/phòng/đơn.</td></tr>
+<tr><td><b>Channel manager</b></td><td>Phần mềm đồng bộ lịch, giá, đơn giữa các sàn OTA và hệ thống quản lý.</td></tr>
+<tr><td><b>iCal</b></td><td>Định dạng lịch chỉ ngày bận/trống (.ics); không có giá hay chi tiết đơn.</td></tr>
+<tr><td><b>Template (mẫu tin)</b></td><td>Tin soạn sẵn được nền tảng duyệt để gửi chủ động ngoài khung trả lời.</td></tr>
+<tr><td><b>RLS</b></td><td>Row Level Security: phân quyền theo từng dòng dữ liệu trong cơ sở dữ liệu, giúp mỗi không gian chỉ thấy dữ liệu của mình.</td></tr>
+</table>
+
+<div class="callout" style="margin-top:20pt"><b>Lời cuối</b>Điều quyết định thành công không phải là điền form đúng, mà là <b>ba trang pháp lý + tên miền riêng + tài khoản dùng thử + video rõ</b>, và việc <b>chạy thử thật trên tài khoản của chính bạn trước khi nộp</b>: gần như mọi lỗi “chữ ký sai”, “token hết hạn”, “điểm cuối đã đổi” sẽ lộ ra ở bước đó, rẻ hơn rất nhiều so với việc để người duyệt phát hiện. Hãy xem cẩm nang là bản nháp có thứ tự; mỗi nhãn CẦN KIỂM TRA là một việc 10 phút mở trang chính thức trước khi nộp.</div>
+</body></html>

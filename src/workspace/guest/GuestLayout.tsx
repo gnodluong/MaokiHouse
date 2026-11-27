@@ -136,7 +136,7 @@ export default function GuestLayout() {
 
           <div className="mk-guest-footer-bottom">
             <span>© {new Date().getFullYear()} MaokiHouse · Sài Gòn, Việt Nam · Chăm chút từng kỳ nghỉ</span>
-            <Link to="/admin" className="mk-guest-staff-link"><FiLock /> Đăng nhập quản trị (dành cho nhân viên)</Link>
+            <Link to="/app" className="mk-guest-staff-link"><FiLock /> Ứng dụng quản trị (dành cho nhân viên)</Link>
           </div>
         </footer>
       </div>

@@ -181,3 +181,9 @@ html[data-mk-desktop] body { margin: 0; }
 .dk-review-reply .dk-inline { align-items: center; flex-wrap: wrap; }
 .dk-review-reply select { width: auto; min-width: 170px; }
 .dk-review-existing { padding: 10px 12px; background: var(--mk-bg); border-radius: 8px; }
+
+/* ── Plan gate ────────────────────────────────────────────────── */
+.dk-locked { display: flex; gap: 16px; align-items: flex-start; padding: 22px 24px; max-width: 640px; }
+.dk-locked > svg { font-size: 22px; margin-top: 3px; color: var(--mk-muted); }
+.dk-locked h2 { margin-bottom: 4px; }
+.dk-locked p { color: var(--mk-muted); }

@@ -16,4 +16,8 @@ Object.assign(phrases7, {
   'Hàng đợi gửi tự động (7 ngày gần nhất)': 'Automatic send queue (last 7 days)', 'Tin do bot, quy tắc tự động hóa và chu trình tạo ra được worker gửi nền mỗi 5 phút. Cần đặt WORKER_SECRET và SUPABASE_SERVICE_ROLE_KEY trên Vercel (xem docs/MESSAGING.md).': 'Messages created by bots, automation rules and journeys are sent in the background every 5 minutes by the worker. Set WORKER_SECRET and SUPABASE_SERVICE_ROLE_KEY on Vercel (see docs/MESSAGING.md).',
   'Đang chờ': 'Waiting', 'Đã gửi': 'Sent', 'Lỗi': 'Errors',
 });
+Object.assign(phrases7, {
+  'Có từ gói Chuyên nghiệp.': 'Available from the Professional plan.', 'Có từ gói Vận hành.': 'Available from the Operations plan.', 'Tính năng này có từ gói Chuyên nghiệp': 'This feature is available from the Professional plan', 'Tính năng này có từ gói Vận hành': 'This feature is available from the Operations plan',
+  'Không gian của bạn đang ở gói Cơ bản. Liên hệ MaokiHouse để nâng cấp.': 'Your workspace is on the Basic plan. Contact MaokiHouse to upgrade.', 'Không gian của bạn đang ở gói Vận hành. Liên hệ MaokiHouse để nâng cấp.': 'Your workspace is on the Operations plan. Contact MaokiHouse to upgrade.',
+});
 export const patterns7: [RegExp, string][] = [[/^Đã đồng bộ (\d+) bình luận \((\d+) mới\)$/, 'Synced $1 comments ($2 new)'], [/^Thêm bình luận$/, 'Add comment'], [/^Tìm bình luận…?$/, 'Search comment…'], [/^Chưa có bình luận$/, 'No comment yet']];
